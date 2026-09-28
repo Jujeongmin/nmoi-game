@@ -1,0 +1,191 @@
+/* CAVIAR MATCH — game-specific layout. Consumes tokens from shared/cv-theme.css. */
+
+/* ---------- HUD: four items instead of the default three ---------- */
+.cm-hud { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+
+/* ---------- Collection strip (flight target for collected caviar) ---------- */
+.cm-collection {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  min-height: 30px;
+}
+.cm-slot {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-width: 0;
+}
+.cm-slot .cv-pearl {
+  --size: 14px;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.cm-slot.is-bump .cv-pearl {
+  transform: scale(1.2);
+  box-shadow: inset 0 -1px 2px rgba(0, 0, 0, 0.3), 0 0 0 3px rgba(226, 204, 152, 0.2), 0 0 10px rgba(226, 204, 152, 0.4);
+}
+.cm-slot__text {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+  line-height: 1;
+}
+.cm-slot__name {
+  font: 600 9px/1 var(--cv-font-ui);
+  letter-spacing: 0.06em;
+  color: var(--cv-gold);
+}
+.cm-slot .cv-value { font-size: 15px; }
+
+/* ---------- Stage ---------- */
+.cm-stage {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 0;
+  border: 1px solid var(--cv-line);
+  background: var(--cv-espresso);
+  touch-action: none;
+  cursor: crosshair;
+  overflow: hidden;
+}
+.cm-stage__canvas {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.cm-fx {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+/* ---------- Guide ---------- */
+.cm-guide {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 4px 10px;
+  padding: 2px 0;
+  font: 500 12px/1.4 var(--cv-font-ui);
+  letter-spacing: 0.02em;
+  word-break: keep-all;
+  color: var(--cv-ivory-dim);
+  text-align: center;
+}
+.cm-guide__sep { width: 4px; height: 4px; transform: rotate(45deg); border: 1px solid var(--cv-gold); }
+.cm-guide__mouse { display: none; }
+@media (hover: hover) and (pointer: fine) {
+  .cm-guide__touch { display: none; }
+  .cm-guide__mouse { display: inline; }
+}
+
+/* ---------- Cards ---------- */
+.cm-card__title { margin-top: 12px; font-size: 50px; }
+.cm-card__title--result { margin-top: 10px; font-size: 34px; }
+.cm-card__sub { margin: 8px 0 0; font: 500 13px/1 var(--cv-font-ui); letter-spacing: 0.12em; text-indent: 0.12em; color: var(--cv-ink-soft); }
+.cm-card__lede { max-width: 21em; margin: 0 auto 18px; }
+.cm-card__menu { margin: 0 0 20px; }
+.cm-num { font-family: var(--cv-font-num); font-size: 18px; font-variant-numeric: lining-nums tabular-nums; }
+
+/* Caviar legend on the title card */
+.cm-legend {
+  display: flex;
+  justify-content: center;
+  gap: 14px;
+  margin: 0 0 20px;
+  padding: 0;
+  list-style: none;
+}
+.cm-legend li {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 7px;
+  min-width: 52px;
+}
+.cm-legend .cv-pearl { --size: 22px; }
+.cm-legend span:last-child {
+  font: 600 9px/1 var(--cv-font-ui);
+  letter-spacing: 0.08em;
+  color: var(--cv-ink-soft);
+}
+
+/* Result: caviar settle into a row, one per kind, with counts */
+.cm-result-types {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 4px;
+  margin: -6px 0 20px;
+  padding: 0;
+  list-style: none;
+}
+.cm-result-types li {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+.cm-result-types .cv-pearl { --size: 16px; }
+.cm-result-types.is-aligning .cv-pearl { animation: cm-align 0.9s cubic-bezier(.2,.7,.2,1) backwards; }
+.cm-result-types li:nth-child(1) .cv-pearl { --fx: -22px; --fy: 12px;  animation-delay: 0.10s; }
+.cm-result-types li:nth-child(2) .cv-pearl { --fx: -8px;  --fy: -16px; animation-delay: 0.18s; }
+.cm-result-types li:nth-child(3) .cv-pearl { --fx: 10px;  --fy: 14px;  animation-delay: 0.26s; }
+.cm-result-types li:nth-child(4) .cv-pearl { --fx: 24px;  --fy: -10px; animation-delay: 0.34s; }
+.cm-result-types__name {
+  font: 600 9px/1 var(--cv-font-ui);
+  letter-spacing: 0.06em;
+  color: var(--cv-ink-soft);
+}
+.cm-result-types__count {
+  font: 400 18px/1 var(--cv-font-num);
+  font-variant-numeric: lining-nums tabular-nums;
+  color: var(--cv-ink);
+}
+
+@keyframes cm-align {
+  0% { opacity: 0; transform: translate(var(--fx), var(--fy)) scale(0.6); }
+  100% { opacity: 1; transform: none; }
+}
+
+/* ---------- Small / short screens ---------- */
+@media (max-width: 380px) {
+  :root { --cv-gutter: 10px; }
+  .cv-value { font-size: 21px; }
+  .cm-slot { gap: 5px; }
+  .cm-slot__name { font-size: 8px; letter-spacing: 0.03em; }
+  .cv-panel { padding: 30px 20px 22px; }
+  .cm-card__title { font-size: 44px; }
+  .cm-card__title--result { font-size: 30px; }
+  .cm-legend { gap: 8px; }
+}
+
+@media (max-height: 700px) {
+  .cm-card__lede { display: none; }
+}
+
+@media (max-height: 640px) {
+  .cv-app { gap: 6px; }
+  .cv-panel { padding: 24px 20px 18px; }
+  .cm-card__title { font-size: 38px; margin-top: 8px; }
+  .cm-card__title--result { font-size: 28px; }
+  .cv-rule { margin: 12px auto; }
+  .cv-menu__row { padding: 7px 0; }
+  .cv-menu--score dd { font-size: 24px; }
+  .cm-card__menu { margin-bottom: 16px; }
+  .cm-legend { margin-bottom: 14px; }
+  .cm-guide { display: none; }
+}
+
+@media (max-height: 480px) {
+  .cv-hud { padding: 6px 0 5px; }
+  .cv-hud__item { gap: 4px; }
+  .cv-value { font-size: 19px; }
+}

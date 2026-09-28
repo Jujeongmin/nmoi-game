@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#0b0a08">
+  <title>Caviar Match</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400;1,6..96,400&family=Noto+Sans+KR:wght@400;500;600;700&family=Noto+Serif+KR:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../shared/cv-theme.css">
+  <link rel="stylesheet" href="game/game.css">
+</head>
+<body>
+  <main class="cv-app" id="app">
+
+    <!-- HUD -->
+    <header class="cv-hud cm-hud" aria-label="게임 상태">
+      <div class="cv-hud__item">
+        <span class="cv-label">스테이지</span>
+        <span class="cv-value" id="hud-stage">01</span>
+      </div>
+      <div class="cv-hud__item" id="hud-time-item">
+        <span class="cv-label">시간</span>
+        <span class="cv-value" id="hud-time">60</span>
+      </div>
+      <div class="cv-hud__item">
+        <span class="cv-label">점수</span>
+        <span class="cv-value" id="hud-score">00000</span>
+      </div>
+      <div class="cv-hud__item" id="hud-combo-item">
+        <span class="cv-label">콤보</span>
+        <span class="cv-value" id="hud-combo">0</span>
+      </div>
+    </header>
+
+    <!-- Collection: collected caviar glide into these slots -->
+    <section class="cm-collection" id="collection" aria-label="컬렉션"></section>
+
+    <!-- Play area -->
+    <section class="cm-stage" id="stage" aria-label="플레이 영역">
+      <canvas id="board" class="cm-stage__canvas"></canvas>
+    </section>
+
+    <!-- Guide -->
+    <footer class="cm-guide">
+      <span class="cm-guide__touch">드래그해 조준 · 손을 떼면 발사</span>
+      <span class="cm-guide__mouse">마우스로 조준 · 클릭해 발사</span>
+      <span class="cm-guide__sep" aria-hidden="true"></span>
+      <span>같은 캐비어 3개 이상 연결</span>
+    </footer>
+
+    <!-- Effects layer spans the whole app so caviar can glide into the collection -->
+    <canvas class="cm-fx" id="fx" aria-hidden="true"></canvas>
+
+    <!-- Title card -->
+    <div class="cv-overlay" id="screen-title" role="dialog" aria-labelledby="title-heading">
+      <div class="cv-panel cm-card">
+        <p class="cv-eyebrow">미니게임 02</p>
+        <h1 class="cv-display cm-card__title" id="title-heading">Caviar<br><em>Match</em></h1>
+        <p class="cm-card__sub">캐비어 매치</p>
+        <div class="cv-rule"><span class="cv-rule__mark"></span></div>
+        <p class="cv-body cm-card__lede">캐비어를 보내 같은 종류 3개 이상을 이어 주세요. 이어진 캐비어는 은은하게 빛난 뒤 컬렉션으로 모입니다.</p>
+        <ul class="cm-legend" id="legend" aria-label="캐비어 종류"></ul>
+        <dl class="cv-menu cm-card__menu">
+          <div class="cv-menu__row"><dt>조준</dt><dd>드래그 · 마우스 이동</dd></div>
+          <div class="cv-menu__row"><dt>발사</dt><dd>손을 떼거나 클릭</dd></div>
+          <div class="cv-menu__row"><dt>제한 시간</dt><dd>60초</dd></div>
+          <div class="cv-menu__row"><dt>최고 점수</dt><dd class="cm-num" id="title-best">00000</dd></div>
+        </dl>
+        <div class="cv-actions">
+          <button class="cv-btn cv-btn--primary" id="btn-start" type="button">시작하기</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Result card -->
+    <div class="cv-overlay" id="screen-result" role="dialog" aria-labelledby="result-title">
+      <div class="cv-panel cm-card">
+        <p class="cv-eyebrow" id="result-eyebrow">스테이지 01 결과</p>
+        <h2 class="cv-heading cm-card__title--result" id="result-title">시간 종료</h2>
+        <div class="cv-rule"><span class="cv-rule__mark"></span></div>
+        <dl class="cv-menu cv-menu--score cm-card__menu">
+          <div class="cv-menu__row"><dt>점수</dt><dd id="result-score">0</dd></div>
+          <div class="cv-menu__row"><dt><span class="cv-tag" id="result-new" hidden>신기록</span>최고 점수</dt><dd id="result-best">0</dd></div>
+          <div class="cv-menu__row"><dt>최대 콤보</dt><dd id="result-combo">0</dd></div>
+          <div class="cv-menu__row"><dt>수집한 캐비어</dt><dd id="result-collected">0</dd></div>
+        </dl>
+        <ul class="cm-result-types" id="result-types" aria-label="종류별 수집"></ul>
+        <div class="cv-actions">
+          <button class="cv-btn cv-btn--primary" id="btn-retry" type="button">다시 하기</button>
+          <button class="cv-btn" id="btn-back" type="button">처음으로</button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script src="../../shared/cv-storage.js"></script>
+  <script src="game/config.js"></script>
+  <script src="game/board.js"></script>
+  <script src="game/logic.js"></script>
+  <script src="game/caviar-art.js"></script>
+  <script src="game/renderer.js"></script>
+  <script src="game/fx.js"></script>
+  <script src="game/ui.js"></script>
+  <script src="game/main.js"></script>
+</body>
+</html>
