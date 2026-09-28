@@ -1,0 +1,41 @@
+/* CAVIAR MASTER CHEF — tuning & content.
+   `image`: leave null to use the CSS placeholder, or set a URL relative to
+   this game's index.html (e.g. 'assets/salmon.png') to swap in real art. */
+(function (NS) {
+  'use strict';
+
+  NS.config = {
+    gameId: 'caviar-master-chef',
+    duration: 60,                 // seconds
+    wrongPenalty: 2,              // seconds removed per wrong pick
+    orderLengths: [3, 4, 5, 6],   // steps per order (last step = signature caviar); repeats last
+    memorize: { base: 1.4, perStep: 0.5 }, // seconds the order stays readable
+    serveDelay: 1.15,             // completion presentation before the next order
+    resultDelay: 1.3,             // pause between time up and the result card
+
+    score: {
+      correct: 100,
+      orderComplete: 500,
+      perfectBonus: 300
+    },
+
+    // Path from this game's index.html to the repo root (shared assets live there).
+    assetRoot: '../../',
+
+    ingredients: [
+      { id: 'cracker', label: 'CRACKER', image: null },
+      { id: 'cream',   label: 'CREAM',   image: null },
+      { id: 'lemon',   label: 'LEMON',   image: null },
+      { id: 'herb',    label: 'HERB',    image: null },
+      { id: 'salmon',  label: 'SALMON',  image: null }
+    ],
+
+    // tone: white | green | black | gold  (maps to .cv-pearl--{tone})
+    caviars: [
+      { id: 'almas',    label: 'ALMAS',    tone: 'white', image: null },
+      { id: 'imperial', label: 'IMPERIAL', tone: 'gold',  image: null },
+      { id: 'classic',  label: 'CLASSIC',  tone: 'black', image: null },
+      { id: 'platinum', label: 'PLATINUM', tone: 'green', image: null }
+    ]
+  };
+})(window.CAVIAR = window.CAVIAR || {});
