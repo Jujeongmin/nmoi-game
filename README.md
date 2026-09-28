@@ -28,6 +28,9 @@ games/
   caviar-escape/            mini game 01 — 30 s shark-dodge survival
     index.html
     game/                   config, logic, input, renderer, ui, main, game.css
+  caviar-match/             mini game 02 — 60 s caviar shooter puzzle
+    index.html
+    game/                   config, board, logic, caviar-art, renderer, fx, ui, main, game.css
 ```
 
 A new game goes in `games/<name>/`, links `../../shared/cv-theme.css`, loads
@@ -48,3 +51,20 @@ A new game goes in `games/<name>/`, links `../../shared/cv-theme.css`, loads
 - Member: idle while swimming, frown on a touch, dance + orbiting caviar on success.
 - Tuning: `games/caviar-escape/game/config.js`.
 - Shark art slot: `config.assets.shark` (null = canvas placeholder).
+
+## Caviar Match (games/caviar-match)
+
+- Bubble-shooter loop: aim, send, bounce off walls, settle on the hex grid, match 3+.
+- Matched caviar glow softly, then glide into the Collection strip — nothing bursts.
+  Caviar left without a hold on the top are gathered too.
+- 60 s. Board steps down every 14 s (faster per stage) and after 5 shots without a match;
+  crossing the dotted line ends the run. Clearing the board starts the next stage.
+- Score: +100 per caviar, +150 per caviar gathered after losing its hold,
+  +150 x (combo - 1) from the second consecutive match, +2000 per cleared board.
+- Controls: drag and release (touch), move and click (mouse). Releasing below the
+  shooter cancels the shot.
+- Code split: `board.js` + `logic.js` are rules only (no DOM); `renderer.js`, `fx.js`
+  and `ui.js` only read state and listen to game events.
+- Caviar art slot: `config.types[].image` (path from repo root; null = canvas pearl).
+  Canvas pearls and DOM icons both switch.
+- Tuning: `games/caviar-match/game/config.js`.
