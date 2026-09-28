@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#0b0a08">
+  <title>Caviar Escape</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400;1,6..96,400&family=Noto+Sans+KR:wght@400;500;600;700&family=Noto+Serif+KR:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../shared/cv-theme.css">
+  <link rel="stylesheet" href="game/game.css">
+</head>
+<body>
+  <main class="cv-app" id="app">
+
+    <!-- HUD -->
+    <header class="cv-hud" aria-label="게임 상태">
+      <div class="cv-hud__item">
+        <span class="cv-label">스테이지</span>
+        <span class="cv-value" id="hud-stage">01</span>
+      </div>
+      <div class="cv-hud__item" id="hud-time-item">
+        <span class="cv-label">시간</span>
+        <span class="cv-value" id="hud-time">30</span>
+      </div>
+      <div class="cv-hud__item" id="hud-score-item">
+        <span class="cv-label">점수</span>
+        <span class="cv-value" id="hud-score">00000</span>
+      </div>
+    </header>
+
+    <div class="cv-subhud">
+      <div class="cv-subhud__group" id="hud-lives" aria-label="라이프">
+        <span class="cv-label">라이프</span>
+        <span class="cv-pearl cv-pearl--white"></span>
+        <span class="cv-pearl cv-pearl--white"></span>
+        <span class="cv-pearl cv-pearl--white"></span>
+      </div>
+      <div class="cv-subhud__group">
+        <span class="cv-label">최고 점수</span>
+        <span class="cv-value" id="hud-best">00000</span>
+      </div>
+    </div>
+
+    <!-- Play area -->
+    <section class="ce-stage" id="stage" aria-label="플레이 영역">
+      <div class="ce-stage__inner">
+        <canvas id="stage-canvas" class="ce-stage__canvas"></canvas>
+      </div>
+      <div class="ce-callout" id="callout" aria-live="polite"></div>
+    </section>
+
+    <!-- Guide -->
+    <footer class="ce-guide">
+      <span class="ce-guide__touch">화면을 드래그해 이동</span>
+      <span class="ce-guide__keys">WASD · 방향키로 이동</span>
+      <span class="ce-guide__sep" aria-hidden="true"></span>
+      <span>상어를 아슬아슬하게 피하면 보너스</span>
+    </footer>
+
+    <!-- Title card -->
+    <div class="cv-overlay" id="screen-title" role="dialog" aria-labelledby="title-heading">
+      <div class="cv-panel ce-card">
+        <p class="cv-eyebrow">미니게임 01</p>
+        <h1 class="cv-display ce-card__title" id="title-heading">Caviar<br><em>Escape</em></h1>
+        <p class="ce-card__sub">캐비어 이스케이프</p>
+        <div class="cv-rule"><span class="cv-rule__mark"></span></div>
+        <p class="cv-body ce-card__lede">캐비어 케이스를 들고 깊은 바다를 건너세요. 30초 동안 상어를 피하면 성공입니다.</p>
+        <div class="ce-picker">
+          <p class="cv-eyebrow" id="picker-label">멤버 선택</p>
+          <div class="ce-picker__row" id="member-picker" role="radiogroup" aria-labelledby="picker-label"></div>
+          <p class="ce-picker__name" id="member-name"></p>
+        </div>
+        <dl class="cv-menu ce-card__menu">
+          <div class="cv-menu__row"><dt>이동</dt><dd>드래그 · WASD · 방향키</dd></div>
+          <div class="cv-menu__row"><dt>라이프</dt><dd>3개, 상어에 닿으면 1개 감소</dd></div>
+          <div class="cv-menu__row"><dt>최고 점수</dt><dd class="ce-num" id="title-best">00000</dd></div>
+        </dl>
+        <div class="cv-actions">
+          <button class="cv-btn cv-btn--primary" id="btn-start" type="button">시작하기</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Result card -->
+    <div class="cv-overlay" id="screen-result" role="dialog" aria-labelledby="result-title">
+      <div class="cv-panel ce-card">
+        <p class="cv-eyebrow">스테이지 01 결과</p>
+        <h2 class="cv-heading ce-card__title--result" id="result-title">성공</h2>
+        <div class="ce-figure" id="result-figure" aria-hidden="true"></div>
+        <div class="cv-pearls ce-result-pearls" id="result-pearls" aria-hidden="true">
+          <span class="cv-pearl cv-pearl--white"></span>
+          <span class="cv-pearl cv-pearl--green"></span>
+          <span class="cv-pearl cv-pearl--black"></span>
+          <span class="cv-pearl cv-pearl--gold"></span>
+        </div>
+        <p class="cv-body ce-card__caption" id="result-caption"></p>
+        <dl class="cv-menu cv-menu--score ce-card__menu">
+          <div class="cv-menu__row"><dt>점수</dt><dd id="result-score">00000</dd></div>
+          <div class="cv-menu__row"><dt><span class="cv-tag" id="result-new" hidden>신기록</span>최고 점수</dt><dd id="result-best">00000</dd></div>
+        </dl>
+        <p class="cv-note ce-card__detail" id="result-detail"></p>
+        <div class="cv-actions">
+          <button class="cv-btn cv-btn--primary" id="btn-retry" type="button">다시 하기</button>
+          <button class="cv-btn" id="btn-back" type="button">처음으로</button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script src="../../shared/cv-storage.js"></script>
+  <script src="../../assets/chibi/members.js"></script>
+  <script src="game/config.js"></script>
+  <script src="game/logic.js"></script>
+  <script src="game/input.js"></script>
+  <script src="game/renderer.js"></script>
+  <script src="game/ui.js"></script>
+  <script src="game/main.js"></script>
+</body>
+</html>

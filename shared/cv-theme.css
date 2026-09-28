@@ -1,0 +1,331 @@
+/* =========================================================================
+   CAVIAR CAMPAIGN — shared design system
+   Reused by every mini game in the campaign. Game-specific styles live in
+   each game's own stylesheet and should only consume these tokens/classes.
+   ========================================================================= */
+
+:root {
+  /* Palette */
+  --cv-onyx: #0b0a08;          /* page background */
+  --cv-espresso: #15100b;      /* play stage */
+  --cv-ivory: #efe8d8;         /* panels, primary text on dark */
+  --cv-ivory-dim: #c4bba8;     /* secondary text on dark */
+  --cv-ink: #1a1612;           /* text on ivory */
+  --cv-ink-soft: #4a4236;      /* secondary text on ivory */
+  --cv-gold: #c9ae78;          /* champagne gold: lines, labels, button text */
+  --cv-gold-bright: #e2cc98;
+  --cv-line: rgba(201, 174, 120, 0.55);
+  --cv-line-faint: rgba(201, 174, 120, 0.22);
+  --cv-garnet: #9a4136;        /* alert only (damage) */
+
+  /* Caviar */
+  --cv-caviar-white: #e6dfcf;
+  --cv-caviar-green: #56603f;
+  --cv-caviar-black: #22201d;
+  --cv-caviar-gold: #c9ae78;
+
+  /* Type */
+  --cv-font-display: "Bodoni Moda", "Didot", "Times New Roman", serif;   /* Latin logo only, large sizes */
+  --cv-font-heading: "Noto Serif KR", "Nanum Myeongjo", serif;           /* Korean headings */
+  --cv-font-ui: "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
+  --cv-font-num: "Noto Serif KR", "Nanum Myeongjo", serif;               /* numbers, names */
+
+  /* Layout */
+  --cv-app-max: 520px;
+  --cv-gutter: 14px;
+  --cv-tap: 48px;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+[hidden] { display: none !important; }
+
+html, body {
+  margin: 0;
+  height: 100%;
+  overflow: hidden;
+  overscroll-behavior: none;
+  background: var(--cv-onyx);
+  color: var(--cv-ivory);
+  font-family: var(--cv-font-ui);
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* ---------- App shell: one portrait column, no page scroll ---------- */
+.cv-app {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+  max-width: var(--cv-app-max);
+  height: 100vh;
+  height: 100dvh;
+  margin: 0 auto;
+  padding:
+    calc(env(safe-area-inset-top, 0px) + 10px)
+    calc(env(safe-area-inset-right, 0px) + var(--cv-gutter))
+    calc(env(safe-area-inset-bottom, 0px) + 10px)
+    calc(env(safe-area-inset-left, 0px) + var(--cv-gutter));
+}
+
+@media (min-width: 560px) {
+  .cv-app {
+    border-left: 1px solid var(--cv-line-faint);
+    border-right: 1px solid var(--cv-line-faint);
+  }
+}
+
+/* ---------- Type roles ---------- */
+.cv-label {
+  font: 600 11px/1.2 var(--cv-font-ui);
+  letter-spacing: 0.08em;
+  color: var(--cv-gold);
+}
+
+.cv-value {
+  font: 400 24px/1 var(--cv-font-num);
+  letter-spacing: 0.04em;
+  font-variant-numeric: lining-nums tabular-nums;
+  color: var(--cv-ivory);
+}
+
+.cv-eyebrow {
+  margin: 0;
+  font: 500 12px/1.4 var(--cv-font-ui);
+  letter-spacing: 0.14em;
+  color: var(--cv-ink-soft);
+}
+
+.cv-display {
+  margin: 0;
+  font: 400 44px/0.95 var(--cv-font-display);
+  letter-spacing: -0.01em;
+  color: var(--cv-ink);
+}
+.cv-display em { font-style: italic; }
+
+.cv-heading {
+  margin: 0;
+  font: 700 32px/1.2 var(--cv-font-heading);
+  letter-spacing: -0.01em;
+  color: var(--cv-ink);
+}
+
+.cv-body {
+  margin: 0;
+  font: 400 15px/1.6 var(--cv-font-ui);
+  word-break: keep-all;
+  color: var(--cv-ink-soft);
+}
+
+.cv-note {
+  margin: 0;
+  font: 400 12px/1.5 var(--cv-font-ui);
+  word-break: keep-all;
+  color: var(--cv-ink-soft);
+}
+
+/* ---------- HUD (top bar, shared by all games) ---------- */
+.cv-hud {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  border-top: 1px solid var(--cv-line);
+  border-bottom: 1px solid var(--cv-line);
+  padding: 9px 0 8px;
+}
+.cv-hud__item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+.cv-hud__item + .cv-hud__item { border-left: 1px solid var(--cv-line-faint); }
+.cv-hud__item .cv-value { transition: color 0.3s; }
+.cv-hud__item.is-alert .cv-value { color: var(--cv-gold-bright); }
+.cv-hud__item.is-flash .cv-value { animation: cv-flash 0.6s ease-out; }
+
+.cv-subhud {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 0 2px;
+  min-height: 16px;
+}
+.cv-subhud__group { display: flex; align-items: center; gap: 8px; }
+.cv-subhud .cv-value { font-size: 16px; color: var(--cv-ivory-dim); }
+
+@keyframes cv-flash {
+  0% { color: var(--cv-gold-bright); transform: translateY(-2px); }
+  100% { color: var(--cv-ivory); transform: none; }
+}
+
+/* ---------- Buttons: black + gold border, always ---------- */
+.cv-btn {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--cv-tap);
+  min-width: 128px;
+  padding: 0 24px;
+  background: var(--cv-onyx);
+  color: var(--cv-gold);
+  border: 1px solid var(--cv-gold);
+  border-radius: 0;
+  font: 700 15px/1 var(--cv-font-ui);
+  letter-spacing: 0.12em;
+  text-indent: 0.12em; /* optically recentre tracked text */
+  cursor: pointer;
+  transition: color 0.2s, background-color 0.2s;
+}
+.cv-btn:hover { color: var(--cv-ivory); background: #17130e; }
+.cv-btn:active { transform: translateY(1px); }
+.cv-btn:focus-visible { outline: 1px solid var(--cv-gold); outline-offset: 3px; }
+/* Primary: a second hairline frame inside the border, like an engraved plate */
+.cv-btn--primary { box-shadow: inset 0 0 0 3px var(--cv-onyx), inset 0 0 0 4px var(--cv-line); }
+
+.cv-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+}
+.cv-actions .cv-btn { flex: 1 1 120px; }
+
+/* ---------- Ivory panel: a menu card with an inner gold frame ---------- */
+.cv-panel {
+  position: relative;
+  width: min(100%, 360px);
+  max-height: 100%;
+  overflow-y: auto;
+  padding: 34px 26px 26px;
+  background: var(--cv-ivory);
+  color: var(--cv-ink);
+  outline: 1px solid var(--cv-gold);
+  outline-offset: -9px;
+  text-align: center;
+}
+
+.cv-rule {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 18px auto;
+  width: 70%;
+  color: var(--cv-gold);
+}
+.cv-rule::before, .cv-rule::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: currentColor;
+  opacity: 0.7;
+}
+.cv-rule__mark {
+  width: 5px;
+  height: 5px;
+  transform: rotate(45deg);
+  border: 1px solid currentColor;
+}
+
+/* Menu-style list: course name left, detail right */
+.cv-menu {
+  margin: 0;
+  padding: 0;
+  text-align: left;
+}
+.cv-menu__row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 9px 0;
+  border-bottom: 1px solid var(--cv-line-faint);
+}
+.cv-menu__row:first-child { border-top: 1px solid var(--cv-line-faint); }
+.cv-menu dt {
+  font: 600 13px/1.3 var(--cv-font-ui);
+  letter-spacing: 0.04em;
+  color: var(--cv-ink);
+  white-space: nowrap;
+}
+.cv-menu dd {
+  margin: 0;
+  font: 400 14px/1.4 var(--cv-font-ui);
+  color: var(--cv-ink-soft);
+  word-break: keep-all;
+  text-align: right;
+}
+.cv-menu--score dd {
+  font: 400 28px/1 var(--cv-font-num);
+  font-variant-numeric: lining-nums tabular-nums;
+  color: var(--cv-ink);
+}
+
+.cv-tag {
+  display: inline-block;
+  margin-right: 8px;
+  padding: 3px 6px 2px;
+  border: 1px solid var(--cv-gold);
+  font: 600 10px/1 var(--cv-font-ui);
+  letter-spacing: 0.04em;
+  color: #8a7248;
+  vertical-align: middle;
+}
+
+/* ---------- Overlay (no blur, no glass) ---------- */
+.cv-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: rgba(8, 7, 5, 0.8);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.35s ease, visibility 0s linear 0.35s;
+}
+.cv-overlay.is-open {
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 0.35s ease;
+}
+.cv-overlay .cv-panel { transform: translateY(10px); transition: transform 0.45s ease; }
+.cv-overlay.is-open .cv-panel { transform: none; }
+
+/* ---------- Caviar pearl (CSS placeholder; swap background for an image) ---------- */
+.cv-pearl {
+  --size: 14px;
+  --pearl: var(--cv-caviar-white);
+  display: inline-block;
+  flex: none;
+  width: var(--size);
+  height: var(--size);
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 34% 30%, rgba(255, 255, 255, 0.55) 0 10%, rgba(255, 255, 255, 0) 32%),
+    var(--pearl);
+  box-shadow: inset 0 -1px 2px rgba(0, 0, 0, 0.3);
+  transition: background 0.3s, box-shadow 0.3s;
+}
+.cv-pearl--white { --pearl: var(--cv-caviar-white); }
+.cv-pearl--green { --pearl: var(--cv-caviar-green); }
+.cv-pearl--black { --pearl: var(--cv-caviar-black); box-shadow: inset 0 -1px 2px rgba(0,0,0,.3), 0 0 0 1px rgba(239,232,216,.16); }
+.cv-pearl--gold  { --pearl: var(--cv-caviar-gold); }
+.cv-pearl.is-empty {
+  background: transparent;
+  box-shadow: inset 0 0 0 1px var(--cv-line);
+}
+
+.cv-pearls { display: flex; justify-content: center; gap: 12px; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+}

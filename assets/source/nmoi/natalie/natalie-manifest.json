@@ -1,0 +1,212 @@
+{
+  "characterId": "natalie",
+  "engine": "component-row",
+  "game_input": "sprite-sheet-alpha.png",
+  "degraded_static_fallback": false,
+  "curation_applied": false,
+  "frame_variant": "pixel",
+  "sprite_sheet_alpha": "sprite-sheet-alpha.png",
+  "sprite_sheet_alpha_report": "sprite-sheet-alpha.report.json",
+  "base_image": "base-source.png",
+  "cell": {
+    "shape": "rect",
+    "width": 384,
+    "height": 384,
+    "safe_margin_x": 24,
+    "safe_margin_y": 36
+  },
+  "chroma_key": {
+    "name": "cyan",
+    "hex": "#00FFFF",
+    "rgb": [
+      0,
+      255,
+      255
+    ],
+    "selection": "auto",
+    "score": 238.28,
+    "min_subject_distance": 222.26,
+    "background": {
+      "mode": "transparent",
+      "opaque_border_fraction": 0.0,
+      "subject_pixels": 17811
+    },
+    "candidates": [
+      {
+        "name": "magenta",
+        "hex": "#FF00FF",
+        "score": 202.24,
+        "min_subject_distance": 190.03,
+        "clears_erase_radius": true
+      },
+      {
+        "name": "green",
+        "hex": "#00FF00",
+        "score": 207.84,
+        "min_subject_distance": 204.88,
+        "clears_erase_radius": true
+      },
+      {
+        "name": "cyan",
+        "hex": "#00FFFF",
+        "score": 238.28,
+        "min_subject_distance": 222.26,
+        "clears_erase_radius": true
+      },
+      {
+        "name": "blue",
+        "hex": "#004DFF",
+        "score": 200.0,
+        "min_subject_distance": 190.02,
+        "clears_erase_radius": true
+      }
+    ],
+    "selection_reason": "highest 1st-percentile subject distance among the 4 candidate(s) clearing the 96 erase radius"
+  },
+  "animation": {
+    "cellWidth": 384,
+    "cellHeight": 384,
+    "columns": 6,
+    "rows": {
+      "idle": {
+        "row": 0,
+        "frames": 4,
+        "fps": 4,
+        "durations_ms": [
+          250,
+          250,
+          250,
+          250
+        ],
+        "loop": true,
+        "frame_variant": "pixel"
+      },
+      "frown": {
+        "row": 1,
+        "frames": 4,
+        "fps": 6,
+        "durations_ms": [
+          167,
+          167,
+          167,
+          167
+        ],
+        "loop": false,
+        "frame_variant": "pixel"
+      },
+      "dance": {
+        "row": 2,
+        "frames": 6,
+        "fps": 8,
+        "durations_ms": [
+          125,
+          125,
+          125,
+          125,
+          125,
+          125
+        ],
+        "loop": true,
+        "frame_variant": "pixel"
+      }
+    }
+  },
+  "frame_layout": {
+    "sheetWidth": 2304,
+    "sheetHeight": 1152,
+    "cellWidth": 384,
+    "cellHeight": 384,
+    "rows": {
+      "idle": [
+        {
+          "x": 0,
+          "y": 0,
+          "w": 384,
+          "h": 384
+        },
+        {
+          "x": 384,
+          "y": 0,
+          "w": 384,
+          "h": 384
+        },
+        {
+          "x": 768,
+          "y": 0,
+          "w": 384,
+          "h": 384
+        },
+        {
+          "x": 1152,
+          "y": 0,
+          "w": 384,
+          "h": 384
+        }
+      ],
+      "frown": [
+        {
+          "x": 0,
+          "y": 384,
+          "w": 384,
+          "h": 384
+        },
+        {
+          "x": 384,
+          "y": 384,
+          "w": 384,
+          "h": 384
+        },
+        {
+          "x": 768,
+          "y": 384,
+          "w": 384,
+          "h": 384
+        },
+        {
+          "x": 1152,
+          "y": 384,
+          "w": 384,
+          "h": 384
+        }
+      ],
+      "dance": [
+        {
+          "x": 0,
+          "y": 768,
+          "w": 384,
+          "h": 384
+        },
+        {
+          "x": 384,
+          "y": 768,
+          "w": 384,
+          "h": 384
+        },
+        {
+          "x": 768,
+          "y": 768,
+          "w": 384,
+          "h": 384
+        },
+        {
+          "x": 1152,
+          "y": 768,
+          "w": 384,
+          "h": 384
+        },
+        {
+          "x": 1536,
+          "y": 768,
+          "w": 384,
+          "h": 384
+        },
+        {
+          "x": 1920,
+          "y": 768,
+          "w": 384,
+          "h": 384
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,200 @@
+/* CAVIAR ESCAPE — game-specific layout. Consumes tokens from shared/cv-theme.css. */
+
+/* ---------- Stage ---------- */
+.ce-stage {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 0;
+  border: 1px solid var(--cv-line);
+  background: var(--cv-espresso);
+  touch-action: none;
+  cursor: grab;
+  overflow: hidden;
+}
+.ce-stage:active { cursor: grabbing; }
+
+.ce-stage__inner { position: absolute; inset: 0; }
+.ce-stage__canvas { display: block; width: 100%; height: 100%; }
+
+/* Hit: brief shake + garnet frame flash. */
+.ce-stage::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border: 2px solid var(--cv-garnet);
+  box-shadow: inset 0 0 28px rgba(154, 65, 54, 0.45);
+  opacity: 0;
+  pointer-events: none;
+}
+.ce-stage.is-hit::after { animation: ce-hit-frame 0.7s ease-out; }
+.ce-stage.is-hit .ce-stage__inner { animation: ce-shake 0.32s linear; }
+
+@keyframes ce-hit-frame {
+  0%, 30% { opacity: 1; }
+  15% { opacity: 0.35; }
+  100% { opacity: 0; }
+}
+@keyframes ce-shake {
+  0% { transform: translate(0, 0); }
+  20% { transform: translate(-5px, 2px); }
+  40% { transform: translate(4px, -3px); }
+  60% { transform: translate(-3px, 1px); }
+  80% { transform: translate(2px, 1px); }
+  100% { transform: translate(0, 0); }
+}
+
+/* ---------- Callout (3-2-1, Escape, Success) ---------- */
+.ce-callout {
+  position: absolute;
+  left: 0; right: 0;
+  top: 38%;
+  text-align: center;
+  font: 700 30px/1 var(--cv-font-heading);
+  letter-spacing: 0;
+  color: var(--cv-ivory);
+  pointer-events: none;
+  opacity: 0;
+}
+.ce-callout[data-kind="number"] { font: 400 80px/1 var(--cv-font-num); color: var(--cv-gold); }
+.ce-callout.is-shown { animation: ce-callout 0.6s ease-out forwards; }
+
+@keyframes ce-callout {
+  0% { opacity: 0; transform: translateY(8px); }
+  100% { opacity: 1; transform: none; }
+}
+
+/* ---------- Guide ---------- */
+.ce-guide {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 4px 10px;
+  padding: 2px 0;
+  font: 500 12px/1.4 var(--cv-font-ui);
+  letter-spacing: 0.02em;
+  word-break: keep-all;
+  color: var(--cv-ivory-dim);
+  text-align: center;
+}
+.ce-guide__sep { width: 4px; height: 4px; transform: rotate(45deg); border: 1px solid var(--cv-gold); }
+.ce-guide__keys { display: none; }
+@media (hover: hover) and (pointer: fine) {
+  .ce-guide__touch { display: none; }
+  .ce-guide__keys { display: inline; }
+}
+
+/* ---------- Cards ---------- */
+.ce-card__title { margin-top: 12px; font-size: 50px; }
+.ce-card__title--result { margin-top: 10px; font-size: 34px; }
+.ce-card__sub { margin: 8px 0 0; font: 500 13px/1 var(--cv-font-ui); letter-spacing: 0.12em; text-indent: 0.12em; color: var(--cv-ink-soft); }
+.ce-card__lede { max-width: 21em; margin: 0 auto 20px; }
+.ce-card__menu { margin: 0 0 22px; }
+.ce-card__caption { margin: 0 auto 18px; max-width: 24em; font-size: 14px; white-space: pre-line; }
+.ce-card__detail { margin: -10px 0 20px; }
+.ce-num { font-family: var(--cv-font-num); font-size: 18px; font-style: normal !important; font-variant-numeric: lining-nums tabular-nums; }
+
+/* Result pearls drift in from scattered positions and settle into a row. */
+.ce-result-pearls { margin: 20px 0 14px; }
+.ce-result-pearls .cv-pearl { --size: 16px; }
+.ce-result-pearls.is-aligning .cv-pearl { animation: ce-align 0.9s cubic-bezier(.2,.7,.2,1) backwards; }
+.ce-result-pearls.is-aligning .cv-pearl:nth-child(1) { --fx: -26px; --fy: 14px; animation-delay: 0.10s; }
+.ce-result-pearls.is-aligning .cv-pearl:nth-child(2) { --fx: -8px;  --fy: -18px; animation-delay: 0.18s; }
+.ce-result-pearls.is-aligning .cv-pearl:nth-child(3) { --fx: 12px;  --fy: 16px; animation-delay: 0.26s; }
+.ce-result-pearls.is-aligning .cv-pearl:nth-child(4) { --fx: 28px;  --fy: -12px; animation-delay: 0.34s; }
+.ce-result-pearls.is-success .cv-pearl {
+  box-shadow: inset 0 -1px 2px rgba(0,0,0,.3), 0 0 0 3px var(--cv-ivory), 0 0 0 4px var(--cv-line);
+}
+
+@keyframes ce-align {
+  0% { opacity: 0; transform: translate(var(--fx), var(--fy)) scale(0.6); }
+  100% { opacity: 1; transform: none; }
+}
+
+/* ---------- Sprite sheet window (CSS) ----------
+   Set per element: --sheet (url), --cell (display px per cell), --cols, --rows,
+   --row, --frames, --ox/--oy (crop offset), --dur. Add .is-playing to animate. */
+.ce-sprite {
+  background-image: var(--sheet);
+  background-repeat: no-repeat;
+  background-size: calc(var(--cell) * var(--cols)) calc(var(--cell) * var(--rows));
+  background-position: var(--ox) calc(var(--oy) - var(--row) * var(--cell));
+}
+.ce-sprite.is-playing { animation: ce-sprite var(--dur) steps(var(--frames)) infinite; }
+@keyframes ce-sprite {
+  from { background-position-x: var(--ox); }
+  to { background-position-x: calc(var(--ox) - var(--frames) * var(--cell)); }
+}
+
+/* ---------- Member picker ---------- */
+.ce-picker { margin: 0 0 18px; }
+.ce-picker__row {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin: 12px 0 8px;
+}
+.ce-member {
+  appearance: none;
+  flex: none;
+  width: 46px;
+  height: 46px;
+  padding: 0;
+  border: 1px solid var(--cv-line);
+  border-radius: 50%;
+  background-color: var(--cv-onyx);
+  cursor: pointer;
+  transition: box-shadow 0.25s, border-color 0.25s;
+}
+.ce-member:hover { border-color: var(--cv-gold); }
+.ce-member:focus-visible { outline: 1px solid var(--cv-gold); outline-offset: 3px; }
+.ce-member[aria-checked="true"] {
+  border-color: var(--cv-gold);
+  box-shadow: 0 0 0 3px var(--cv-ivory), 0 0 0 4px var(--cv-gold);
+}
+.ce-picker__name {
+  margin: 0;
+  font: 600 19px/1.2 var(--cv-font-heading);
+  letter-spacing: 0.08em;
+  text-indent: 0.08em;
+  color: var(--cv-ink);
+}
+
+/* Result: the chosen member dances (success) or stands (game over). */
+.ce-figure {
+  width: 96px;
+  height: 92px;
+  margin: 14px auto -6px;
+}
+
+/* ---------- Small / short screens ---------- */
+@media (max-width: 380px) {
+  :root { --cv-gutter: 10px; }
+  .cv-value { font-size: 22px; }
+  .cv-panel { padding: 30px 20px 22px; }
+  .ce-card__title { font-size: 44px; }
+  .ce-card__title--result { font-size: 30px; }
+}
+
+@media (max-height: 640px) {
+  .cv-app { gap: 6px; }
+  .cv-panel { padding: 24px 20px 18px; }
+  .ce-card__title { font-size: 38px; margin-top: 8px; }
+  .ce-card__title--result { font-size: 28px; }
+  .cv-rule { margin: 12px auto; }
+  .ce-card__lede { margin-bottom: 14px; }
+  .cv-menu__row { padding: 7px 0; }
+  .ce-card__menu { margin-bottom: 16px; }
+  .ce-result-pearls { margin: 14px 0 10px; }
+  .ce-card__lede { display: none; }
+  .ce-picker { margin-bottom: 14px; }
+  .ce-figure { margin-top: 8px; }
+}
+
+@media (max-height: 480px) {
+  .ce-guide { display: none; }
+  .cv-hud { padding: 6px 0 5px; }
+  .cv-hud__item { gap: 4px; }
+  .cv-value { font-size: 20px; }
+  .ce-card__lede { display: none; }
+}
