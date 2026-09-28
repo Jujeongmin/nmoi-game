@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#0b0a08">
+  <title>Caviar Master Chef</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400;1,6..96,400&family=Noto+Sans+KR:wght@400;500;600;700&family=Noto+Serif+KR:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../shared/cv-theme.css">
+  <link rel="stylesheet" href="game/game.css">
+</head>
+<body>
+  <main class="cv-app" id="app">
+
+    <!-- HUD -->
+    <header class="cv-hud" aria-label="게임 상태">
+      <div class="cv-hud__item">
+        <span class="cv-label">주문</span>
+        <span class="cv-value" id="hud-order">01</span>
+      </div>
+      <div class="cv-hud__item" id="hud-time-item">
+        <span class="cv-label">시간</span>
+        <span class="cv-value" id="hud-time">60</span>
+      </div>
+      <div class="cv-hud__item" id="hud-score-item">
+        <span class="cv-label">점수</span>
+        <span class="cv-value" id="hud-score">00000</span>
+      </div>
+    </header>
+
+    <div class="cv-subhud">
+      <div class="cv-subhud__group">
+        <span class="cv-label">콤보</span>
+        <span class="cv-value" id="hud-combo">0</span>
+      </div>
+      <div class="cv-subhud__group">
+        <span class="cv-label">최고 점수</span>
+        <span class="cv-value" id="hud-best">00000</span>
+      </div>
+    </div>
+
+    <!-- Order ticket -->
+    <section class="cm-ticket" id="ticket" aria-live="polite">
+      <div class="cm-ticket__head">
+        <span class="cm-ticket__title" id="ticket-title">ORDER No.01</span>
+        <span class="cm-ticket__status" id="ticket-status">주문 확인</span>
+      </div>
+      <ol class="cm-ticket__lines" id="ticket-lines"></ol>
+      <div class="cm-ticket__foot">
+        <div class="cm-ticket__bar"><i id="ticket-bar"></i></div>
+        <button class="cv-btn cm-ticket__ready" id="btn-ready" type="button">플레이팅 ›</button>
+      </div>
+    </section>
+
+    <!-- Plate -->
+    <section class="cm-stage" id="stage" aria-label="플레이팅">
+      <div class="cm-plate" id="plate">
+        <div class="cm-plate__rim"></div>
+        <div class="cm-plate__items" id="plate-items"></div>
+        <div class="cm-signature" id="signature">
+          <div class="cm-signature__dish" id="sig-dish"></div>
+          <span class="cm-signature__label">시그니처</span>
+        </div>
+      </div>
+      <div class="cm-banner" id="banner"></div>
+      <div class="cm-fx" id="fx"></div>
+      <div class="cm-callout" id="callout"></div>
+    </section>
+
+    <!-- Controls -->
+    <section class="cm-controls" id="controls">
+      <div class="cm-controls__label"><span class="cv-label">재료</span></div>
+      <div class="cm-controls__row cm-controls__row--ing" id="ingredient-row"></div>
+      <div class="cm-controls__label"><span class="cv-label">시그니처 캐비어</span></div>
+      <div class="cm-controls__row cm-controls__row--cav" id="caviar-row"></div>
+    </section>
+
+    <!-- Title card -->
+    <div class="cv-overlay" id="screen-title" role="dialog" aria-labelledby="title-heading">
+      <div class="cv-panel cm-card">
+        <p class="cv-eyebrow">미니게임 03</p>
+        <h1 class="cv-display cm-card__title" id="title-heading">Caviar<br><em>Master Chef</em></h1>
+        <p class="cm-card__sub">캐비어 마스터 셰프</p>
+        <div class="cv-rule"><span class="cv-rule__mark"></span></div>
+        <p class="cv-body cm-card__lede">주문서를 기억하고 같은 순서로 접시를 완성하세요. 마지막은 시그니처 캐비어로 마무리합니다.</p>
+        <dl class="cv-menu cm-card__menu">
+          <div class="cv-menu__row"><dt>진행</dt><dd>주문 확인 · 재료 선택 · 시그니처</dd></div>
+          <div class="cv-menu__row"><dt>제한 시간</dt><dd>60초, 실수하면 2초 감소</dd></div>
+          <div class="cv-menu__row"><dt>최고 점수</dt><dd class="cm-num" id="title-best">00000</dd></div>
+        </dl>
+        <div class="cv-actions">
+          <button class="cv-btn cv-btn--primary" id="btn-start" type="button">시작하기</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Result card -->
+    <div class="cv-overlay" id="screen-result" role="dialog" aria-labelledby="result-title">
+      <div class="cv-panel cm-card">
+        <p class="cv-eyebrow">오늘의 서비스</p>
+        <h2 class="cv-display cm-card__title cm-card__title--result" id="result-title">Service<br><em>Complete</em></h2>
+        <div class="cv-pearls cm-result-pearls" aria-hidden="true">
+          <span class="cv-pearl cv-pearl--white"></span>
+          <span class="cv-pearl cv-pearl--green"></span>
+          <span class="cv-pearl cv-pearl--black"></span>
+          <span class="cv-pearl cv-pearl--gold"></span>
+        </div>
+        <dl class="cv-menu cv-menu--score cm-card__menu">
+          <div class="cv-menu__row"><dt>점수</dt><dd id="result-score">00000</dd></div>
+          <div class="cv-menu__row"><dt>완성한 주문</dt><dd id="result-orders">0</dd></div>
+          <div class="cv-menu__row"><dt>퍼펙트 주문</dt><dd id="result-perfect">0</dd></div>
+          <div class="cv-menu__row"><dt>최대 콤보</dt><dd id="result-combo">0</dd></div>
+          <div class="cv-menu__row"><dt><span class="cv-tag" id="result-new" hidden>신기록</span>최고 점수</dt><dd id="result-best">00000</dd></div>
+        </dl>
+        <div class="cv-actions">
+          <button class="cv-btn cv-btn--primary" id="btn-retry" type="button">다시 하기</button>
+          <button class="cv-btn" id="btn-back" type="button">처음으로</button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script src="../../shared/cv-storage.js"></script>
+  <script src="game/config.js"></script>
+  <script src="game/logic.js"></script>
+  <script src="game/ui.js"></script>
+  <script src="game/main.js"></script>
+</body>
+</html>

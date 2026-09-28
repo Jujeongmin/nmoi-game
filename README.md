@@ -28,6 +28,9 @@ games/
   caviar-escape/            mini game 01 — 30 s shark-dodge survival
     index.html
     game/                   config, logic, input, renderer, ui, main, game.css
+  caviar-master-chef/       mini game 03 — 60 s order-memory plating
+    index.html
+    game/                   config, logic, ui, main, game.css
 ```
 
 A new game goes in `games/<name>/`, links `../../shared/cv-theme.css`, loads
@@ -48,3 +51,15 @@ A new game goes in `games/<name>/`, links `../../shared/cv-theme.css`, loads
 - Member: idle while swimming, frown on a touch, dance + orbiting caviar on success.
 - Tuning: `games/caviar-escape/game/config.js`.
 - Shark art slot: `config.assets.shark` (null = canvas placeholder).
+
+## Caviar Master Chef (games/caviar-master-chef)
+
+- 60 s. Read the order ticket, it hides, then pick ingredients in the same
+  order and finish with the Signature Caviar. Orders grow 3 → 4 → 5 → 6 steps.
+- Score: +100 per correct pick, +500 per order, +300 perfect (no mistakes).
+  Wrong pick: input cancelled, −2 s. Combo = consecutive perfect orders.
+- Caviar is never placed on the food: the chosen caviar aligns in a separate
+  signature dish beside the plate and the gold rims light up.
+- Tuning and content: `games/caviar-master-chef/game/config.js`.
+- Art slots: `image` on each ingredient / caviar (null = CSS placeholder).
+- Debug: `CAVIAR.debug.step(seconds)` / `CAVIAR.debug.game` in the console.
