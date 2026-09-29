@@ -14,6 +14,7 @@
   var store = NS.storage.scope(cfg.gameId);
 
   var best = store.getNumber('best', 0);
+  NS.bingoUI.attachGame(cfg.gameId, { root: cfg.assetRoot });
 
   // Member selection (remembered locally).
   var members = NS.members || [];
@@ -30,7 +31,8 @@
   }
   if (members.length) {
     ui.buildPicker(members);
-    selectMember(store.get('member', members[0].id));
+    // A guest from the landing gets the member their order picked.
+    selectMember((NS.hub.fromHub && NS.hub.memberId()) || store.get('member', members[0].id));
   }
   ui.on('member', selectMember);
   var resultShown = true;
@@ -82,9 +84,13 @@
       closeCalls: game.closeCalls,
       lifeBonus: game.lifeBonus
     });
+    NS.bingoUI.showRun(cfg.gameId, NS.bingo.report(cfg.gameId, {
+      result: game.result, score: score, lives: game.lives, closeCalls: game.closeCalls
+    }));
   }
 
   function handle(ev) {
+    NS.sound.event(cfg.gameId, ev.type, ev);
     switch (ev.type) {
       case 'hit':
         ui.hitFeedback();
@@ -109,7 +115,7 @@
 
   ui.on('start', startRun);
   ui.on('retry', startRun);
-  ui.on('back', toTitle);
+  ui.on('back', NS.hub.backOr(toTitle));
 
   document.addEventListener('visibilitychange', function () {
     paused = document.hidden;

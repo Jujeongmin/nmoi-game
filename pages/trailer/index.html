@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#ffffff">
+  <title>Trailer</title>
+  <script src="../../shared/cv-frame.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Noto+Sans+KR:wght@400;500;600;700&family=Noto+Serif+KR:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../shared/cv-theme.css">
+  <link rel="stylesheet" href="../../shared/cv-bingo.css">
+  <link rel="stylesheet" href="../pages.css">
+</head>
+<body class="pg pg--white">
+  <div class="pg-app" id="app">
+    <header class="pg-bar">
+      <a class="pg-bar__back" id="link-home">&larr; 레스토랑</a>
+      <p class="pg-bar__title">Trailer</p>
+      <button class="pg-bar__bingo" id="btn-bingo" type="button">빙고판</button>
+    </header>
+
+    <main class="pg-scroll">
+      <p class="pg-lede">장바구니 속 오브제를 눌러 트레일러를 열어보세요</p>
+      <div class="pg-basket" id="basket"></div>
+      <ol class="pg-trailers" id="trailer-list"></ol>
+    </main>
+
+    <!-- Player -->
+    <div class="cv-overlay" id="player" role="dialog" aria-labelledby="player-title">
+      <div class="cv-panel pg-player">
+        <p class="cv-eyebrow" id="player-no">01 Trailer</p>
+        <h2 class="pg-player__title" id="player-title"></h2>
+        <div class="pg-player__frame" id="player-frame"></div>
+        <button class="cv-btn pg-player__close" id="player-close" type="button">닫기</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="../../shared/cv-storage.js"></script>
+  <script src="../../shared/cv-hub.js"></script>
+  <script src="../../shared/cv-bingo.js"></script>
+  <script src="../../shared/cv-bingo-ui.js"></script>
+  <script src="../../shared/cv-brand.js"></script>
+  <script src="../../shared/cv-presave.js"></script>
+  <script src="../../shared/cv-sound.js"></script>
+  <script src="../content.js"></script>
+  <script src="../trailer.js"></script>
+</body>
+</html>

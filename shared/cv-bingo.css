@@ -1,0 +1,295 @@
+/* CAVIAR BINGO — "caviar service tray": a black lacquer board of tins seen from above.
+   A tin is empty until its quest is done, then it is filled with that game's caviar.
+   Finished lines are joined by a gold rule. Uses cv-theme.css tokens. */
+
+.cv-bingo { z-index: 40; }
+
+.cv-bingo__panel {
+  width: min(100%, 390px);
+  padding: 24px 18px 18px;
+  background: #0e0c0a;
+  color: var(--cv-ivory);
+  outline: 1px solid var(--cv-line);
+  outline-offset: -8px;
+  box-shadow: 0 30px 60px -20px rgba(0, 0, 0, 0.8);
+}
+
+.cv-bingo__head { text-align: center; }
+.cv-bingo__head .cv-eyebrow { color: var(--cv-gold); letter-spacing: 0.3em; }
+.cv-bingo__title {
+  margin: 8px 0 0;
+  font: 500 26px/1.1 var(--cv-font-display);
+  letter-spacing: 0.1em;
+  text-indent: 0.1em;
+  color: var(--cv-gold-bright);
+}
+.cv-bingo__sub {
+  margin: 8px 0 16px;
+  font: 500 12px/1 var(--cv-font-ui);
+  letter-spacing: 0.08em;
+  color: var(--cv-ivory-dim);
+}
+.cv-bingo__sub b { font-weight: 700; color: var(--cv-ivory); }
+
+/* Board */
+.cv-bingo__board {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 4px;
+  padding: 8px;
+  border: 1px solid var(--cv-line-faint);
+  background: #080706;
+}
+.cv-bingo__lines {
+  position: absolute;
+  z-index: 0;         /* behind the tins: the rule shows between them */
+  inset: 8px;
+  width: calc(100% - 16px);
+  height: calc(100% - 16px);
+  pointer-events: none;
+  overflow: visible;
+}
+.cv-bingo__lines line {
+  stroke: var(--cv-gold-bright);
+  stroke-width: 2;
+  stroke-linecap: round;
+  vector-effect: non-scaling-stroke;
+  filter: drop-shadow(0 0 3px rgba(226, 204, 152, 0.9));
+  opacity: 0.85;
+}
+
+.cv-bingo__cell {
+  appearance: none;
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 3px;
+  min-width: 0;
+  padding: 6px 2px 5px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--cv-ivory-dim);
+  cursor: pointer;
+  transition: border-color 0.3s, background-color 0.3s;
+}
+.cv-bingo__cell:hover { border-color: var(--cv-line-faint); }
+.cv-bingo__cell:focus-visible { outline: 1px solid var(--cv-gold); outline-offset: -1px; }
+.cv-bingo__cell.is-selected { border-color: var(--cv-gold); background: #120f0c; }
+
+.cv-bingo__tin {
+  display: block;
+  width: 82%;
+  aspect-ratio: 1;
+  object-fit: contain;
+  transition: transform 0.4s ease, filter 0.4s ease;
+}
+.cv-bingo__cell:not(.is-done) .cv-bingo__tin { filter: brightness(0.42) saturate(0.35); opacity: 0.85; }
+.cv-bingo__cell:not(.is-done):hover .cv-bingo__tin { filter: brightness(0.6) saturate(0.5); }
+.cv-bingo__cell.is-done .cv-bingo__tin { filter: drop-shadow(0 0 8px rgba(226, 204, 152, 0.4)); }
+.cv-bingo__cell:not(.is-done) .cv-bingo__name { color: #8d8474; }
+.cv-bingo__cell.is-fresh .cv-bingo__tin { animation: cv-tin-fill 0.9s ease-out both; }
+
+/* CSS fallback when a tin image is missing */
+.cv-bingo__tin--css {
+  border-radius: 50%;
+  border: 2px solid var(--cv-gold);
+  background: #1d1915;
+}
+
+.cv-bingo__name {
+  max-width: 100%;
+  padding: 1px 3px;
+  background: #080706;   /* masks the bingo rule behind the label */
+  font: 600 10px/1.2 var(--cv-font-ui);
+  letter-spacing: -0.01em;
+  text-align: center;
+  word-break: keep-all;
+}
+.cv-bingo__cell.is-done .cv-bingo__name { color: var(--cv-gold-bright); }
+.cv-bingo__cell.is-presave .cv-bingo__name { color: var(--cv-gold); }
+
+@keyframes cv-tin-fill {
+  0% { transform: scale(0.9); filter: brightness(1.6) drop-shadow(0 0 14px rgba(226, 204, 152, 0.9)); }
+  100% { transform: none; }
+}
+
+/* Detail under the board */
+.cv-bingo__detail {
+  min-height: 92px;
+  margin: 12px 0 14px;
+  padding: 12px 4px 0;
+  border-top: 1px solid var(--cv-line-faint);
+  text-align: center;
+}
+.cv-bingo__hint { margin: 10px 0 0; font: 400 13px/1.55 var(--cv-font-ui); word-break: keep-all; color: var(--cv-ivory-dim); }
+.cv-bingo__meta { margin: 0; font: 600 10px/1 var(--cv-font-ui); letter-spacing: 0.16em; color: var(--cv-gold); }
+.cv-bingo__q { margin: 7px 0 0; font: 700 17px/1.3 var(--cv-font-heading); color: var(--cv-ivory); }
+.cv-bingo__done { margin: 0 0 0 8px; vertical-align: 2px; color: var(--cv-gold-bright); border-color: var(--cv-gold); }
+.cv-bingo__desc { margin: 4px 0 0; font: 400 13px/1.45 var(--cv-font-ui); word-break: keep-all; color: var(--cv-ivory-dim); }
+.cv-bingo__actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px 18px; margin-top: 10px; }
+.cv-bingo__link {
+  appearance: none;
+  padding: 6px 2px;
+  border: 0;
+  border-bottom: 1px solid var(--cv-gold);
+  background: none;
+  font: 600 13px/1.2 var(--cv-font-ui);
+  color: var(--cv-gold-bright);
+  text-decoration: none;
+  cursor: pointer;
+}
+.cv-bingo__close { width: 100%; }
+
+@media (max-height: 640px) {
+  .cv-bingo__panel { padding-top: 18px; }
+  .cv-bingo__sub { margin-bottom: 10px; }
+  .cv-bingo__detail { min-height: 76px; margin: 8px 0 10px; }
+}
+
+/* ---------- On game cards (ivory panels) ---------- */
+.cv-quest-link,
+.cv-quest-result__more {
+  appearance: none;
+  display: block;
+  margin: 0 auto 14px;
+  padding: 6px 2px;
+  border: 0;
+  border-bottom: 1px solid var(--cv-line);
+  background: none;
+  font: 600 12px/1.2 var(--cv-font-ui);
+  letter-spacing: 0.02em;
+  color: var(--cv-ink-soft);
+  cursor: pointer;
+}
+.cv-quest-link:hover,
+.cv-quest-result__more:hover { color: var(--cv-ink); border-bottom-color: var(--cv-gold); }
+
+.cv-quest-result { margin: 0 0 4px; }
+.cv-quest-result.is-new {
+  margin-bottom: 14px;
+  padding: 10px 12px 2px;
+  background: var(--cv-onyx);
+  outline: 1px solid var(--cv-gold);
+  outline-offset: -4px;
+  animation: cv-quest-in 0.6s ease-out both;
+}
+.cv-quest-result__head {
+  margin: 2px 0 6px;
+  font: 700 11px/1 var(--cv-font-ui);
+  letter-spacing: 0.2em;
+  text-indent: 0.2em;
+  color: var(--cv-gold);
+}
+.cv-quest-result__item {
+  margin: 0 0 4px;
+  font: 500 13px/1.4 var(--cv-font-ui);
+  word-break: keep-all;
+  color: var(--cv-ivory);
+}
+.cv-quest-result.is-new .cv-quest-result__more { margin-top: 6px; margin-bottom: 8px; color: var(--cv-gold-bright); border-bottom-color: var(--cv-gold); }
+
+@keyframes cv-quest-in {
+  from { opacity: 0; transform: translateY(6px); }
+}
+
+/* Reward tiers under the board */
+.cv-bingo__rewards { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; margin-top: 12px; }
+.cv-bingo__reward {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 7px 4px;
+  border: 1px dashed var(--cv-line-faint);
+  font: 500 10px/1.3 var(--cv-font-ui);
+  word-break: keep-all;
+  color: var(--cv-ivory-dim);
+}
+.cv-bingo__reward b { font: 700 12px/1 var(--cv-font-ui); color: var(--cv-ivory); }
+.cv-bingo__reward.is-on { border-style: solid; border-color: var(--cv-gold); color: var(--cv-gold-bright); }
+.cv-bingo__reward.is-on b { color: var(--cv-gold-bright); }
+
+/* Pre-save mission call-to-action on result cards */
+.cv-presave-cta {
+  appearance: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 40px;
+  margin: 2px 0 14px;
+  padding: 8px 10px;
+  border: 1px solid var(--cv-gold);
+  background: rgba(201, 174, 120, 0.14);
+  font: 600 12.5px/1.3 var(--cv-font-ui);
+  word-break: keep-all;
+  color: var(--cv-ink);
+  cursor: pointer;
+}
+.cv-presave-cta__tag { flex: none; padding: 3px 5px 2px; background: var(--cv-onyx); font: 700 9px/1 var(--cv-font-ui); letter-spacing: 0.14em; color: var(--cv-gold); }
+
+/* Leaderboard rank line on result cards */
+.cv-rank-line { margin: 0 0 10px; font: 600 12.5px/1.4 var(--cv-font-ui); color: var(--cv-ink); word-break: keep-all; }
+.cv-quest-result.is-new .cv-rank-line { color: var(--cv-ivory); }
+.cv-rank-line.is-off { font-weight: 500; font-size: 11px; color: var(--cv-ink-soft); }
+.cv-rank-line__tag { padding: 2px 5px 1px; background: var(--cv-gold); font: 700 9px/1 var(--cv-font-ui); letter-spacing: 0.14em; color: var(--cv-onyx); vertical-align: 1px; }
+
+/* ---------- Pre-save link block (bingo cell + panel) ---------- */
+.cv-presave-link { display: flex; flex-direction: column; align-items: center; gap: 8px; margin-top: 10px; }
+.cv-presave-link__btn { width: 100%; max-width: 300px; }
+.cv-presave-link__slot { width: 100%; max-width: 300px; min-height: 0; padding: 8px; }
+.cv-presave-link.is-nudge .cv-presave-link__slot { animation: cv-nudge 0.4s ease; }
+.cv-presave-link__demo { appearance: none; padding: 4px 2px; border: 0; border-bottom: 1px dotted currentColor; background: none; font: 500 11px/1.2 var(--cv-font-ui); color: var(--cv-ivory-dim); cursor: pointer; }
+@keyframes cv-nudge { 25% { transform: translateX(-4px); } 75% { transform: translateX(4px); } }
+
+/* ---------- Full-screen pre-save panel after each run ---------- */
+.cv-presave-ad {
+  position: absolute;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 18px;
+  overflow-y: auto;
+  background: #0b0a08;
+  color: var(--cv-ivory);
+  text-align: center;
+  animation: cv-fade-in 0.35s ease both;
+  transition: opacity 0.35s ease;
+}
+.cv-presave-ad.is-leaving { opacity: 0; pointer-events: none; }
+.cv-presave-ad__close {
+  appearance: none;
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 38px;
+  height: 38px;
+  border: 1px solid var(--cv-line);
+  border-radius: 50%;
+  background: transparent;
+  font: 500 16px/1 var(--cv-font-ui);
+  color: var(--cv-ivory);
+  cursor: pointer;
+}
+.cv-presave-ad__close:disabled { color: var(--cv-ivory-dim); cursor: default; }
+.cv-presave-ad__body { width: min(100%, 340px); }
+.cv-presave-ad__eyebrow { margin: 0 0 14px; font: 600 11px/1 var(--cv-font-ui); letter-spacing: 0.3em; color: var(--cv-gold); }
+.cv-presave-ad__art { width: min(62vw, 220px); aspect-ratio: 1; margin: 0 auto; object-fit: cover; box-shadow: 0 20px 40px -18px rgba(0, 0, 0, 0.9); }
+.cv-presave-ad .cv-asset { color: var(--cv-gold); border-color: var(--cv-line); }
+.cv-presave-ad__title { margin: 20px 0 8px; font: 600 26px/1.15 var(--cv-font-display); letter-spacing: 0.06em; color: var(--cv-gold-bright); }
+.cv-presave-ad__sub { margin: 0 0 6px; font: 400 14px/1.55 var(--cv-font-ui); word-break: keep-all; color: var(--cv-ivory-dim); }
+.cv-presave-ad__later { appearance: none; margin-top: 14px; padding: 6px 2px; border: 0; background: none; font: 500 12px/1 var(--cv-font-ui); color: var(--cv-ivory-dim); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+@media (max-height: 640px) {
+  .cv-presave-ad__art { width: min(44vw, 150px); }
+  .cv-presave-ad__title { margin-top: 12px; font-size: 22px; }
+}
+
+.cv-bingo .cv-brand-badge { border-top-color: var(--cv-line-faint); }
+.cv-bingo .cv-brand-badge__label { color: var(--cv-ivory-dim); }
+.cv-bingo .cv-asset--inline { color: var(--cv-gold); border-color: var(--cv-line); }

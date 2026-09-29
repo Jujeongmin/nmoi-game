@@ -167,6 +167,9 @@
   margin: 14px auto -6px;
 }
 
+/* Result art slot (star chef / shark-hat member) */
+.ce-result-art { width: 100%; max-width: 280px; aspect-ratio: 16 / 9; max-height: 120px; margin: -6px auto 18px; object-fit: cover; }
+
 /* ---------- Small / short screens ---------- */
 @media (max-width: 380px) {
   :root { --cv-gutter: 10px; }
@@ -189,6 +192,7 @@
   .ce-card__lede { display: none; }
   .ce-picker { margin-bottom: 14px; }
   .ce-figure { margin-top: 8px; }
+  .ce-result-art { max-height: 84px; margin-bottom: 12px; }
 }
 
 @media (max-height: 480px) {

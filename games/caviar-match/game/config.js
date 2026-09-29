@@ -9,6 +9,7 @@ CM.CONFIG = {
   cols: 9,
   radius: 20,              // world width = cols * 2 * radius = 360
   minWorldHeight: 560,     // view guarantees at least this much height
+  minWorldHeightWide: 470, // landscape phones: a little shorter so the board stays big
   maxWorldHeight: 700,     // extra height on very tall screens is letterboxed
 
   // Rules
@@ -37,9 +38,9 @@ CM.CONFIG = {
      shared .cv-pearl--* class for DOM icons. To use real art set `image` to a path
      relative to the repo root (square PNG, transparent), e.g. 'assets/caviar/almas.png'. */
   types: [
-    { id: 'almas',    name: 'ALMAS',    pearl: 'white', light: '#fbf8f0', base: '#e6dfcf', shade: '#9d9582', rim: 'rgba(255, 248, 230, 0.55)', gloss: 0.8,  image: null },
-    { id: 'imperial', name: 'IMPERIAL', pearl: 'green', light: '#939e6c', base: '#56603f', shade: '#232815', rim: 'rgba(214, 196, 140, 0.35)', gloss: 0.45, image: null },
-    { id: 'classic',  name: 'CLASSIC',  pearl: 'black', light: '#57534c', base: '#22201d', shade: '#050404', rim: 'rgba(214, 190, 140, 0.5)',  gloss: 0.38, image: null },
-    { id: 'platinum', name: 'PLATINUM', pearl: 'gold',  light: '#f4e5c2', base: '#c9ae78', shade: '#7a6337', rim: 'rgba(255, 240, 200, 0.5)',  gloss: 0.65, image: null },
+    { id: 'almas',    name: 'ALMAS',    pearl: 'white', light: '#fbf8f0', base: '#e6dfcf', shade: '#9d9582', rim: 'rgba(255, 248, 230, 0.55)', gloss: 0.8,  image: 'assets/caviar/roe-almas.webp' },
+    { id: 'imperial', name: 'IMPERIAL', pearl: 'green', light: '#939e6c', base: '#56603f', shade: '#232815', rim: 'rgba(214, 196, 140, 0.35)', gloss: 0.45, image: 'assets/caviar/roe-imperial.webp' },
+    { id: 'classic',  name: 'CLASSIC',  pearl: 'black', light: '#57534c', base: '#22201d', shade: '#050404', rim: 'rgba(214, 190, 140, 0.5)',  gloss: 0.38, image: 'assets/caviar/roe-classic.webp' },
+    { id: 'platinum', name: 'PLATINUM', pearl: 'gold',  light: '#f4e5c2', base: '#c9ae78', shade: '#7a6337', rim: 'rgba(255, 240, 200, 0.5)',  gloss: 0.65, image: 'assets/caviar/roe-platinum.webp' },
   ],
 };

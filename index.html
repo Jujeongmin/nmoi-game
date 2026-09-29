@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#f6f2ea">
+  <title>Caviar</title>
+  <script src="shared/cv-frame.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Noto+Sans+KR:wght@400;500;600;700&family=Noto+Serif+KR:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="shared/cv-theme.css">
+  <link rel="stylesheet" href="shared/cv-bingo.css">
+  <link rel="stylesheet" href="landing/landing.css">
+</head>
+<body class="lp">
+  <div class="lp-app" id="app" data-step="table">
+
+    <header class="lp-bar">
+      <button class="lp-bar__prev" id="btn-prev" type="button" aria-label="이전 단계">
+        <span aria-hidden="true">&larr;</span> 이전
+      </button>
+      <p class="lp-bar__brand">Caviar</p>
+      <div class="lp-bar__right">
+        <button class="lp-bar__bingo" id="btn-bingo" type="button" aria-label="빙고판 열기">빙고 <span class="lp-bar__count" id="bingo-count">0/16</span></button>
+        <button class="lp-bar__menu" id="btn-menu" type="button" aria-label="메뉴 열기"><span></span><span></span><span></span></button>
+      </div>
+    </header>
+
+    <main class="lp-stage">
+      <!-- Blurred table behind the order sheet: the menu is open on the same table -->
+      <div class="lp-backdrop" id="backdrop" aria-hidden="true"></div>
+
+      <!-- 01 · Table -->
+      <section class="lp-screen" data-screen="table" aria-label="테이블">
+        <!-- Table photo (config.images.table); the whole scene opens the menu.
+             Without a photo, the CSS menu book below is shown instead. -->
+        <button class="lp-scene" id="menu-book" type="button" aria-label="메뉴판 열기">
+          <img class="lp-scene__img" id="scene-img" alt="" hidden>
+          <span class="lp-menu" id="menu-fallback" aria-hidden="true">
+            <span class="lp-menu__page"></span>
+            <span class="lp-menu__cover">
+              <span class="lp-menu__title">Caviar</span>
+              <span class="lp-menu__sub">MENU</span>
+            </span>
+          </span>
+        </button>
+        <button class="lp-hint" id="btn-open" type="button">
+          <span data-copy="tapMenu">메뉴판을 클릭해주세요</span> <span aria-hidden="true">&rarr;</span>
+        </button>
+      </section>
+
+      <!-- 02 · Order checklist -->
+      <section class="lp-screen" data-screen="order" aria-label="주문서">
+        <form class="lp-sheet" id="order-form" novalidate autocomplete="off">
+          <div class="lp-sheet__head">
+            <p class="lp-sheet__kicker">Today's Recipe</p>
+            <h1 class="lp-sheet__title">Caviar</h1>
+          </div>
+
+          <fieldset class="lp-q">
+            <legend class="lp-q__label"><label for="nickname">Q. 고객님 성함은?</label></legend>
+            <input class="lp-input" id="nickname" name="nickname" type="text" placeholder="닉네임을 적어주세요" enterkeyhint="done">
+          </fieldset>
+
+          <fieldset class="lp-q">
+            <legend class="lp-q__label">Q. 고객님의 성향은?</legend>
+            <div class="lp-opts" id="opts-mood"></div>
+          </fieldset>
+
+          <fieldset class="lp-q">
+            <legend class="lp-q__label">Q. 좋아하는 캐비어</legend>
+            <div class="lp-opts lp-opts--3" id="opts-caviar"></div>
+          </fieldset>
+
+          <fieldset class="lp-q">
+            <legend class="lp-q__label">Q. 캐비어 먹을 때?</legend>
+            <div class="lp-opts" id="opts-eat"></div>
+          </fieldset>
+
+          <fieldset class="lp-q">
+            <legend class="lp-q__label">Q. 같이 마실 음료</legend>
+            <div class="lp-opts" id="opts-drink"></div>
+          </fieldset>
+
+          <div class="lp-consent">
+            <label class="lp-consent__row">
+              <input type="checkbox" id="consent" name="consent">
+              <span>[선택] 닉네임과 최고 점수가 <b>리더보드에 공개</b>되는 것에 동의합니다</span>
+            </label>
+            <button class="lp-consent__more" id="btn-privacy" type="button">개인정보 처리 안내</button>
+          </div>
+
+          <div class="lp-sheet__foot">
+            <button class="cv-btn cv-btn--primary" id="btn-submit" type="submit" disabled>작성 완료</button>
+          </div>
+        </form>
+      </section>
+
+      <!-- 03 · Serving -->
+      <section class="lp-screen" data-screen="serve" aria-label="서빙">
+        <div class="lp-serve">
+          <div class="lp-serve__host">
+            <p class="lp-bubble" id="serve-line"></p>
+            <div class="lp-host" id="serve-host" aria-hidden="true"></div>
+            <p class="lp-host__name" id="serve-name"></p>
+          </div>
+          <div class="lp-cards">
+            <figure class="lp-card">
+              <figcaption class="lp-card__label">최고급 캐비어</figcaption>
+              <div class="lp-card__art"><div class="lp-tin lp-tin--open" id="serve-tin"></div></div>
+              <p class="lp-card__name" id="serve-caviar"></p>
+            </figure>
+            <figure class="lp-card">
+              <figcaption class="lp-card__label">추천 음료</figcaption>
+              <div class="lp-card__art"><div class="lp-drink" id="serve-drink"></div></div>
+              <p class="lp-card__name" id="serve-drink-name"></p>
+            </figure>
+          </div>
+          <button class="cv-btn cv-btn--primary lp-serve__cta" id="btn-secret" type="button" data-copy="secret">이 맛의 비결은 뭐지?!</button>
+        </div>
+      </section>
+
+      <!-- 04 · Caviar cans -->
+      <section class="lp-screen" data-screen="cans" aria-label="캐비어 캔 선택">
+        <div class="lp-cans">
+          <h2 class="lp-cans__title" data-copy="cansTitle">어떤 캐비어를 맛보시겠어요?</h2>
+          <div class="cv-rule"><span class="cv-rule__mark"></span></div>
+          <div class="lp-cans__row" id="cans"></div>
+          <p class="lp-cans__note" data-copy="cansNote">선택하시면 게임을 시작합니다!</p>
+          <button class="lp-cans__bingo" id="btn-bingo-2" type="button">게임 퀘스트를 깨고 빙고를 채워보세요 &rarr;</button>
+          <nav class="lp-cans__more" aria-label="더 보기">
+            <a class="lp-cans__link" data-href="pages/recipe/index.html"><b>Recipe Book</b><span>멤버 B컷</span></a>
+            <a class="lp-cans__link" data-href="pages/trailer/index.html"><b>Trailer</b><span>트레일러</span></a>
+          </nav>
+        </div>
+      </section>
+    </main>
+
+    <!-- Site menu -->
+    <div class="cv-overlay lp-sheet-overlay" id="menu-sheet" role="dialog" aria-label="메뉴">
+      <div class="cv-panel lp-nav">
+        <p class="cv-eyebrow">MENU</p>
+        <h2 class="lp-nav__title">Caviar</h2>
+        <nav class="lp-nav__list">
+          <a class="lp-nav__item" data-href="pages/recipe/index.html"><b>Recipe Book</b><span>멤버 B컷 레시피북</span></a>
+          <a class="lp-nav__item" data-href="pages/trailer/index.html"><b>Trailer</b><span>트레일러 장바구니</span></a>
+          <button class="lp-nav__item" type="button" data-act="bingo"><b>Mission Bingo</b><span>게임 퀘스트 · 미션 빙고판</span></button>
+          <button class="lp-nav__item" type="button" data-act="ranking"><b>Ranking</b><span>내 기록 · 리더보드</span></button>
+          <button class="lp-nav__item" type="button" data-act="presave"><b>Pre-save</b><span>NMOI Spotify 프리세이브</span></button>
+          <button class="lp-nav__item" type="button" data-act="restart"><b>Restart</b><span>레스토랑 입장부터 다시</span></button>
+          <div class="lp-nav__item lp-nav__sound" id="menu-sound"><b>Sound</b></div>
+          <div class="lp-nav__item is-disabled"><b>Login</b><span>로그인 · 개인정보 동의 (준비 중)</span></div>
+        </nav>
+        <button class="cv-btn lp-nav__close" type="button" data-act="close">닫기</button>
+      </div>
+    </div>
+
+    <!-- Privacy notice (draft — wording to be confirmed) -->
+    <div class="cv-overlay lp-sheet-overlay" id="privacy-sheet" role="dialog" aria-label="개인정보 처리 안내">
+      <div class="cv-panel lp-nav lp-privacy">
+        <p class="cv-eyebrow">PRIVACY</p>
+        <h2 class="lp-nav__title">개인정보 처리 안내</h2>
+        <p class="lp-privacy__draft">초안 · 법무 검토 후 확정 필요 (<b>확정 필요</b> 표시 항목)</p>
+        <dl class="cv-menu lp-privacy__list">
+          <div class="cv-menu__row"><dt>수집 항목</dt><dd>닉네임, 게임 점수·기록, 미션(빙고) 진행 기록, Verse8 계정 식별자</dd></div>
+          <div class="cv-menu__row"><dt>이용 목적</dt><dd>리더보드 표시, 미션 보상 지급</dd></div>
+          <div class="cv-menu__row"><dt>공개 범위</dt><dd>닉네임과 게임별 최고 점수가 리더보드에 공개</dd></div>
+          <div class="cv-menu__row"><dt>보관 기간</dt><dd>캠페인 종료 후 ○일 이내 파기 <b>확정 필요</b></dd></div>
+          <div class="cv-menu__row"><dt>보상 지급</dt><dd>보상 지급 시 필요한 정보는 별도 동의 후 수집 <b>확정 필요</b></dd></div>
+          <div class="cv-menu__row"><dt>동의 거부</dt><dd>동의하지 않아도 게임과 미션은 모두 이용 가능 (리더보드만 미참여)</dd></div>
+          <div class="cv-menu__row"><dt>문의</dt><dd>문의처 <b>확정 필요</b></dd></div>
+        </dl>
+        <button class="cv-btn lp-nav__close" type="button" data-act="close">닫기</button>
+      </div>
+    </div>
+
+    <!-- Ranking / records -->
+    <div class="cv-overlay lp-sheet-overlay" id="ranking-sheet" role="dialog" aria-label="기록과 리더보드">
+      <div class="cv-panel lp-nav">
+        <p class="cv-eyebrow">RANKING</p>
+        <h2 class="lp-nav__title">Records</h2>
+        <div class="lp-rank" id="ranking-body"></div>
+        <button class="cv-btn lp-nav__close" type="button" data-act="close">닫기</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="shared/cv-storage.js"></script>
+  <script src="shared/cv-hub.js"></script>
+  <script src="shared/cv-bingo.js"></script>
+  <script src="shared/cv-bingo-ui.js"></script>
+  <script src="shared/cv-brand.js"></script>
+  <script src="shared/cv-presave.js"></script>
+  <script src="shared/cv-sound.js"></script>
+  <script src="shared/cv-leaderboard.js"></script>
+  <script src="assets/chibi/members.js"></script>
+  <script src="landing/config.js"></script>
+  <script src="landing/flow.js"></script>
+  <script src="landing/ui.js"></script>
+  <script src="landing/menu.js"></script>
+  <script src="landing/main.js"></script>
+</body>
+</html>

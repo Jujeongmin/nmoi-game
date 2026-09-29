@@ -21,7 +21,7 @@
     el.classList.add('ce-sprite');
     var st = el.style;
     // Absolute URL: a url() inside a custom property resolves against the stylesheet otherwise.
-    st.setProperty('--sheet', 'url("' + new URL(assetRoot + member.sheet, document.baseURI).href + '")');
+    st.setProperty('--sheet', 'url("' + NS.url(member.sheet) + '")');
     st.setProperty('--cell', cellPx + 'px');
     st.setProperty('--cols', cols);
     st.setProperty('--rows', rows);
@@ -189,6 +189,17 @@
       applySprite(el.resultFigure, this.member, success ? 'dance' : 'idle', 96, 96, 4);
       restartClass(el.resultFigure, 'is-playing');
     }
+
+    // Success / fail art (real images later; placeholder slot until then)
+    var art = NS.assetSlot({
+      name: success ? '성공 연출 · 스타 셰프가 캐비어 요리를 서빙하는 이미지' : '실패 연출 · 상어 모자를 쓴 멤버 이미지',
+      spec: '결과 화면 · 16:9',
+      src: (this.cfg.resultArt || {})[success ? 'clear' : 'over'],
+      className: 'ce-result-art'
+    });
+    if (this.resultArt) this.resultArt.parentNode.replaceChild(art, this.resultArt);
+    else el.resultCaption.parentNode.insertBefore(art, el.resultCaption.nextSibling);
+    this.resultArt = art;
 
     el.resultPearls.classList.toggle('is-success', success);
     restartClass(el.resultPearls, 'is-aligning');

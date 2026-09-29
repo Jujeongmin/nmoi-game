@@ -1,0 +1,82 @@
+"""Copy this static site into a Verse8 (Vite) project.
+
+    python tools/sync-verse8.py <path-to-verse8-repo>
+
+Verse8 builds with `vite build` and deploys `dist/`. Vite copies `public/` as-is,
+so every static file goes there, and the landing page becomes the Vite entry
+`index.html` with root-absolute URLs ("/shared/...") that Vite resolves to
+`public/` and rewrites for `base: "./"`.
+
+Replaced on every run: <verse8>/index.html and <verse8>/public/{shared,landing,games,assets}.
+Nothing else in the Verse8 repo (.agent8.lock, .env, src/, package.json ...) is touched.
+"""
+import os
+import re
+import shutil
+import sys
+import time
+from pathlib import Path
+
+
+def long_path(p):
+    """Windows: opt into >260-char paths (deep game folders in long workspace paths)."""
+    p = os.path.abspath(p)
+    prefix = "\\\\?\\"   # \\?\
+    if os.name == "nt" and not p.startswith(prefix):
+        p = prefix + p
+    return Path(p)
+
+
+ROOT = long_path(Path(__file__).parent.parent)
+COPY_DIRS = ["shared", "landing", "games", "pages"]
+ASSET_DIRS = ["assets/chibi", "assets/landing", "assets/caviar", "assets/bingo", "assets/pages"]   # runtime assets only (no assets/source)
+
+
+def main():
+    if len(sys.argv) != 2:
+        sys.exit(__doc__)
+    target = long_path(sys.argv[1])
+    if not (target / "vite.config.ts").exists():
+        sys.exit(f"{target} does not look like the Verse8 project (no vite.config.ts)")
+
+    public = target / "public"
+    for name in COPY_DIRS + ["assets"]:
+        shutil.rmtree(public / name, ignore_errors=True)
+    for name in COPY_DIRS + ASSET_DIRS:
+        shutil.copytree(ROOT / name, public / name)
+
+    # Cache-busting: every local script/stylesheet gets ?v=<build>, so a CDN or browser
+    # never pairs a fresh page with a stale members.js / config that points at files
+    # which no longer exist. Images get new names when they change, so they need none.
+    version = time.strftime("%Y%m%d%H%M%S")
+    local_ref = re.compile(r'((?:src|href)=")(?!https?:|//|#|data:)([^"?]+\.(?:js|css))(")')
+
+    def bust(text):
+        return local_ref.sub(lambda m: m.group(1) + m.group(2) + "?v=" + version + m.group(3), text)
+
+    # Verse8-only files: server.js (leaderboard), the server bridge and the Vite config
+    # that emits it as shared/cv-server.js.
+    for rel in ["server.js", "vite.config.ts", "src/cv-server.ts"]:
+        (target / rel).parent.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(ROOT / "verse8" / rel, target / rel)
+
+    # Static pages (games, content pages) load the built bridge as a module.
+    bridge = '  <script type="module" src="../../shared/cv-server.js?v=' + version + '"></script>\n'
+    for page in list((public / "games").rglob("index.html")) + list((public / "pages").rglob("index.html")):
+        text = bust(page.read_text(encoding="utf-8"))
+        text = text.replace("</body>", bridge + "</body>", 1)
+        page.write_text(text, encoding="utf-8", newline="\n")
+
+    # Landing page -> Vite entry. Local href/src become root-absolute public URLs;
+    # the bridge is bundled straight from its source.
+    html = (ROOT / "index.html").read_text(encoding="utf-8")
+    html = re.sub(r'(href|src)="(?!https?:|/|#|data:)([^"]+)"', r'\1="/\2"', html)
+    html = bust(html).replace("</body>", '  <script type="module" src="/src/cv-server.ts"></script>\n</body>', 1)
+    (target / "index.html").write_text(html, encoding="utf-8", newline="\n")
+
+    count = sum(1 for _ in public.rglob("*") if _.is_file())
+    print(f"synced -> {target} ({count} files in public/)")
+
+
+if __name__ == "__main__":
+    main()

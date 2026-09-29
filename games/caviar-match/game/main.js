@@ -18,11 +18,13 @@
 
   const store = CAVIAR.storage.scope(cfg.gameId);
   let best = store.getNumber('best', 0);
+  CAVIAR.bingoUI.attachGame(cfg.gameId, { root: cfg.assetRoot });
   let resultTimer = null;
 
   // --- Game events ------------------------------------------------------
 
   function onGameEvent(type, d) {
+    CAVIAR.sound.event(cfg.gameId, type, d);
     if (type === 'collect') {
       const r = view.scale * cfg.radius * 0.95;
       fx.collect(d.items.map((it, i) => {
@@ -44,6 +46,9 @@
   }
 
   function scheduleResult(d) {
+    const fresh = CAVIAR.bingo.report(cfg.gameId, {
+      score: d.score, maxCombo: d.maxCombo, stage: d.stage, total: d.total, collected: d.collected,
+    });
     const newBest = d.score > best;
     if (newBest) {
       best = d.score;
@@ -57,6 +62,7 @@
       if ((!fx.busy && waited > 700) || waited > 2000) {
         clearInterval(resultTimer);
         ui.showResult(Object.assign({}, d, { best, newBest }));
+        CAVIAR.bingoUI.showRun(cfg.gameId, fresh);
       }
     }, 100);
   }
@@ -81,7 +87,7 @@
 
   ui.on('btn-start', startGame);
   ui.on('btn-retry', startGame);
-  ui.on('btn-back', backToTitle);
+  ui.on('btn-back', CAVIAR.hub.backOr(backToTitle));
 
   // --- Input: pointer events cover mouse, touch and pen -----------------
   // Mouse: move to aim, click to send.  Touch: drag to aim, release to send.
