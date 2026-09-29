@@ -380,7 +380,7 @@ html, body {
 
 /* ---------- Verse8 splash (shared/verse8-splash, driven by cv-brand.js) ----------
    Anti-flash: the page stays hidden until the splash covers it; the module clears the flag on hide(). */
-html[data-splash-active="true"] .cv-app { visibility: hidden; }
+html[data-splash-active="true"] #app { visibility: hidden; }
 
 /* ---------- Verse8 badge under result cards ---------- */
 .cv-brand-badge {
