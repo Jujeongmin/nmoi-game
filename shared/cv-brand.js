@@ -5,7 +5,7 @@
         where the real asset goes (for demos: "이 자리에 ○○ 이미지가 들어옵니다").
 
    CAVIAR.brand.splash()          official Verse8 splash (shared/verse8-splash, unmodified
-                                  vendor module) — shown when a game page opens.
+                                  vendor module) — shown once when the site is opened.
    CAVIAR.brand.badge(panel)      "POWERED BY Verse8" line at the bottom of a result card.
 
    Files (paths from the site root) are in BRAND below. */
@@ -76,7 +76,17 @@
     }
   };
 
-  // Verse8 splash only when a game opens (every game page has #screen-title);
-  // not on the landing or the content pages.
-  if (document.getElementById('screen-title')) NS.brand.splash();
+  // Verse8 splash once per visit: on the first page opened (normally the landing, or a
+  // game opened by a direct link), never again when moving between pages of the site.
+  var SHOWN = 'caviar-campaign:splash-shown';
+  function splashShown() {
+    try { return window.sessionStorage.getItem(SHOWN) === '1'; } catch (e) { return false; }
+  }
+  // Internal moves (?from=hub game links, the landing's #cans return) also count as
+  // "already shown" so a blocked sessionStorage never replays it inside the site.
+  var internal = (NS.hub && NS.hub.fromHub) || window.location.hash === '#cans';
+  if (!splashShown() && !internal) {
+    try { window.sessionStorage.setItem(SHOWN, '1'); } catch (e) { /* show once per page load */ }
+    NS.brand.splash();
+  }
 })(window.CAVIAR = window.CAVIAR || {});

@@ -23,19 +23,19 @@
     assetRoot: '../../',
 
     ingredients: [
-      { id: 'cracker', label: 'CRACKER', image: null },
-      { id: 'cream',   label: 'CREAM',   image: null },
-      { id: 'lemon',   label: 'LEMON',   image: null },
-      { id: 'herb',    label: 'HERB',    image: null },
-      { id: 'salmon',  label: 'SALMON',  image: null }
+      { id: 'cracker', label: '크래커', image: null },
+      { id: 'cream',   label: '크림',   image: null },
+      { id: 'lemon',   label: '레몬',   image: null },
+      { id: 'herb',    label: '허브',   image: null },
+      { id: 'salmon',  label: '연어',   image: null }
     ],
 
     // tone: white | green | black | gold  (maps to .cv-pearl--{tone})
     caviars: [
-      { id: 'almas',    label: 'ALMAS',    tone: 'white', image: null },
-      { id: 'imperial', label: 'IMPERIAL', tone: 'gold',  image: null },
-      { id: 'classic',  label: 'CLASSIC',  tone: 'black', image: null },
-      { id: 'platinum', label: 'PLATINUM', tone: 'green', image: null }
+      { id: 'almas',    label: '알마스',   tone: 'white', image: null },
+      { id: 'imperial', label: '임페리얼', tone: 'green', image: null },
+      { id: 'classic',  label: '클래식',   tone: 'black', image: null },
+      { id: 'platinum', label: '플래티넘', tone: 'gold',  image: null }
     ]
   };
 })(window.CAVIAR = window.CAVIAR || {});

@@ -70,8 +70,9 @@ Paths are from the site root; `null` shows a labelled slot.
 
 ## Verse8 splash
 
-The official Verse8 Splash Module plays once when a game page opens (never on the landing or the
-content pages): min 2.4 s, the page stays hidden until it is covered (anti-flash), and the sting
+The official Verse8 Splash Module plays once when the site is opened — on the first page of the
+visit (normally the landing; a game opened by a direct link shows it there), never again while
+moving between the landing, the games and the content pages (sessionStorage): min 2.4 s, the page stays hidden until it is covered (anti-flash), and the sting
 is silent when the guest has turned sound off. Result cards and the bingo board show
 "POWERED BY" + the logo on a dark chip (the logo is white).
 
