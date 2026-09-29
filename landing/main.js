@@ -66,8 +66,6 @@
   NS.landingMenu.on('presave', function () { NS.presave.interstitial(); });
   NS.landingMenu.on('restart', function () { flow.step = 'table'; render(); });
 
-  // Verse8 splash on the first visit of the session
-  NS.brand.splash({ once: 'landing' });
   NS.sound.bgm('landing');   // restaurant loop, starts on the first tap
   ui.on('can', function (id) {
     var can = flow.can(id);

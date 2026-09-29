@@ -4,7 +4,7 @@
      -> <img> when `src` is set, otherwise a labelled placeholder frame that shows
         where the real asset goes (for demos: "이 자리에 ○○ 이미지가 들어옵니다").
 
-   CAVIAR.brand.splash({ once })   Verse8 splash over the page (tap to skip).
+   CAVIAR.brand.splash({ once })   Verse8 splash over the page (tap to skip) — shown when a game opens.
    CAVIAR.brand.badge(panel)       Verse8 logo line at the bottom of a result card.
 
    Real files: set BRAND.splash / BRAND.logo (paths from the site root). */
@@ -58,7 +58,7 @@
       wrap.setAttribute('role', 'presentation');
       wrap.appendChild(NS.assetSlot({
         name: 'Verse8 Splash Image',
-        spec: '게임 시작 · 게임 사이 노출 · 세로 1080×1920 권장',
+        spec: '게임 시작 시 노출 · 세로 1080×1920 권장',
         src: BRAND.splash,
         className: 'cv-splash__art'
       }));
@@ -87,6 +87,6 @@
     }
   };
 
-  // Opened from the landing = "between games": show the splash before play.
-  if (NS.hub && NS.hub.fromHub) NS.brand.splash();
+  // Verse8 splash only when a game starts (every game page has #screen-title); not on the landing or content pages.
+  if (document.getElementById('screen-title')) NS.brand.splash();
 })(window.CAVIAR = window.CAVIAR || {});
