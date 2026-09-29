@@ -33,9 +33,9 @@
     // tone: white | green | black | gold  (maps to .cv-pearl--{tone})
     caviars: [
       { id: 'almas',    label: '알마스',   tone: 'white', image: null },
-      { id: 'imperial', label: '임페리얼', tone: 'gold',  image: null },
+      { id: 'imperial', label: '임페리얼', tone: 'green', image: null },
       { id: 'classic',  label: '클래식',   tone: 'black', image: null },
-      { id: 'platinum', label: '플래티넘', tone: 'green', image: null }
+      { id: 'platinum', label: '플래티넘', tone: 'gold',  image: null }
     ]
   };
 })(window.CAVIAR = window.CAVIAR || {});
