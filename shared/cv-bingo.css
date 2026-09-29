@@ -230,6 +230,7 @@
   color: var(--cv-ink);
   cursor: pointer;
 }
+.cv-quest-result.is-new .cv-presave-cta { color: var(--cv-ivory); }   /* dark card after a new quest */
 .cv-presave-cta__tag { flex: none; padding: 3px 5px 2px; background: var(--cv-onyx); font: 700 9px/1 var(--cv-font-ui); letter-spacing: 0.14em; color: var(--cv-gold); }
 
 /* Leaderboard rank line on result cards */
