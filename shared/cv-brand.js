@@ -4,17 +4,19 @@
      -> <img> when `src` is set, otherwise a labelled placeholder frame that shows
         where the real asset goes (for demos: "이 자리에 ○○ 이미지가 들어옵니다").
 
-   CAVIAR.brand.splash({ once })   Verse8 splash over the page (tap to skip) — shown when a game opens.
-   CAVIAR.brand.badge(panel)       Verse8 logo line at the bottom of a result card.
+   CAVIAR.brand.splash()          official Verse8 splash (shared/verse8-splash, unmodified
+                                  vendor module) — shown when a game page opens.
+   CAVIAR.brand.badge(panel)      "POWERED BY Verse8" line at the bottom of a result card.
 
-   Real files: set BRAND.splash / BRAND.logo (paths from the site root). */
+   Files (paths from the site root) are in BRAND below. */
 (function (NS) {
   'use strict';
 
   var BRAND = {
-    splash: null,   // e.g. 'assets/brand/verse8-splash.png'  (portrait, 1080x1920 recommended)
-    logo: null,     // e.g. 'assets/brand/verse8-logo.png'    (transparent, wide)
-    splashMs: 1500
+    module: 'shared/verse8-splash/VerseSplash.js',   // Verse8 Splash Module (ESM, default export)
+    logoSvg: 'assets/brand/verse8_logo_light.svg',   // animated wordmark + "8"
+    logo: 'assets/brand/verse8_logo_light.png',      // white logo: used on a dark chip
+    sound: 'assets/brand/splash.mp3'
   };
 
   function el(tag, cls, text) {
@@ -40,53 +42,41 @@
     return box;
   };
 
-  function host() { return document.getElementById('app') || document.body; }
-
   NS.brand = {
     config: BRAND,
 
-    /** Full-screen Verse8 splash. once: session key — shown only the first time. */
-    splash: function (opts) {
-      opts = opts || {};
-      if (opts.once) {
-        try {
-          if (sessionStorage.getItem('cv-splash:' + opts.once)) return;
-          sessionStorage.setItem('cv-splash:' + opts.once, '1');
-        } catch (e) { /* storage blocked: show it */ }
-      }
-      var wrap = el('div', 'cv-splash');
-      wrap.setAttribute('role', 'presentation');
-      wrap.appendChild(NS.assetSlot({
-        name: 'Verse8 Splash Image',
-        spec: '게임 시작 시 노출 · 세로 1080×1920 권장',
-        src: BRAND.splash,
-        className: 'cv-splash__art'
-      }));
-      wrap.appendChild(el('p', 'cv-splash__skip', '화면을 누르면 넘어갑니다'));
-      var done = false;
-      function close() {
-        if (done) return;
-        done = true;
-        wrap.classList.add('is-leaving');
-        setTimeout(function () { if (wrap.parentNode) wrap.parentNode.removeChild(wrap); }, 450);
-      }
-      wrap.addEventListener('click', close);
-      host().appendChild(wrap);
-      setTimeout(close, opts.ms || BRAND.splashMs);
+    /** Official Verse8 splash (min 2.4 s, then fades into the page). */
+    splash: function () {
+      var html = document.documentElement;
+      // Anti-flash: hide the page until the splash covers it (see .cv-app rule in cv-theme.css).
+      html.setAttribute('data-splash-active', 'true');
+      import(NS.url(BRAND.module)).then(function (mod) {
+        var splash = new mod.default({
+          logoSrc: NS.url(BRAND.logoSvg),
+          soundSrc: NS.url(BRAND.sound),
+          // our sound switch doubles as the "audio enabled" state
+          isAudioEnabled: function () { return !(NS.sound && NS.sound.muted()); }
+        });
+        return splash.show().then(function () { return splash.hide(); });
+      }).catch(function (err) {
+        console.warn('[cv-brand] Verse8 splash unavailable:', err);
+        html.removeAttribute('data-splash-active');   // never leave the game hidden
+      });
     },
 
-    /** "Verse8" line under a result card. */
+    /** "POWERED BY [Verse8]" under a result card or the bingo board. */
     badge: function (panel) {
       if (!panel || panel.querySelector('.cv-brand-badge')) return;
       var row = el('div', 'cv-brand-badge');
       row.appendChild(el('span', 'cv-brand-badge__label', 'POWERED BY'));
-      row.appendChild(BRAND.logo
-        ? NS.assetSlot({ src: BRAND.logo, className: 'cv-brand-badge__logo', alt: 'Verse8' })
-        : NS.assetSlot({ name: 'Verse8 로고', className: 'cv-asset--inline' }));
+      var chip = el('span', 'cv-brand-badge__chip');
+      chip.appendChild(NS.assetSlot({ src: BRAND.logo, className: 'cv-brand-badge__logo', alt: 'Verse8' }));
+      row.appendChild(chip);
       panel.appendChild(row);
     }
   };
 
-  // Verse8 splash only when a game starts (every game page has #screen-title); not on the landing or content pages.
+  // Verse8 splash only when a game opens (every game page has #screen-title);
+  // not on the landing or the content pages.
   if (document.getElementById('screen-title')) NS.brand.splash();
 })(window.CAVIAR = window.CAVIAR || {});

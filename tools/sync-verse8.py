@@ -29,7 +29,7 @@ def long_path(p):
 
 ROOT = long_path(Path(__file__).parent.parent)
 COPY_DIRS = ["shared", "landing", "games", "pages"]
-ASSET_DIRS = ["assets/chibi", "assets/landing", "assets/caviar", "assets/bingo", "assets/pages"]   # runtime assets only (no assets/source)
+ASSET_DIRS = ["assets/chibi", "assets/landing", "assets/caviar", "assets/bingo", "assets/pages", "assets/brand"]   # runtime assets only (no assets/source)
 
 
 def main():
