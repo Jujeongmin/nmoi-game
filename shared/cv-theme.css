@@ -378,32 +378,9 @@ html, body {
 .cv-asset--inline .cv-asset__name { font-size: 11px; }
 .cv-asset-img { display: block; max-width: 100%; }
 
-/* ---------- Verse8 splash ---------- */
-.cv-splash {
-  position: fixed;
-  inset: 0;
-  z-index: 100;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 18px;
-  padding: 24px;
-  background: var(--cv-onyx);
-  cursor: pointer;
-  animation: cv-fade-in 0.3s ease both;
-  transition: opacity 0.45s ease;
-}
-.cv-splash.is-leaving { opacity: 0; pointer-events: none; }
-.cv-splash__art {
-  width: min(78vw, 320px);
-  aspect-ratio: 9 / 16;
-  max-height: 72vh;
-  object-fit: contain;
-}
-.cv-splash .cv-asset { color: var(--cv-gold); border-color: var(--cv-line); }
-.cv-splash__skip { margin: 0; font: 500 11px/1 var(--cv-font-ui); letter-spacing: 0.1em; color: var(--cv-ivory-dim); }
-@keyframes cv-fade-in { from { opacity: 0; } }
+/* ---------- Verse8 splash (shared/verse8-splash, driven by cv-brand.js) ----------
+   Anti-flash: the page stays hidden until the splash covers it; the module clears the flag on hide(). */
+html[data-splash-active="true"] .cv-app { visibility: hidden; }
 
 /* ---------- Verse8 badge under result cards ---------- */
 .cv-brand-badge {
@@ -416,7 +393,8 @@ html, body {
   border-top: 1px solid var(--cv-line-faint);
 }
 .cv-brand-badge__label { font: 600 9px/1 var(--cv-font-ui); letter-spacing: 0.22em; color: var(--cv-ink-soft); }
-.cv-brand-badge__logo { height: 18px; width: auto; }
+.cv-brand-badge__chip { display: inline-flex; align-items: center; padding: 5px 9px; background: #041627; }
+.cv-brand-badge__logo { display: block; height: 13px; width: auto; }
 
 /* ---------- Sound switch ---------- */
 .cv-sound-toggle {

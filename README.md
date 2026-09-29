@@ -31,12 +31,14 @@ shared/                     used by every page
   cv-hub.js                 landing ⇄ game hand-off (order, ?from=hub, Verse8 ?account/auth kept)
   cv-bingo.js / -ui.js      4x4 bingo: quests, board, rewards / board overlay + quest blocks
   cv-bingo.css              bingo, pre-save panel, rank line styles
-  cv-brand.js               asset slots (CAVIAR.assetSlot), Verse8 splash + logo
+  cv-brand.js               asset slots (CAVIAR.assetSlot), runs the Verse8 splash, logo badge
+  verse8-splash/            official Verse8 Splash Module (vendor, unmodified) + its README
   cv-presave.js             Spotify pre-save link + full-screen panel after each run
   cv-leaderboard.js         nickname sync, score submit, rank line (opt-in)
   cv-sound.js               synthesized effects, BGM loops, sound switch
   cv-frame.js               reports page size to the Verse8 parent frame
 assets/
+  brand/                    Verse8 logo (svg/png) + splash sting (from the Verse8 Splash Module)
   landing/ pages/ bingo/    generated art (GPT image) — replace freely
   caviar/                   caviar roe icons (generated) — used by .cv-pearl and the Match board
   chibi/                    256px member sheets (webp) + members.js (generated)
@@ -58,7 +60,6 @@ scripts in the same order as the existing games and sets `assetRoot: '../../'` i
 | Asset | File |
 |---|---|
 | Spotify pre-save URL, album cover | `shared/cv-presave.js` |
-| Verse8 splash, logo | `shared/cv-brand.js` |
 | B-cuts (15), member handwriting, trailer videos (YouTube) | `pages/content.js` |
 | Escape success / fail art (star chef, shark-hat member) | `games/caviar-escape/game/config.js` → `resultArt` |
 | Table photo, tins, drinks, paper | `landing/config.js` |
@@ -66,6 +67,13 @@ scripts in the same order as the existing games and sets `assetRoot: '../../'` i
 | BGM files (replace the synthesized loops) | `shared/cv-sound.js` → `BGM` |
 
 Paths are from the site root; `null` shows a labelled slot.
+
+## Verse8 splash
+
+The official Verse8 Splash Module plays once when a game page opens (never on the landing or the
+content pages): min 2.4 s, the page stays hidden until it is covered (anti-flash), and the sting
+is silent when the guest has turned sound off. Result cards and the bingo board show
+"POWERED BY" + the logo on a dark chip (the logo is white).
 
 ## Landing (index.html)
 
