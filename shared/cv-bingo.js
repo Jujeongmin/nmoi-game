@@ -1,45 +1,56 @@
-/* CAVIAR BINGO — quests, board and progress. No DOM (see cv-bingo-ui.js).
-   4x4 board: 5 quests per game x 3 games + 1 NMOI pre-save cell.
-   Games call CAVIAR.bingo.report(gameId, stats) when a run ends.
-   Needs shared/cv-storage.js. */
+/* CAVIAR BINGO — missions, board and progress. No DOM (see cv-bingo-ui.js).
+   4x4 = 15 mission cards (5 per week: game 2 · referral 2 · attendance 1) + NMOI pre-save.
+   Rewards: each mission = one B-cut card · a line = +3 tickets · full board = top tier.
+   Missions of a week can only be completed once that week is open (cv-campaign.js).
+   Needs cv-storage.js, cv-campaign.js (and cv-account.js for referral / attendance / tickets). */
 (function (NS) {
   'use strict';
 
   /* ---------------- Data (edit freely) ---------------- */
 
   var GAMES = {
-    'caviar-escape':      { name: '캐비어를 훔쳐라', caviar: 'ALMAS',    tone: 'white', path: 'games/caviar-escape/' },
+    // week order: W1 매치 · W2 훔쳐라 · W3 셰프
     'caviar-match':       { name: '캐비어 매치',     caviar: 'IMPERIAL', tone: 'green', path: 'games/caviar-match/' },
+    'caviar-escape':      { name: '캐비어를 훔쳐라', caviar: 'ALMAS',    tone: 'white', path: 'games/caviar-escape/' },
     'caviar-master-chef': { name: '마스터 셰프',     caviar: 'CLASSIC',  tone: 'black', path: 'games/caviar-master-chef/' }
   };
 
-  /* test(stats, meta): stats = what the game reported for this run,
-     meta.plays = runs finished in this game so far (including this one). */
-  var QUESTS = [
-    // Caviar Escape — stats: { result: 'clear'|'over', score, lives, closeCalls }
-    { id: 'e1', game: 'caviar-escape', title: '첫 탈출',       desc: '30초 버티고 탈출 성공',          test: function (s) { return s.result === 'clear'; } },
-    { id: 'e2', game: 'caviar-escape', title: '노 데미지',     desc: '라이프 3개 그대로 탈출',         test: function (s) { return s.result === 'clear' && s.lives >= 3; } },
-    { id: 'e3', game: 'caviar-escape', title: '아슬아슬',      desc: '한 판에 아슬아슬 5번',           test: function (s) { return s.closeCalls >= 5; } },
-    { id: 'e4', game: 'caviar-escape', title: '4,000점',       desc: '한 판 4,000점 이상',             test: function (s) { return s.score >= 4000; } },
-    { id: 'e5', game: 'caviar-escape', title: '단골 손님',     desc: '3판 플레이',                     test: function (s, m) { return m.plays >= 3; } },
-
-    // Caviar Match — stats: { score, maxCombo, stage, total, collected: [n per kind] }
-    { id: 'm1', game: 'caviar-match', title: '첫 컬렉션',      desc: '한 판에 캐비어 20개 수집',       test: function (s) { return s.total >= 20; } },
-    { id: 'm2', game: 'caviar-match', title: '콤보 3',         desc: '연속 매치 3콤보',                test: function (s) { return s.maxCombo >= 3; } },
-    { id: 'm3', game: 'caviar-match', title: '테이블 클리어',  desc: '보드를 비우고 스테이지 2 도달',  test: function (s) { return s.stage >= 2; } },
-    { id: 'm4', game: 'caviar-match', title: '5,000점',        desc: '한 판 5,000점 이상',             test: function (s) { return s.score >= 5000; } },
-    { id: 'm5', game: 'caviar-match', title: '4종 컬렉터',     desc: '한 판에 네 종류 각각 5개 이상',  test: function (s) { return !!s.collected && s.collected.length >= 4 && s.collected.every(function (n) { return n >= 5; }); } },
-
-    // Caviar Master Chef — stats: { score, ordersCompleted, perfectOrders, maxCombo }
-    { id: 'c1', game: 'caviar-master-chef', title: '첫 주문',   desc: '주문 1개 완성',                  test: function (s) { return s.ordersCompleted >= 1; } },
-    { id: 'c2', game: 'caviar-master-chef', title: '퍼펙트 3',  desc: '실수 없는 주문 3개',             test: function (s) { return s.perfectOrders >= 3; } },
-    { id: 'c3', game: 'caviar-master-chef', title: '콤보 3',    desc: '퍼펙트 주문 3연속',              test: function (s) { return s.maxCombo >= 3; } },
-    { id: 'c4', game: 'caviar-master-chef', title: '바쁜 주방', desc: '한 판에 주문 5개 완성',          test: function (s) { return s.ordersCompleted >= 5; } },
-    { id: 'c5', game: 'caviar-master-chef', title: '5,000점',   desc: '한 판 5,000점 이상',             test: function (s) { return s.score >= 5000; } }
+  /* Mission cards in B-cut order: mission n unlocks B-cut n (pages/content.js).
+     week: 0..2 · type: game | ref | att.  game: test(stats) on a finished run.
+     ref / att: need = referrals / attendance days required. */
+  var MISSIONS = [
+    // W1 · Caviar Match
+    { id: 'w1-g1', week: 0, type: 'game', game: 'caviar-match', title: '첫 컬렉션', desc: '캐비어 매치 한 판에 캐비어 20개 수집', test: function (s) { return s.total >= 20; } },
+    { id: 'w1-g2', week: 0, type: 'game', game: 'caviar-match', title: '5,000점', desc: '캐비어 매치 한 판 5,000점 이상', test: function (s) { return s.score >= 5000; } },
+    { id: 'w1-r1', week: 0, type: 'ref', need: 1, title: '친구 초대 1', desc: '초대 링크로 들어온 새 친구 1명이 프리세이브' },
+    { id: 'w1-r2', week: 0, type: 'ref', need: 2, title: '친구 초대 2', desc: '초대 링크로 들어온 새 친구 2명이 프리세이브' },
+    { id: 'w1-a1', week: 0, type: 'att', need: 1, title: '출석 1일', desc: '레스토랑에 하루 방문' },
+    // W2 · Caviar Escape
+    { id: 'w2-g1', week: 1, type: 'game', game: 'caviar-escape', title: '첫 탈출', desc: '캐비어를 훔쳐라 30초 버티고 탈출', test: function (s) { return s.result === 'clear'; } },
+    { id: 'w2-g2', week: 1, type: 'game', game: 'caviar-escape', title: '아슬아슬 5', desc: '캐비어를 훔쳐라 한 판에 아슬아슬 5번', test: function (s) { return s.closeCalls >= 5; } },
+    { id: 'w2-r1', week: 1, type: 'ref', need: 3, title: '친구 초대 3', desc: '초대 링크로 들어온 새 친구 3명이 프리세이브' },
+    { id: 'w2-r2', week: 1, type: 'ref', need: 4, title: '친구 초대 4', desc: '초대 링크로 들어온 새 친구 4명이 프리세이브' },
+    { id: 'w2-a1', week: 1, type: 'att', need: 2, title: '출석 2일', desc: '서로 다른 날 2번 방문' },
+    // W3 · Caviar Master Chef
+    { id: 'w3-g1', week: 2, type: 'game', game: 'caviar-master-chef', title: '첫 주문', desc: '마스터 셰프 주문 1개 완성', test: function (s) { return s.ordersCompleted >= 1; } },
+    { id: 'w3-g2', week: 2, type: 'game', game: 'caviar-master-chef', title: '퍼펙트 3', desc: '마스터 셰프 실수 없는 주문 3개', test: function (s) { return s.perfectOrders >= 3; } },
+    { id: 'w3-r1', week: 2, type: 'ref', need: 5, title: '친구 초대 5', desc: '초대 링크로 들어온 새 친구 5명이 프리세이브' },
+    { id: 'w3-r2', week: 2, type: 'ref', need: 6, title: '친구 초대 6', desc: '초대 링크로 들어온 새 친구 6명이 프리세이브' },
+    { id: 'w3-a1', week: 2, type: 'att', need: 3, title: '출석 3일', desc: '서로 다른 날 3번 방문' }
   ];
 
-  /* Tins seen from above (paths from the repo root). A cell shows the empty tin
-     until its quest is done, then the tin filled with its game's caviar (tone). */
+  var PRESAVE = { id: 'presave', type: 'presave', tone: 'pearl', title: 'NMOI 프리세이브', desc: 'Spotify에서 프리세이브하고 채우기' };
+
+  /* Board, row by row — the overview's layout (W1 gold, W2 green, W3 ivory, PRE inside). */
+  var LAYOUT = [
+    'w1-g1', 'w1-r1', 'w2-g1', 'w2-r1',
+    'w1-g2', 'presave', 'w2-g2', 'w3-g1',
+    'w1-a1', 'w2-a1', 'w3-r1', 'w3-g2',
+    'w1-r2', 'w2-r2', 'w3-a1', 'w3-r2'
+  ];
+  var SIZE = 4;
+
+  var WEEK_TONE = ['gold', 'green', 'white'];
   var ART = {
     empty: 'assets/bingo/tin-empty.webp',
     filled: {
@@ -51,30 +62,12 @@
     }
   };
 
-  var PRESAVE = {
-    id: 'presave',
-    tone: 'gold',
-    title: 'NMOI 프리세이브',
-    desc: 'Spotify에서 프리세이브하고 채우기'   // link: shared/cv-presave.js
-  };
-
-  /* Board, row by row. Games are mixed so every line needs more than one game;
-     the pre-save cell sits on a diagonal. */
-  var LAYOUT = [
-    'e1', 'm1', 'c1', 'e2',
-    'm2', 'presave', 'e3', 'c2',
-    'c3', 'e4', 'm3', 'm4',
-    'e5', 'c4', 'm5', 'c5'
-  ];
-
-  var SIZE = 4;
-
-  /* Rewards by finished lines (contents decided later). */
   var REWARDS = [
-    { lines: 1, label: '1줄', reward: '보상 A (추후 공개)' },
-    { lines: 2, label: '2줄', reward: '보상 B (추후 공개)' },
-    { lines: 3, label: '3줄', reward: '보상 C (추후 공개)' }
+    { key: 'card', label: '달성', reward: '칸마다 B컷 카드 1장' },
+    { key: 'line', label: '줄 완성', reward: '응모권 +3' },
+    { key: 'full', label: '판 완성', reward: '상위 등급 · 쇼케이스 초청 추첨' }
   ];
+  var REWARD_NOTE = '보상은 계정당 1회 · 수령 시에만 실명 확인';
 
   /* ---------------- Logic ---------------- */
 
@@ -84,40 +77,72 @@
   function readDone() {
     try {
       var list = JSON.parse(store.get('done', '[]'));
-      return Array.isArray(list) ? list : [];
+      return Array.isArray(list) ? list.filter(function (id) { return !!mission(id); }) : [];
     } catch (e) { return []; }
   }
   function writeDone(list) { store.set('done', JSON.stringify(list)); }
 
-  function quest(id) {
+  function mission(id) {
     if (id === PRESAVE.id) return PRESAVE;
-    for (var i = 0; i < QUESTS.length; i++) if (QUESTS[i].id === id) return QUESTS[i];
+    for (var i = 0; i < MISSIONS.length; i++) if (MISSIONS[i].id === id) return MISSIONS[i];
     return null;
   }
-
+  function weekOpen(m) { return m.week === undefined || NS.campaign.isWeekOpen(m.week); }
   function isDone(id) { return readDone().indexOf(id) >= 0; }
 
-  function lines() {
-    var done = readDone(), out = [], r, c, i;
-    function full(idx) { return idx.every(function (k) { return done.indexOf(LAYOUT[k]) >= 0; }); }
-    for (r = 0; r < SIZE; r++) { var row = []; for (c = 0; c < SIZE; c++) row.push(r * SIZE + c); if (full(row)) out.push(row); }
-    for (c = 0; c < SIZE; c++) { var col = []; for (r = 0; r < SIZE; r++) col.push(r * SIZE + c); if (full(col)) out.push(col); }
+  function lineList() {
+    var out = [], r, c, i;
+    for (r = 0; r < SIZE; r++) { var row = []; for (c = 0; c < SIZE; c++) row.push(r * SIZE + c); out.push({ id: 'r' + r, cells: row }); }
+    for (c = 0; c < SIZE; c++) { var col = []; for (r = 0; r < SIZE; r++) col.push(r * SIZE + c); out.push({ id: 'c' + c, cells: col }); }
     var d1 = [], d2 = [];
     for (i = 0; i < SIZE; i++) { d1.push(i * SIZE + i); d2.push(i * SIZE + (SIZE - 1 - i)); }
-    if (full(d1)) out.push(d1);
-    if (full(d2)) out.push(d2);
+    out.push({ id: 'd0', cells: d1 }, { id: 'd1', cells: d2 });
     return out;
   }
+  var LINES = lineList();
 
-  function emit(change) {
-    for (var i = 0; i < listeners.length; i++) listeners[i](change);
+  function finishedLines() {
+    var done = readDone();
+    return LINES.filter(function (l) { return l.cells.every(function (k) { return done.indexOf(LAYOUT[k]) >= 0; }); });
   }
+
+  function emit(change) { for (var i = 0; i < listeners.length; i++) listeners[i](change); }
 
   function complete(ids) {
     if (!ids.length) return;
-    var before = lines().length;
+    var before = finishedLines().length;
     writeDone(readDone().concat(ids));
-    emit({ added: ids, newLines: lines().length - before });
+    var now = finishedLines();
+    // A finished line pays +3 tickets once (server keeps the record).
+    if (NS.account) now.forEach(function (l) { NS.account.claimLine(l.id); });
+    emit({ added: ids, newLines: now.length - before });
+  }
+
+  /** Referral / attendance / pre-save cells from the account state. */
+  function sync() {
+    if (!NS.account) return [];
+    var st = NS.account.state(), days = NS.account.days(), done = readDone();
+    var fresh = MISSIONS.filter(function (m) {
+      if (done.indexOf(m.id) >= 0 || !weekOpen(m)) return false;
+      if (m.type === 'ref') return st.referrals >= m.need;
+      if (m.type === 'att') return days >= m.need;
+      return false;
+    }).map(function (m) { return m.id; });
+    if (st.presaved && done.indexOf(PRESAVE.id) < 0) fresh.push(PRESAVE.id);
+    complete(fresh);
+    return fresh;
+  }
+
+  function cellOf(id, index, done) {
+    var m = mission(id);
+    var game = m.game ? GAMES[m.game] : null;
+    return {
+      index: index, id: id, quest: m, type: m.type, week: m.week,
+      game: game, gameId: m.game || null,
+      tone: m.type === 'presave' ? PRESAVE.tone : WEEK_TONE[m.week],
+      locked: !weekOpen(m),
+      done: done.indexOf(id) >= 0
+    };
   }
 
   NS.bingo = {
@@ -126,11 +151,11 @@
     presave: PRESAVE,
     art: ART,
     rewards: REWARDS,
+    rewardNote: REWARD_NOTE,
+    missions: MISSIONS,
 
-    /** Board index of the pre-save cell. */
     presaveIndex: function () { return LAYOUT.indexOf(PRESAVE.id); },
 
-    /** Ids completed since the board was last viewed (they get a fill animation). */
     unseen: function () {
       var seen;
       try { seen = JSON.parse(store.get('seen', '[]')); } catch (e) { seen = []; }
@@ -138,59 +163,74 @@
     },
     markSeen: function () { store.set('seen', JSON.stringify(readDone())); },
 
-    /** Cells in board order: { index, id, quest, game, done }. */
     cells: function () {
       var done = readDone();
-      return LAYOUT.map(function (id, index) {
-        var q = quest(id);
-        return { index: index, id: id, quest: q, game: q && q.game ? GAMES[q.game] : null, gameId: q ? q.game : null, done: done.indexOf(id) >= 0 };
-      });
+      return LAYOUT.map(function (id, index) { return cellOf(id, index, done); });
     },
 
+    /** The week's 5 missions (default: the running week, or W1 before the start). */
+    weekProgress: function (weekIdx) {
+      var i = typeof weekIdx === 'number' ? weekIdx : Math.min(Math.max(NS.campaign.weekIndex(), 0), 2);
+      var list = MISSIONS.filter(function (m) { return m.week === i; });
+      var done = readDone();
+      return { week: i, done: list.filter(function (m) { return done.indexOf(m.id) >= 0; }).length, total: list.length };
+    },
+
+    /** Game missions of one game (for its title and result cards). */
     questsFor: function (gameId) {
       var done = readDone();
-      return QUESTS.filter(function (q) { return q.game === gameId; }).map(function (q) {
-        return { id: q.id, title: q.title, desc: q.desc, done: done.indexOf(q.id) >= 0 };
+      return MISSIONS.filter(function (m) { return m.game === gameId; }).map(function (m) {
+        return { id: m.id, title: m.title, desc: m.desc, done: done.indexOf(m.id) >= 0 };
       });
     },
-
     progress: function (gameId) {
       var list = this.questsFor(gameId);
       return { done: list.filter(function (q) { return q.done; }).length, total: list.length };
     },
 
-    doneCount: function () { return readDone().length; },
-    lines: lines,
-    isDone: isDone,
-
-    /** A run ended. Returns the quests completed by it (may be empty). */
-    report: function (gameId, stats) {
-      var plays = (store.getNumber('plays:' + gameId, 0) || 0) + 1;
-      store.set('plays:' + gameId, plays);
-      var meta = { plays: plays };
-      var done = readDone();
-      var fresh = QUESTS.filter(function (q) {
-        if (q.game !== gameId || done.indexOf(q.id) >= 0) return false;
-        try { return !!q.test(stats || {}, meta); } catch (e) { return false; }
-      });
-      complete(fresh.map(function (q) { return q.id; }));
-      if (NS.leaderboard && stats) NS.leaderboard.submit(gameId, stats.score);
-      return fresh.map(function (q) { return { id: q.id, title: q.title, desc: q.desc }; });
+    /** B-cut n (0-based) is unlocked by mission n. */
+    bcut: function (n) {
+      var m = MISSIONS[n];
+      return m ? { mission: m, unlocked: isDone(m.id) } : { mission: null, unlocked: true };
     },
 
-    /** Pre-save cell (self-reported until a real Spotify check exists). */
+    doneCount: function () { return readDone().length; },
+    missionCount: function () { return readDone().filter(function (id) { return id !== PRESAVE.id; }).length; },
+    lines: function () { return finishedLines().map(function (l) { return l.cells; }); },
+    fullBoard: function () { return readDone().length >= LAYOUT.length; },
+    isDone: isDone,
+    sync: sync,
+
+    /** A run ended. Returns the missions completed by it (may be empty). */
+    report: function (gameId, stats) {
+      var done = readDone();
+      var fresh = MISSIONS.filter(function (m) {
+        if (m.game !== gameId || done.indexOf(m.id) >= 0 || !weekOpen(m)) return false;
+        try { return !!m.test(stats || {}); } catch (e) { return false; }
+      });
+      complete(fresh.map(function (m) { return m.id; }));
+      if (NS.leaderboard && stats) NS.leaderboard.submit(gameId, stats.score);
+      return fresh.map(function (m) { return { id: m.id, title: m.title, desc: m.desc }; });
+    },
+
+    /** Pre-save cell (self-reported: click-based, see cv-presave.js). */
     completePresave: function () {
+      if (NS.account) NS.account.presave();
       if (!isDone(PRESAVE.id)) complete([PRESAVE.id]);
     },
 
     onChange: function (fn) { listeners.push(fn); },
 
-    /** For testing only. */
+    /** Demo / testing only. */
     reset: function () {
       writeDone([]);
       store.set('seen', '[]');
-      Object.keys(GAMES).forEach(function (g) { store.set('plays:' + g, 0); });
       emit({ added: [], newLines: 0, reset: true });
     }
   };
+
+  if (NS.account) {
+    NS.account.onChange(function () { sync(); });
+    sync();
+  }
 })(window.CAVIAR = window.CAVIAR || {});

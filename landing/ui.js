@@ -69,6 +69,7 @@
       backdrop: $('backdrop'),
       form: $('order-form'),
       nickname: $('nickname'),
+      email: $('email'),
       submit: $('btn-submit'),
       serveLine: $('serve-line'),
       serveHost: $('serve-host'),
@@ -159,7 +160,12 @@
 
     e.nickname.addEventListener('input', function () { self._fire('answer', { key: 'nickname', value: e.nickname.value }); });
     e.nickname.addEventListener('keydown', function (ev) {
-      if (ev.key === 'Enter') { ev.preventDefault(); e.nickname.blur(); }
+      if (ev.key === 'Enter') { ev.preventDefault(); e.email.focus(); }
+    });
+    e.email.addEventListener('input', function () { self._fire('answer', { key: 'email', value: e.email.value }); });
+    e.email.addEventListener('blur', function () { self._fire('emailBlur'); });
+    e.email.addEventListener('keydown', function (ev) {
+      if (ev.key === 'Enter') { ev.preventDefault(); e.email.blur(); }
     });
     e.form.addEventListener('change', function (ev) {
       var t = ev.target;
@@ -184,6 +190,7 @@
   P.fillForm = function (answers) {
     var form = this.el.form;
     this.el.nickname.value = answers.nickname || '';
+    this.el.email.value = answers.email || '';
     $('consent').checked = !!answers.consent;
     ['mood', 'caviar', 'eat', 'drink'].forEach(function (name) {
       Array.prototype.forEach.call(form.querySelectorAll('input[name="' + name + '"]'), function (i) {
@@ -194,6 +201,27 @@
   };
 
   P.setComplete = function (ok) { this.el.submit.disabled = !ok; };
+
+  /** Email hint under the field: neutral, or a gentle error once the guest left it. */
+  P.setEmailState = function (bad) {
+    var hint = $('email-hint');
+    this.el.email.classList.toggle('is-bad', !!bad);
+    hint.classList.toggle('is-bad', !!bad);
+    hint.textContent = bad ? '이메일 형식을 확인해주세요' : '가입 없이 이메일만 받아요 · 비밀번호 없음';
+  };
+
+  /** Week lock on the cans: a game opens on its week (shared/cv-campaign.js). */
+  P.setCanLocks = function (fn) {
+    Array.prototype.forEach.call(this.el.cans.children, function (b) {
+      var info = fn(b.dataset.id);
+      b.classList.toggle('is-locked', !info.open);
+      b.setAttribute('aria-disabled', info.open ? 'false' : 'true');
+      var badge = b.querySelector('.lp-can__week');
+      if (!badge) { badge = el('span', 'lp-can__week'); b.insertBefore(badge, b.firstChild); }
+      badge.textContent = info.badge;
+      badge.classList.toggle('is-now', !!info.now);
+    });
+  };
 
   P.setBingo = function (filled, total, lines) {
     $('bingo-count').textContent = lines ? lines + '줄' : filled + '/' + total;
@@ -274,6 +302,16 @@
       b.classList.toggle('is-chosen', b.dataset.id === id);
     });
     setTimeout(done, 650);
+  };
+
+  /** Locked can: a short shake instead of starting the game. */
+  P.nudgeCan = function (id) {
+    Array.prototype.forEach.call(this.el.cans.children, function (b) {
+      if (b.dataset.id !== id) return;
+      b.classList.remove('is-nudge');
+      void b.offsetWidth;
+      b.classList.add('is-nudge');
+    });
   };
 
   P.resetCans = function () {

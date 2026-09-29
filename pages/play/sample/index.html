@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <title>Integration Sample</title>
+  <style>
+    :root { --bg: #0b0a09; --ivory: #efe8d8; --dim: rgba(239, 232, 216, 0.6); --gold: #c9ae78; }
+    html, body { height: 100%; margin: 0; background: var(--bg); color: var(--ivory); font: 400 14px/1.5 system-ui, sans-serif; }
+    main { box-sizing: border-box; display: flex; flex-direction: column; gap: 12px; height: 100%; padding: 16px; text-align: center; }
+    h1 { margin: 8px 0 0; font: 600 18px/1.2 Georgia, serif; letter-spacing: 0.08em; color: var(--gold); }
+    p { margin: 0; color: var(--dim); }
+    .score { font: 700 44px/1 Georgia, serif; color: var(--ivory); }
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    button { min-height: 44px; border: 1px solid var(--gold); background: none; color: var(--ivory); font: 600 14px/1 system-ui, sans-serif; cursor: pointer; }
+    button.primary { background: var(--gold); color: var(--bg); }
+    button:disabled { opacity: 0.4; cursor: default; }
+    pre { flex: 1; min-height: 0; margin: 0; padding: 8px; overflow: auto; border: 1px solid rgba(201, 174, 120, 0.25); text-align: left; font: 11px/1.45 ui-monospace, monospace; color: var(--dim); white-space: pre-wrap; word-break: break-all; }
+  </style>
+</head>
+<!-- Reference game for docs/game-integration.md: every protocol message, nothing else.
+     "Play" = tap +100 a few times, then "End run". Reports as caviar-match. -->
+<body>
+  <main>
+    <h1>INTEGRATION SAMPLE</h1>
+    <p id="who">연결 중…</p>
+    <div class="score" id="score">0</div>
+    <div class="row">
+      <button class="primary" id="btn-start" type="button">Start run</button>
+      <button id="btn-add" type="button" disabled>+100 · 캐비어 +2</button>
+    </div>
+    <div class="row">
+      <button id="btn-end" type="button" disabled>End run</button>
+      <button id="btn-exit" type="button">Exit</button>
+    </div>
+    <pre id="log"></pre>
+  </main>
+  <script src="../../../shared/cv-bridge.js"></script>
+  <script>
+    (function () {
+      var B = window.CaviarBridge;
+      var score = 0, total = 0;
+      function $(id) { return document.getElementById(id); }
+      function log(t, o) { $('log').textContent = t + (o ? ' ' + JSON.stringify(o) : '') + '\n' + $('log').textContent; }
+      function playing(on) { $('btn-start').disabled = on; $('btn-add').disabled = !on; $('btn-end').disabled = !on; }
+
+      B.init({ gameId: 'caviar-match' }).then(function (cfg) {
+        log('config', cfg);
+        $('who').textContent = (cfg.nickname || '게스트') + ' · 오늘 남은 판 ' + cfg.playsLeft + (cfg.booster > 1 ? ' · 부스터 x' + cfg.booster : '');
+      });
+
+      $('btn-start').addEventListener('click', function () {
+        B.requestStart().then(function (r) {
+          log('start', r);
+          if (!r.allowed) { $('who').textContent = r.reason === 'locked' ? '아직 열리지 않은 주차예요' : '오늘 판을 모두 썼어요'; return; }
+          score = 0; total = 0; $('score').textContent = '0';
+          $('who').textContent = '플레이 중 · 남은 판 ' + r.playsLeft;
+          playing(true);
+        });
+      });
+      $('btn-add').addEventListener('click', function () {
+        score += 100; total += 2; $('score').textContent = score;
+        B.event('collect', { total: total });
+      });
+      $('btn-end').addEventListener('click', function () {
+        playing(false);
+        B.end({ score: score, stats: { total: total, maxCombo: 0, stage: 1 } }).then(function (r) { log('result', r); });
+      });
+      $('btn-exit').addEventListener('click', function () { B.exit(); });
+    })();
+  </script>
+</body>
+</html>

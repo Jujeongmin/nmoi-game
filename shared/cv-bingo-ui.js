@@ -1,15 +1,17 @@
-/* CAVIAR BINGO — DOM: board overlay, quest link on a game's title card,
-   quest result on a game's result card. Styles: shared/cv-bingo.css.
-   Needs cv-storage.js and cv-bingo.js.
+/* CAVIAR BINGO — DOM: board overlay (TIER 1, behind the V8 login), mission link on a
+   game's title card, mission / rank / pre-save blocks on a game's result card.
+   Styles: shared/cv-bingo.css. Needs cv-storage, cv-campaign, cv-account, cv-bingo.
 
-   Landing:  CAVIAR.bingoUI.mount({ root: '' });            then .open()
-   Game:     CAVIAR.bingoUI.attachGame(gameId, { root: '../../' });
+   Landing:  CAVIAR.bingoUI.mount();  then .open()
+   Game:     CAVIAR.bingoUI.attachGame(gameId);
              CAVIAR.bingoUI.showRun(gameId, CAVIAR.bingo.report(gameId, stats)); */
 (function (NS) {
   'use strict';
 
   var B = NS.bingo;
-  var overlay = null, els = {}, opts = { root: '' }, selected = null, currentGame = null;
+  var A = NS.account;
+  var CFG = NS.campaign.config;
+  var overlay = null, els = {}, selected = null, currentGame = null;
 
   function el(tag, cls, text) {
     var n = document.createElement(tag);
@@ -19,6 +21,7 @@
   }
 
   function host() { return document.getElementById('app') || document.body; }
+  function weekLabel(i) { var w = NS.campaign.weeks[i]; return w.label + ' · ' + NS.campaign.md(w.start); }
 
   function build() {
     overlay = el('div', 'cv-overlay cv-bingo');
@@ -27,24 +30,27 @@
     var panel = el('div', 'cv-panel cv-bingo__panel');
 
     var head = el('div', 'cv-bingo__head');
-    head.appendChild(el('p', 'cv-eyebrow', 'NMOI · CAVIAR SERVICE'));
+    head.appendChild(el('p', 'cv-eyebrow', 'TIER 1 · MISSION BINGO'));
     els.title = el('h2', 'cv-bingo__title');
     els.sub = el('p', 'cv-bingo__sub');
     head.appendChild(els.title);
     head.appendChild(els.sub);
 
+    els.body = el('div', 'cv-bingo__body');
     els.board = el('div', 'cv-bingo__board');
     els.board.setAttribute('role', 'grid');
-
     els.detail = el('div', 'cv-bingo__detail');
+    els.gate = el('div', 'cv-bingo__gate');
+    els.body.appendChild(els.board);
+    els.body.appendChild(els.detail);
 
     var close = el('button', 'cv-btn cv-bingo__close', '닫기');
     close.type = 'button';
     close.addEventListener('click', api.close);
 
     panel.appendChild(head);
-    panel.appendChild(els.board);
-    panel.appendChild(els.detail);
+    panel.appendChild(els.gate);
+    panel.appendChild(els.body);
     panel.appendChild(close);
     if (NS.brand) NS.brand.badge(panel);
     overlay.appendChild(panel);
@@ -53,10 +59,27 @@
     host().appendChild(overlay);
   }
 
-  function tone(cell) { return cell.id === B.presave.id ? B.presave.tone : cell.game.tone; }
+  /* ---------- TIER 1 gate (V8 login placeholder) ---------- */
+
+  function renderGate() {
+    var g = els.gate;
+    g.innerHTML = '';
+    g.appendChild(el('p', 'cv-bingo__gate-title', '더 큰 보상은 V8 로그인'));
+    g.appendChild(el('p', 'cv-bingo__desc', '게임·프리세이브는 로그인 없이 계속할 수 있어요. 빙고 미션과 상위 보상은 Verse8 소셜 1탭 로그인 후 열려요.'));
+    var list = el('ul', 'cv-bingo__gate-list');
+    B.rewards.forEach(function (r) { var li = el('li'); li.appendChild(el('b', '', r.label)); li.appendChild(document.createTextNode(' ' + r.reward)); list.appendChild(li); });
+    g.appendChild(list);
+    g.appendChild(NS.assetSlot({ name: 'Verse8 소셜 1탭 로그인', spec: '로그인 연결 주소를 받으면 이 버튼이 Verse8 로그인으로 연결됩니다', className: 'cv-bingo__gate-slot' }));
+    var demo = el('button', 'cv-presave-link__demo cv-bingo__gate-demo', '데모: 로그인한 것으로 보기');
+    demo.type = 'button';
+    demo.addEventListener('click', function () { A.setDemoLogin(true); renderBoard(); });
+    g.appendChild(demo);
+  }
+
+  /* ---------- board ---------- */
 
   function tinImage(cell) {
-    var src = cell.done ? B.art.filled[tone(cell)] : B.art.empty;
+    var src = cell.done ? B.art.filled[cell.tone] : B.art.empty;
     var img = el('img', 'cv-bingo__tin');
     img.alt = '';
     img.decoding = 'async';
@@ -66,7 +89,6 @@
   }
 
   var SVG = 'http://www.w3.org/2000/svg';
-
   function renderLines(lines) {
     var svg = document.createElementNS(SVG, 'svg');
     svg.setAttribute('class', 'cv-bingo__lines');
@@ -84,28 +106,33 @@
   }
 
   function renderBoard() {
-    var cells = B.cells();
+    var logged = A.loggedIn();
+    els.gate.hidden = logged;
+    els.body.hidden = !logged;
+    var st = A.state();
     var lines = B.lines();
-    var fresh = B.unseen();
-
-    els.title.textContent = lines.length ? 'BINGO × ' + lines.length : 'CAVIAR BINGO';
+    els.title.textContent = !logged ? 'CAVIAR BINGO' : lines.length ? 'BINGO × ' + lines.length : 'CAVIAR BINGO';
     els.sub.innerHTML = '';
-    els.sub.appendChild(document.createTextNode('채운 캔 '));
-    els.sub.appendChild(el('b', '', B.doneCount() + ' / ' + cells.length));
-    els.sub.appendChild(document.createTextNode(lines.length ? ' · 빙고 ' + lines.length + '줄' : ' · 한 줄을 채우면 빙고'));
+    els.sub.appendChild(document.createTextNode('미션 '));
+    els.sub.appendChild(el('b', '', B.missionCount() + ' / 15'));
+    els.sub.appendChild(document.createTextNode(' · 응모권 '));
+    els.sub.appendChild(el('b', '', st.tickets + '장'));
+    if (!logged) { renderGate(); return; }
 
+    var cells = B.cells();
+    var fresh = B.unseen();
     els.board.innerHTML = '';
     cells.forEach(function (cell) {
-      var b = el('button', 'cv-bingo__cell');
+      var b = el('button', 'cv-bingo__cell cv-bingo__cell--' + cell.tone);
       b.type = 'button';
-      b.dataset.index = cell.index;
       if (cell.done) b.classList.add('is-done');
+      if (cell.locked) b.classList.add('is-locked');
       if (cell.done && fresh.indexOf(cell.id) >= 0) b.classList.add('is-fresh');
-      if (cell.id === B.presave.id) b.classList.add('is-presave');
+      if (cell.type === 'presave') b.classList.add('is-presave');
       if (selected === cell.index) b.classList.add('is-selected');
-      b.setAttribute('aria-label', cell.quest.title + (cell.done ? ' — 완료' : ''));
+      b.setAttribute('aria-label', cell.quest.title + (cell.done ? ' — 완료' : cell.locked ? ' — 잠김' : ''));
       b.appendChild(tinImage(cell));
-      b.appendChild(el('span', 'cv-bingo__name', cell.quest.title));
+      b.appendChild(el('span', 'cv-bingo__name', cell.locked ? NS.campaign.md(NS.campaign.weeks[cell.week].start) + ' 공개' : cell.quest.title));
       b.addEventListener('click', function () { selected = cell.index; renderBoard(); });
       els.board.appendChild(b);
     });
@@ -114,68 +141,132 @@
     renderDetail(cells);
   }
 
+  function rewardTiers() {
+    var tiers = el('div', 'cv-bingo__rewards');
+    var state = [B.missionCount() + '/15장', B.lines().length + '줄', B.fullBoard() ? '달성' : '—'];
+    var on = [B.missionCount() > 0, B.lines().length > 0, B.fullBoard()];
+    B.rewards.forEach(function (r, i) {
+      var t = el('div', 'cv-bingo__reward' + (on[i] ? ' is-on' : ''));
+      t.appendChild(el('b', '', r.label));
+      t.appendChild(el('span', '', r.reward));
+      t.appendChild(el('em', '', state[i]));
+      tiers.appendChild(t);
+    });
+    return tiers;
+  }
+
+  function inviteBlock() {
+    var box = el('div', 'cv-invite');
+    var link = A.inviteLink();
+    var st = A.state();
+    box.appendChild(el('p', 'cv-invite__count', '지금까지 인정된 친구 ' + st.referrals + ' / ' + CFG.maxReferrals + '명'));
+    if (!link) {
+      box.appendChild(el('p', 'cv-bingo__desc', '레스토랑 주문서(닉네임·이메일)를 작성하면 내 초대 링크가 만들어져요. (Verse8 서버 연결 필요)'));
+      return box;
+    }
+    var field = el('input', 'cv-invite__field');
+    field.readOnly = true;
+    field.value = link;
+    field.setAttribute('aria-label', '내 초대 링크');
+    var copy = el('button', 'cv-bingo__link', '링크 복사');
+    copy.type = 'button';
+    copy.addEventListener('click', function () {
+      var done = function () { copy.textContent = '복사됨'; };
+      if (navigator.clipboard) navigator.clipboard.writeText(link).then(done, function () { field.select(); });
+      else field.select();
+    });
+    box.appendChild(field);
+    var row = el('div', 'cv-bingo__actions');
+    row.appendChild(copy);
+    if (navigator.share) {
+      var share = el('button', 'cv-bingo__link', '공유하기');
+      share.type = 'button';
+      share.addEventListener('click', function () { navigator.share({ title: 'NMOI Caviar', url: link }).catch(function () {}); });
+      row.appendChild(share);
+    }
+    box.appendChild(row);
+    box.appendChild(el('p', 'cv-invite__rule', '새 이메일로 들어온 친구가 프리세이브를 눌러야 1명으로 인정돼요.'));
+    return box;
+  }
+
   function renderDetail(cells) {
     var d = els.detail;
     d.innerHTML = '';
     var cell = selected === null ? null : cells[selected];
     if (!cell) {
-      d.appendChild(el('p', 'cv-bingo__hint', '칸을 누르면 퀘스트를 볼 수 있어요. 한 줄을 채우면 빙고!'));
-      var n = B.lines().length;
-      var tiers = el('div', 'cv-bingo__rewards');
-      B.rewards.forEach(function (r) {
-        var t = el('div', 'cv-bingo__reward' + (n >= r.lines ? ' is-on' : ''));
-        t.appendChild(el('b', '', r.label));
-        t.appendChild(el('span', '', r.reward));
-        tiers.appendChild(t);
-      });
-      d.appendChild(tiers);
+      d.appendChild(el('p', 'cv-bingo__hint', '칸을 누르면 미션을 볼 수 있어요. 미션마다 B컷 카드가 열려요.'));
+      d.appendChild(rewardTiers());
+      d.appendChild(el('p', 'cv-bingo__note', B.rewardNote));
       return;
     }
     var q = cell.quest;
-    var meta = el('p', 'cv-bingo__meta', cell.id === B.presave.id ? 'SPECIAL' : cell.game.caviar + ' · ' + cell.game.name);
-    d.appendChild(meta);
+    var metaText = cell.type === 'presave' ? 'SPECIAL · 프리세이브'
+      : weekLabel(cell.week) + ' · ' + (cell.type === 'game' ? cell.game.name : cell.type === 'ref' ? '레퍼럴' : '출석');
+    d.appendChild(el('p', 'cv-bingo__meta', metaText));
     var qt = el('p', 'cv-bingo__q', q.title);
     if (cell.done) qt.appendChild(el('span', 'cv-tag cv-bingo__done', '완료'));
     d.appendChild(qt);
     d.appendChild(el('p', 'cv-bingo__desc', q.desc));
+    var n = B.missions.indexOf(q);
+    if (n >= 0) d.appendChild(el('p', 'cv-bingo__card', '달성 보상 · B컷 카드 #' + (n + 1)));
 
-    var actions = el('div', 'cv-bingo__actions');
-    if (cell.id === B.presave.id) {
-      if (!cell.done && NS.presave) {
-        d.appendChild(NS.presave.linkBlock(function () { renderBoard(); refreshLinks(); }));
-      }
-    } else if (!cell.done && cell.gameId !== currentGame) {
+    if (cell.locked) {
+      d.appendChild(el('p', 'cv-bingo__hint', NS.campaign.md(NS.campaign.weeks[cell.week].start) + '에 공개되는 미션이에요.'));
+      return;
+    }
+    if (cell.done) return;
+    if (cell.type === 'presave' && NS.presave) {
+      d.appendChild(NS.presave.linkBlock(function () { renderBoard(); refreshLinks(); }));
+    } else if (cell.type === 'ref') {
+      d.appendChild(inviteBlock());
+    } else if (cell.type === 'att') {
+      d.appendChild(el('p', 'cv-bingo__hint', '매일 레스토랑에 들르면 채워져요 · 지금까지 ' + A.days() + '일'));
+    } else if (cell.type === 'game' && cell.gameId !== currentGame) {
+      var actions = el('div', 'cv-bingo__actions');
       var play = el('a', 'cv-bingo__link', '게임하러 가기 →');
       play.href = NS.hub ? NS.hub.gameUrl(cell.game.path) : NS.url(cell.game.path + 'index.html');
       actions.appendChild(play);
+      d.appendChild(actions);
     }
-    if (actions.childNodes.length) d.appendChild(actions);
+  }
+
+  /* ---------- progress bar + booster nudge (landing + result cards) ---------- */
+
+  function progressBlock(dark) {
+    var p = B.weekProgress();
+    var box = el('div', 'cv-progress' + (dark ? ' is-dark' : ''));
+    var head = el('p', 'cv-progress__head');
+    head.appendChild(el('b', '', NS.campaign.weeks[p.week].label + ' 미션 ' + p.done + ' / ' + p.total));
+    head.appendChild(document.createTextNode(' · 응모권 ' + A.state().tickets + '장'));
+    box.appendChild(head);
+    var bar = el('div', 'cv-progress__bar');
+    var fill = el('span');
+    fill.style.width = Math.round(p.done / p.total * 100) + '%';
+    bar.appendChild(fill);
+    box.appendChild(bar);
+    if (!A.presaved() && !NS.campaign.isReleased()) {
+      box.appendChild(el('p', 'cv-progress__nudge', '프리세이브하면 점수 x' + CFG.booster + ' · 하루 1판 더 · 응모권 +' + CFG.tickets.presave));
+    }
+    return box;
   }
 
   /* ---------- game cards ---------- */
 
   var titleLinks = [];
-
   function questLinkText(gameId) {
     var p = B.progress(gameId);
-    var n = B.lines().length;
-    return '퀘스트 ' + p.done + '/' + p.total + (n ? ' · 빙고 ' + n + '줄' : '') + ' · 빙고판 보기';
+    return '이 게임 미션 ' + p.done + '/' + p.total + ' · 빙고판 보기';
   }
-
-  function refreshLinks() {
-    titleLinks.forEach(function (l) { l.btn.textContent = questLinkText(l.game); });
-  }
-
+  function refreshLinks() { titleLinks.forEach(function (l) { l.btn.textContent = questLinkText(l.game); }); }
   function insertBeforeActions(panel, node) {
     var actions = panel.querySelector('.cv-actions');
     if (actions) panel.insertBefore(node, actions); else panel.appendChild(node);
   }
 
   var api = {
-    mount: function (o) {
-      if (o) for (var k in o) opts[k] = o[k];
-      if (!overlay) build();
-    },
+    progressBlock: progressBlock,
+    inviteBlock: inviteBlock,
+    mount: function () { if (!overlay) build(); },
 
     open: function (focusIndex) {
       api.mount();
@@ -189,10 +280,10 @@
       refreshLinks();
     },
 
-    /** Adds "퀘스트 n/5 · 빙고판 보기" to the game's title card. */
-    attachGame: function (gameId, o) {
+    /** Title card: missions link, runs left / week lock (cv-account). */
+    attachGame: function (gameId) {
       currentGame = gameId;
-      api.mount(o);
+      api.mount();
       var panel = document.querySelector('#screen-title .cv-panel');
       if (!panel) return;
       var btn = el('button', 'cv-quest-link', questLinkText(gameId));
@@ -200,49 +291,45 @@
       btn.addEventListener('click', function () { api.open(); });
       insertBeforeActions(panel, btn);
       titleLinks.push({ btn: btn, game: gameId });
+      A.attachGame(gameId);
     },
 
-    /** Shows quests finished by this run (or progress) on the result card. */
+    /** Result card: new missions, rank, weekly progress + nudge, pre-save CTA. */
     showRun: function (gameId, fresh) {
       refreshLinks();
       var panel = document.querySelector('#screen-result .cv-panel');
       if (!panel) return;
       var box = panel.querySelector('.cv-quest-result');
-      if (!box) {
-        box = el('div', 'cv-quest-result');
-        insertBeforeActions(panel, box);
-      }
+      if (!box) { box = el('div', 'cv-quest-result'); insertBeforeActions(panel, box); }
       box.innerHTML = '';
-      var p = B.progress(gameId);
-      var n = B.lines().length;
       if (fresh && fresh.length) {
         box.classList.add('is-new');
-        box.appendChild(el('p', 'cv-quest-result__head', '퀘스트 달성 · 캔이 채워졌어요'));
+        box.appendChild(el('p', 'cv-quest-result__head', '미션 달성 · B컷 카드가 열렸어요'));
         fresh.forEach(function (q) { box.appendChild(el('p', 'cv-quest-result__item', q.title + ' — ' + q.desc)); });
       } else {
         box.classList.remove('is-new');
       }
-      var more = el('button', 'cv-quest-result__more', '퀘스트 ' + p.done + '/' + p.total + (n ? ' · 빙고 ' + n + '줄' : '') + ' · 빙고판 보기');
+      box.appendChild(progressBlock(fresh && fresh.length));
+      var more = el('button', 'cv-quest-result__more', questLinkText(gameId));
       more.type = 'button';
       more.addEventListener('click', function () { api.open(); });
       box.appendChild(more);
 
-      // Mission -> Spotify pre-save hand-off (the campaign's real goal)
-      if (!B.isDone(B.presave.id)) {
+      if (!A.presaved() && NS.presave) {
         var ps = el('button', 'cv-presave-cta');
         ps.type = 'button';
-        ps.appendChild(el('span', 'cv-presave-cta__tag', 'MISSION'));
-        ps.appendChild(el('span', '', 'NMOI Spotify Pre-save 하고 빙고 칸 채우기 →'));
-        ps.addEventListener('click', function () { if (NS.presave) NS.presave.interstitial(); else api.open(B.presaveIndex()); });
+        ps.appendChild(el('span', 'cv-presave-cta__tag', 'PRE-SAVE'));
+        ps.appendChild(el('span', '', NS.campaign.isReleased() ? 'NMOI 신곡 Spotify에서 듣기 →' : '프리세이브 +' + CFG.tickets.presave + ' 응모권 · 점수 x' + CFG.booster + ' →'));
+        ps.addEventListener('click', function () { NS.presave.interstitial(); });
         box.appendChild(ps);
       }
       if (NS.leaderboard) NS.leaderboard.renderResult(box, gameId);
       if (NS.brand) NS.brand.badge(panel);
-      if (NS.presave) setTimeout(NS.presave.interstitial, 450);   // after the result card appears
+      if (NS.presave) setTimeout(NS.presave.interstitial, 450);
     }
   };
 
-  B.onChange(function () { refreshLinks(); });
+  B.onChange(function () { refreshLinks(); if (overlay && overlay.classList.contains('is-open')) renderBoard(); });
 
   NS.bingoUI = api;
 })(window.CAVIAR = window.CAVIAR || {});

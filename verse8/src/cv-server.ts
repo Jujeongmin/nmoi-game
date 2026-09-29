@@ -4,6 +4,11 @@
 // CAVIAR.whenServer() (shared/cv-storage.js) — it may never arrive (local preview).
 import { GameServer } from "@agent8/gameserver";
 
+type Me = {
+  nickname: string; hasEmail: boolean; presaved: boolean; tickets: number; referrals: number;
+  days: number; lines: string[]; inviteCode: string; playsToday: Record<string, number>;
+  dailyLimit: number; booster: number; season: string;
+};
 type LeaderRow = { rank: number; nickname: string; score: number; me?: boolean };
 
 const server = new GameServer();
@@ -31,11 +36,16 @@ async function call<T>(fn: string, args: unknown[] = []): Promise<T> {
 const api = {
   account: server.account,
   connect,
-  setNickname: (nickname: string) => call<string>("setNickname", [nickname]),
+  setProfile: (p: { nickname: string; email: string; emailHash: string; ref?: string }) => call<Me>("setProfile", [p]),
+  getMe: () => call<Me>("getMe"),
+  checkIn: () => call<Me>("checkIn"),
+  markPresave: () => call<Me>("markPresave"),
+  claimLine: (lineId: string) => call<Me>("claimLine", [lineId]),
   submitScore: (gameId: string, score: number) =>
-    call<{ best: number; improved: boolean; rank: number }>("submitScore", [gameId, score]),
-  getLeaderboard: (gameId: string, limit = 20) =>
-    call<{ top: LeaderRow[]; mine: LeaderRow | null }>("getLeaderboard", [gameId, limit]),
+    call<{ counted: boolean; reason?: string; score?: number; boosted?: boolean; best?: number; improved?: boolean; rank?: number; season?: string; playsLeft: number }>(
+      "submitScore", [gameId, score]),
+  getLeaderboard: (gameId: string, limit = 20, season?: string) =>
+    call<{ season: string; top: LeaderRow[]; mine: LeaderRow | null }>("getLeaderboard", [gameId, limit, season]),
 };
 
 const w = window as unknown as { CAVIAR?: Record<string, unknown> };

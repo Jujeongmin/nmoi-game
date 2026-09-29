@@ -60,11 +60,16 @@ def main():
         (target / rel).parent.mkdir(parents=True, exist_ok=True)
         shutil.copyfile(ROOT / "verse8" / rel, target / rel)
 
-    # Static pages (games, content pages) load the built bridge as a module.
-    bridge = '  <script type="module" src="../../shared/cv-server.js?v=' + version + '"></script>\n'
+    # Static hub pages (games, content pages) load the built bridge as a module, from the
+    # same folder as their cv-storage.js. Pages without it (the integration sample game,
+    # which only talks postMessage) get no bridge.
+    storage_src = re.compile(r'src="([./]*)shared/cv-storage\.js')
     for page in list((public / "games").rglob("index.html")) + list((public / "pages").rglob("index.html")):
         text = bust(page.read_text(encoding="utf-8"))
-        text = text.replace("</body>", bridge + "</body>", 1)
+        m = storage_src.search(text)
+        if m:
+            bridge = '  <script type="module" src="' + m.group(1) + 'shared/cv-server.js?v=' + version + '"></script>\n'
+            text = text.replace("</body>", bridge + "</body>", 1)
         page.write_text(text, encoding="utf-8", newline="\n")
 
     # Landing page -> Vite entry. Local href/src become root-absolute public URLs;

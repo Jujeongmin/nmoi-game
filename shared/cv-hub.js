@@ -12,7 +12,7 @@
   /* Verse8 passes the player's identity in the page URL (?account=&auth=). Carry it
      across every internal link so the landing and the games share one account
      (the leaderboard is per account). */
-  var KEEP = ['account', 'auth'];
+  var KEEP = ['account', 'auth', 'date'];   // date: demo walk-through (cv-campaign.js)
   var carried = (function () {
     var q = new URLSearchParams(window.location.search), out = [];
     KEEP.forEach(function (k) { if (q.get(k)) out.push(k + '=' + encodeURIComponent(q.get(k))); });

@@ -1,4 +1,5 @@
-/* RECIPE BOOK — B-cut polaroid browser, canapé recipe, member notes. */
+/* RECIPE BOOK — B-cut polaroid browser, canapé recipe, member notes.
+   B-cut n is the reward card of bingo mission n (shared/cv-bingo.js): locked until done. */
 (function (NS) {
   'use strict';
 
@@ -24,14 +25,25 @@
     var list = C.bcuts;
     index = (i + list.length) % list.length;
     var b = list[index];
+    var lock = NS.bingo.bcut(index);
     var photo = $('bcut-photo');
     photo.innerHTML = '';
-    photo.appendChild(NS.assetSlot({
-      name: '멤버 B컷 이미지 ' + two(index + 1),
-      spec: b.member + ' · 세로 4:5',
-      src: b.image,
-      className: 'pg-polaroid__img'
-    }));
+    if (lock.unlocked) {
+      photo.appendChild(NS.assetSlot({
+        name: '멤버 B컷 이미지 ' + two(index + 1),
+        spec: b.member + ' · 세로 4:5',
+        src: b.image,
+        className: 'pg-polaroid__img'
+      }));
+    } else {
+      var locked = el('div', 'pg-polaroid__lock');
+      locked.appendChild(el('b', '', 'LOCKED'));
+      locked.appendChild(el('span', '', '미션 「' + lock.mission.title + '」'));
+      locked.appendChild(el('span', '', '달성하면 이 B컷이 열려요'));
+      photo.appendChild(locked);
+    }
+    $('bcut-card').classList.toggle('is-locked', !lock.unlocked);
+    $('bcut-open').textContent = lock.unlocked ? '크게 보기 · 저장하기' : '미션 보기 →';
     $('bcut-caption').textContent = b.caption;
     $('bcut-no').textContent = two(index + 1) + ' / ' + two(list.length);
     $('bcut-member').textContent = b.member;
@@ -45,6 +57,7 @@
   $('bcut-next').addEventListener('click', function () { showBcut(index + 1); });
   $('bcut-card').addEventListener('click', function () { openViewer(); });
   $('bcut-open').addEventListener('click', function () { openViewer(); });
+  NS.bingo.onChange(function () { showBcut(index); });
 
   /* ---------- Viewer + save ---------- */
   var viewer = $('viewer');
@@ -56,11 +69,28 @@
     $('viewer-no').textContent = two(index + 1) + ' / ' + two(C.bcuts.length);
     $('viewer-cap').textContent = b.member + ' · ' + b.caption;
   }
-  function openViewer() { renderViewer(); viewer.hidden = false; }
+  function missionCell(id) {
+    var cells = NS.bingo.cells();
+    for (var i = 0; i < cells.length; i++) if (cells[i].id === id) return i;
+    return undefined;
+  }
+  function openViewer() {
+    var lock = NS.bingo.bcut(index);
+    if (!lock.unlocked) { NS.bingoUI.open(missionCell(lock.mission.id)); return; }
+    renderViewer();
+    viewer.hidden = false;
+  }
   function closeViewer() { viewer.hidden = true; }
   $('viewer-close').addEventListener('click', closeViewer);
-  $('viewer-prev').addEventListener('click', function () { showBcut(index - 1); renderViewer(); });
-  $('viewer-next').addEventListener('click', function () { showBcut(index + 1); renderViewer(); });
+  // Viewer steps only through unlocked B-cuts.
+  function stepUnlocked(dir) {
+    for (var k = 1; k <= C.bcuts.length; k++) {
+      var i = (index + dir * k + C.bcuts.length) % C.bcuts.length;
+      if (NS.bingo.bcut(i).unlocked) { showBcut(i); renderViewer(); return; }
+    }
+  }
+  $('viewer-prev').addEventListener('click', function () { stepUnlocked(-1); });
+  $('viewer-next').addEventListener('click', function () { stepUnlocked(1); });
   document.addEventListener('keydown', function (e) {
     if (viewer.hidden) return;
     if (e.key === 'Escape') closeViewer();
@@ -108,6 +138,7 @@
 
   $('viewer-save').addEventListener('click', function () {
     var b = C.bcuts[index], no = index + 1, btn = this;
+    if (!NS.bingo.bcut(index).unlocked) return;
     btn.disabled = true;
     var job = b.image
       ? fetch(NS.url(b.image)).then(function (r) { if (!r.ok) throw new Error(r.status); return r.blob(); })
