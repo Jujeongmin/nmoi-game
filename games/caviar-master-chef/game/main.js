@@ -9,6 +9,7 @@
   var store = NS.storage.scope(cfg.gameId);
 
   var best = store.getNumber('best', 0);
+  NS.bingoUI.attachGame(cfg.gameId, { root: cfg.assetRoot });
   var resultShown = true;
   var paused = false;
   var last = performance.now();
@@ -39,18 +40,24 @@
       perfectOrders: game.perfectOrders,
       maxCombo: game.maxCombo
     });
+    NS.bingoUI.showRun(cfg.gameId, NS.bingo.report(cfg.gameId, {
+      score: score, ordersCompleted: game.ordersCompleted, perfectOrders: game.perfectOrders, maxCombo: game.maxCombo
+    }));
   }
 
   ui.on('start', startRun);
   ui.on('retry', startRun);
-  ui.on('back', toTitle);
+  ui.on('back', NS.hub.backOr(toTitle));
   ui.on('ready', function () { game.ready(); flush(); });
   ui.on('select', function (pick) { game.select(pick.kind, pick.id); flush(); });
 
   // Hand queued game events to the UI right away so taps feel immediate.
   function flush() {
     var events = game.drainEvents();
-    for (var i = 0; i < events.length; i++) ui.handle(events[i], game);
+    for (var i = 0; i < events.length; i++) {
+      NS.sound.event(cfg.gameId, events[i].type, events[i]);
+      ui.handle(events[i], game);
+    }
   }
 
   document.addEventListener('visibilitychange', function () {

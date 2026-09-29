@@ -56,7 +56,7 @@
     var members = NS.members || [];
     for (var i = 0; i < members.length; i++) {
       var sheet = new Image();
-      sheet.src = (config.assetRoot || '') + members[i].sheet;
+      sheet.src = NS.url(members[i].sheet);
       this.memberSheets[members[i].id] = sheet;
     }
     this.member = null;

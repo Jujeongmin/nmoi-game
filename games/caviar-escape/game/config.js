@@ -60,6 +60,12 @@
        or set an image URL. Sprites are drawn centred, facing right (+x). */
     assets: {
       shark: null
+    },
+
+    /* Result-card art (paths from the site root; null = labelled placeholder slot). */
+    resultArt: {
+      clear: null,   // 성공: 스타 셰프가 멋진 캐비어 요리를 서빙하는 이미지
+      over: null     // 실패: 상어 모자를 쓴 멤버 이미지
     }
   };
 })(window.CAVIAR = window.CAVIAR || {});

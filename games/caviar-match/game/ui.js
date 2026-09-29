@@ -20,7 +20,7 @@ CM.UI = (function () {
   function pearl(t, assetRoot) {
     const p = el('span', 'cv-pearl cv-pearl--' + t.pearl);
     if (t.image) {
-      const url = new URL((assetRoot || '') + t.image, document.baseURI).href;
+      const url = CAVIAR.url(t.image);
       p.style.background = 'center / cover no-repeat url("' + url + '")';
       p.style.boxShadow = 'none';
     }
@@ -151,8 +151,8 @@ CM.UI = (function () {
       const e = this.el;
       e.resultEyebrow.textContent = '스테이지 ' + pad(d.stage, 2) + ' 결과';
       e.resultTitle.textContent = d.reason === 'overflow' ? '게임 오버' : '시간 종료';
-      e.resultScore.textContent = fmt(d.score);
-      e.resultBest.textContent = fmt(d.best);
+      e.resultScore.textContent = pad(d.score, 5);   // same format as the other games
+      e.resultBest.textContent = pad(d.best, 5);
       e.resultNew.hidden = !d.newBest;
       e.resultCombo.textContent = String(d.maxCombo);
       e.resultCollected.textContent = String(d.total);

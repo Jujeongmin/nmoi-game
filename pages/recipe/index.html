@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#f6f2ea">
+  <title>Recipe Book</title>
+  <script src="../../shared/cv-frame.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Nanum+Pen+Script&family=Noto+Sans+KR:wght@400;500;600;700&family=Noto+Serif+KR:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../shared/cv-theme.css">
+  <link rel="stylesheet" href="../../shared/cv-bingo.css">
+  <link rel="stylesheet" href="../pages.css">
+</head>
+<body class="pg">
+  <div class="pg-app" id="app">
+    <header class="pg-bar">
+      <a class="pg-bar__back" id="link-home">&larr; 레스토랑</a>
+      <p class="pg-bar__title">Recipe Book</p>
+      <button class="pg-bar__bingo" id="btn-bingo" type="button">빙고판</button>
+    </header>
+
+    <main class="pg-scroll">
+      <article class="pg-book">
+
+        <!-- B-cut polaroid (click / arrows to browse) -->
+        <section class="pg-polaroid" aria-label="B컷">
+          <button class="pg-polaroid__nav" id="bcut-prev" type="button" aria-label="이전 B컷">&lsaquo;</button>
+          <figure class="pg-polaroid__card" id="bcut-card">
+            <div class="pg-polaroid__photo" id="bcut-photo"></div>
+            <figcaption class="pg-hand pg-polaroid__caption"><span id="bcut-caption">Trailer B-cut</span> <span id="bcut-no">01 / 15</span></figcaption>
+          </figure>
+          <button class="pg-polaroid__nav" id="bcut-next" type="button" aria-label="다음 B컷">&rsaquo;</button>
+          <p class="pg-polaroid__msg"><b id="bcut-member"></b> <span class="pg-hand" id="bcut-msg"></span></p>
+          <button class="pg-polaroid__open" id="bcut-open" type="button">크게 보기 · 저장하기</button>
+        </section>
+
+        <!-- Recipe -->
+        <section class="pg-recipe">
+          <p class="pg-recipe__chef" id="recipe-chef"></p>
+          <h1 class="pg-recipe__title" id="recipe-title"></h1>
+          <p class="pg-hand pg-recipe__sub" id="recipe-sub"></p>
+          <div class="pg-recipe__dish" id="recipe-dish"></div>
+          <ul class="pg-recipe__parts" id="recipe-parts"></ul>
+          <h2 class="pg-recipe__h">Ingredients</h2>
+          <ul class="pg-recipe__ing" id="recipe-ing"></ul>
+        </section>
+
+        <!-- Member handwriting notes -->
+        <section class="pg-notes" id="notes" aria-label="멤버 노트"></section>
+      </article>
+    </main>
+
+    <!-- B-cut viewer (full size + save) -->
+    <div class="pg-viewer" id="viewer" role="dialog" aria-label="B컷 크게 보기" hidden>
+      <div class="pg-viewer__top">
+        <span class="pg-viewer__no" id="viewer-no">01 / 15</span>
+        <button class="pg-viewer__x" id="viewer-close" type="button" aria-label="닫기">&times;</button>
+      </div>
+      <div class="pg-viewer__stage">
+        <button class="pg-viewer__nav" id="viewer-prev" type="button" aria-label="이전">&lsaquo;</button>
+        <div class="pg-viewer__photo" id="viewer-photo"></div>
+        <button class="pg-viewer__nav" id="viewer-next" type="button" aria-label="다음">&rsaquo;</button>
+      </div>
+      <p class="pg-viewer__cap" id="viewer-cap"></p>
+      <button class="cv-btn cv-btn--primary pg-viewer__save" id="viewer-save" type="button">이미지 저장하기</button>
+      <p class="pg-viewer__hint">모바일은 공유 메뉴에서 &lsquo;이미지 저장&rsquo;을 선택하세요</p>
+    </div>
+  </div>
+
+  <script src="../../shared/cv-storage.js"></script>
+  <script src="../../shared/cv-hub.js"></script>
+  <script src="../../shared/cv-bingo.js"></script>
+  <script src="../../shared/cv-bingo-ui.js"></script>
+  <script src="../../shared/cv-brand.js"></script>
+  <script src="../../shared/cv-presave.js"></script>
+  <script src="../../shared/cv-sound.js"></script>
+  <script src="../content.js"></script>
+  <script src="../recipe.js"></script>
+</body>
+</html>

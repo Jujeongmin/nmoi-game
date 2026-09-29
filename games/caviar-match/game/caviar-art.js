@@ -18,7 +18,7 @@ CM.CaviarArt = (function () {
       if (!t.image) return;
       const img = new Image();
       img.onload = () => { images[i] = img; cache.clear(); };
-      img.src = (CM.CONFIG.assetRoot || '') + t.image;
+      img.src = CAVIAR.url(t.image);
     });
   }
 
@@ -33,7 +33,8 @@ CM.CaviarArt = (function () {
     const r = px;
 
     if (images[typeIndex]) {
-      g.drawImage(images[typeIndex], c - r, c - r, r * 2, r * 2);
+      const k = 1.02; // roe ball photo is cropped tight
+      g.drawImage(images[typeIndex], c - r * k, c - r * k, r * 2 * k, r * 2 * k);
       return { canvas, size };
     }
 

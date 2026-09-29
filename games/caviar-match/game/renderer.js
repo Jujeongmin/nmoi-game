@@ -56,7 +56,8 @@ CM.BoardView = (function () {
       this.canvas.height = Math.round(h * this.dpr);
 
       const cfg = this.cfg;
-      const s = Math.min(w / this.W, h / cfg.minWorldHeight);
+      const minH = w > h * 1.15 && cfg.minWorldHeightWide ? cfg.minWorldHeightWide : cfg.minWorldHeight;
+      const s = Math.min(w / this.W, h / minH);
       let worldH = h / s;
       let oy = 0;
       if (worldH > cfg.maxWorldHeight) {

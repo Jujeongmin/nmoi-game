@@ -25,7 +25,7 @@
   --cv-caviar-gold: #c9ae78;
 
   /* Type */
-  --cv-font-display: "Bodoni Moda", "Didot", "Times New Roman", serif;   /* Latin logo only, large sizes */
+  --cv-font-display: "Cinzel", "Trajan Pro", "Times New Roman", serif;   /* Latin titles: upright Roman capitals, no script */
   --cv-font-heading: "Noto Serif KR", "Nanum Myeongjo", serif;           /* Korean headings */
   --cv-font-ui: "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
   --cv-font-num: "Noto Serif KR", "Nanum Myeongjo", serif;               /* numbers, names */
@@ -101,11 +101,19 @@ html, body {
 
 .cv-display {
   margin: 0;
-  font: 400 44px/0.95 var(--cv-font-display);
-  letter-spacing: -0.01em;
+  font: 500 44px/1 var(--cv-font-display);
+  letter-spacing: 0.04em;
   color: var(--cv-ink);
 }
-.cv-display em { font-style: italic; }
+/* second line: smaller, tracked out — keeps long names like MASTER CHEF inside the card */
+.cv-display em {
+  display: inline-block;
+  margin-top: 0.12em;
+  font-size: 0.66em;
+  font-style: normal;
+  letter-spacing: 0.12em;
+  color: #8a7248;
+}
 
 .cv-heading {
   margin: 0;
@@ -319,6 +327,18 @@ html, body {
 .cv-pearl--green { --pearl: var(--cv-caviar-green); }
 .cv-pearl--black { --pearl: var(--cv-caviar-black); box-shadow: inset 0 -1px 2px rgba(0,0,0,.3), 0 0 0 1px rgba(239,232,216,.16); }
 .cv-pearl--gold  { --pearl: var(--cv-caviar-gold); }
+/* Real caviar (assets/caviar: small balls of packed roe, generated art). Flat colours above = fallback. */
+.cv-pearl--white, .cv-pearl--green, .cv-pearl--black, .cv-pearl--gold, .cv-pearl--pearl {
+  background-position: center;
+  background-size: 100%;
+  background-repeat: no-repeat;
+  box-shadow: none;
+}
+.cv-pearl--white { background-image: url("../assets/caviar/roe-almas.webp"); }
+.cv-pearl--green { background-image: url("../assets/caviar/roe-imperial.webp"); }
+.cv-pearl--black { background-image: url("../assets/caviar/roe-classic.webp"); }
+.cv-pearl--gold  { background-image: url("../assets/caviar/roe-platinum.webp"); }
+.cv-pearl--pearl { --pearl: #f2ede9; background-image: url("../assets/caviar/roe-whitepearl.webp"); }
 .cv-pearl.is-empty {
   background: transparent;
   box-shadow: inset 0 0 0 1px var(--cv-line);
@@ -329,3 +349,87 @@ html, body {
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
 }
+
+/* ---------- Asset slot: where a real image will go (demo placeholder) ---------- */
+.cv-asset {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  min-height: 60px;
+  padding: 10px;
+  border: 1px dashed rgba(160, 132, 82, 0.7);
+  background: repeating-linear-gradient(135deg, rgba(201, 174, 120, 0.09) 0 8px, transparent 8px 16px);
+  color: #7d6436;
+  text-align: center;
+}
+.cv-asset__tag {
+  padding: 3px 6px 2px;
+  border: 1px solid currentColor;
+  font: 700 9px/1 var(--cv-font-ui);
+  letter-spacing: 0.2em;
+  text-indent: 0.2em;
+}
+.cv-asset__name { font: 600 12px/1.35 var(--cv-font-ui); word-break: keep-all; }
+.cv-asset__spec { font: 400 10px/1.35 var(--cv-font-ui); word-break: keep-all; opacity: 0.85; }
+.cv-asset--inline { flex-direction: row; min-height: 0; padding: 4px 8px; gap: 6px; }
+.cv-asset--inline .cv-asset__tag { padding: 2px 4px 1px; font-size: 8px; }
+.cv-asset--inline .cv-asset__name { font-size: 11px; }
+.cv-asset-img { display: block; max-width: 100%; }
+
+/* ---------- Verse8 splash ---------- */
+.cv-splash {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  padding: 24px;
+  background: var(--cv-onyx);
+  cursor: pointer;
+  animation: cv-fade-in 0.3s ease both;
+  transition: opacity 0.45s ease;
+}
+.cv-splash.is-leaving { opacity: 0; pointer-events: none; }
+.cv-splash__art {
+  width: min(78vw, 320px);
+  aspect-ratio: 9 / 16;
+  max-height: 72vh;
+  object-fit: contain;
+}
+.cv-splash .cv-asset { color: var(--cv-gold); border-color: var(--cv-line); }
+.cv-splash__skip { margin: 0; font: 500 11px/1 var(--cv-font-ui); letter-spacing: 0.1em; color: var(--cv-ivory-dim); }
+@keyframes cv-fade-in { from { opacity: 0; } }
+
+/* ---------- Verse8 badge under result cards ---------- */
+.cv-brand-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid var(--cv-line-faint);
+}
+.cv-brand-badge__label { font: 600 9px/1 var(--cv-font-ui); letter-spacing: 0.22em; color: var(--cv-ink-soft); }
+.cv-brand-badge__logo { height: 18px; width: auto; }
+
+/* ---------- Sound switch ---------- */
+.cv-sound-toggle {
+  appearance: none;
+  display: block;
+  margin: 0 auto 12px;
+  padding: 4px 10px;
+  border: 1px solid var(--cv-line-faint);
+  border-radius: 999px;
+  background: none;
+  font: 600 11px/1.2 var(--cv-font-ui);
+  letter-spacing: 0.04em;
+  color: var(--cv-ink-soft);
+  cursor: pointer;
+}
+.cv-sound-toggle.is-off { opacity: 0.6; text-decoration: line-through; }

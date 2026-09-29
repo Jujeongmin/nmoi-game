@@ -189,3 +189,21 @@
   .cv-hud__item { gap: 4px; }
   .cv-value { font-size: 19px; }
 }
+
+/* ---------- Landscape phones: HUD + collection become a left rail, the board gets the full height ---------- */
+@media (orientation: landscape) and (max-height: 520px) {
+  .cv-app {
+    max-width: 900px;
+    display: grid;
+    grid-template-columns: minmax(150px, 190px) minmax(0, 1fr);
+    grid-template-rows: auto 1fr auto;
+    column-gap: 12px;
+    row-gap: 8px;
+  }
+  .cm-hud { grid-column: 1; grid-row: 1; grid-template-columns: repeat(2, minmax(0, 1fr)); row-gap: 6px; }
+  .cm-hud .cv-hud__item:nth-child(3) { border-left: 0; }
+  .cm-collection { grid-column: 1; grid-row: 2; grid-template-columns: repeat(2, minmax(0, 1fr)); align-content: start; row-gap: 10px; }
+  .cm-stage { grid-column: 2; grid-row: 1 / span 3; }
+  .cm-guide { grid-column: 1; grid-row: 3; display: flex; font-size: 10px; }
+  .cm-guide__sep { display: none; }
+}
