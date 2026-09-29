@@ -296,3 +296,67 @@
 .cv-bingo .cv-asset--inline { color: var(--cv-gold); border-color: var(--cv-line); }
 
 @keyframes cv-fade-in { from { opacity: 0; } }
+
+/* ================= CAVIAR COURSE additions ================= */
+
+/* Runs left today / week lock — on a game's title card (ivory panel) */
+.cv-plays { margin: 0 auto 12px; font: 600 12px/1.5 var(--cv-font-ui); text-align: center; word-break: keep-all; color: var(--cv-ink-soft); }
+.cv-plays b { font: 700 14px/1 var(--cv-font-num); color: var(--cv-ink); }
+.cv-plays.is-out { color: #9a4136; }
+.cv-plays.is-locked { padding: 8px 10px; border: 1px dashed var(--cv-line); color: var(--cv-ink); }
+
+/* Pre-save chip: HUD bar in games, pill on the landing */
+.cv-presave-chip {
+  appearance: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 30px;
+  padding: 5px 10px;
+  border: 1px solid var(--cv-gold);
+  background: rgba(201, 174, 120, 0.12);
+  font: 500 11.5px/1.25 var(--cv-font-ui);
+  word-break: keep-all;
+  color: var(--cv-ivory);
+  cursor: pointer;
+}
+.cv-presave-chip b { flex: none; font: 700 10px/1 var(--cv-font-ui); letter-spacing: 0.14em; color: var(--cv-gold-bright); }
+.cv-presave-chip.is-done { border-color: var(--cv-line-faint); background: transparent; color: var(--cv-ivory-dim); cursor: default; }
+.cv-presave-chip--hud { margin: 0; }
+
+/* Weekly mission progress + booster nudge */
+.cv-progress { margin: 0 0 12px; text-align: left; }
+.cv-progress__head { margin: 0 0 6px; font: 500 12px/1.3 var(--cv-font-ui); color: var(--cv-ink-soft); }
+.cv-progress__head b { font-weight: 700; color: var(--cv-ink); }
+.cv-progress__bar { height: 6px; background: rgba(27, 22, 19, 0.1); overflow: hidden; }
+.cv-progress__bar span { display: block; height: 100%; background: var(--cv-gold); transition: width 0.6s ease; }
+.cv-progress__nudge { margin: 6px 0 0; font: 600 11.5px/1.35 var(--cv-font-ui); color: #7c6230; word-break: keep-all; }
+.cv-progress.is-dark .cv-progress__head { color: var(--cv-ivory-dim); }
+.cv-progress.is-dark .cv-progress__head b { color: var(--cv-ivory); }
+.cv-progress.is-dark .cv-progress__bar { background: rgba(255, 255, 255, 0.12); }
+.cv-progress.is-dark .cv-progress__nudge { color: var(--cv-gold-bright); }
+
+/* Bingo: locked future-week cells, gate, rewards, invite */
+.cv-bingo__cell.is-locked { cursor: default; opacity: 0.45; }
+.cv-bingo__cell.is-locked .cv-bingo__name { color: var(--cv-ivory-dim); font-weight: 500; }
+.cv-bingo__cell--gold .cv-bingo__name { border-bottom: 1px solid rgba(201, 174, 120, 0.7); }
+.cv-bingo__cell--green .cv-bingo__name { border-bottom: 1px solid rgba(122, 146, 96, 0.8); }
+.cv-bingo__cell--white .cv-bingo__name { border-bottom: 1px solid rgba(239, 232, 216, 0.6); }
+.cv-bingo__cell--pearl .cv-bingo__name { border-bottom: 1px solid rgba(170, 140, 230, 0.8); }
+.cv-bingo__reward em { font: 600 10px/1 var(--cv-font-ui); font-style: normal; color: var(--cv-gold); }
+.cv-bingo__card { margin: 6px 0 0; font: 600 11px/1 var(--cv-font-ui); letter-spacing: 0.06em; color: var(--cv-gold); }
+.cv-bingo__note { margin: 10px 0 0; font: 400 11px/1.4 var(--cv-font-ui); color: var(--cv-ivory-dim); }
+
+.cv-bingo__gate { padding: 6px 2px 14px; text-align: center; }
+.cv-bingo__gate[hidden], .cv-bingo__body[hidden] { display: none; }
+.cv-bingo__gate-title { margin: 0 0 8px; font: 700 18px/1.3 var(--cv-font-heading); color: var(--cv-gold-bright); }
+.cv-bingo__gate-list { margin: 14px auto; padding: 0; max-width: 300px; list-style: none; text-align: left; font: 400 13px/1.8 var(--cv-font-ui); color: var(--cv-ivory); }
+.cv-bingo__gate-list b { display: inline-block; min-width: 64px; color: var(--cv-gold); }
+.cv-bingo__gate-slot { margin: 12px 0 8px; color: var(--cv-gold); border-color: var(--cv-line); }
+
+.cv-invite { margin-top: 10px; display: grid; gap: 8px; text-align: center; }
+.cv-invite__count { margin: 0; font: 700 13px/1 var(--cv-font-ui); color: var(--cv-gold-bright); }
+.cv-invite__field { width: 100%; padding: 8px 10px; border: 1px solid var(--cv-line); background: #080706; color: var(--cv-ivory); font: 500 12px/1 var(--cv-font-ui); box-sizing: border-box; }
+.cv-invite__rule { margin: 0; font: 400 11px/1.45 var(--cv-font-ui); color: var(--cv-ivory-dim); word-break: keep-all; }

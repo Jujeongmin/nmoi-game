@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#0b0a09">
+  <title>Caviar Play</title>
+  <script src="../../shared/cv-frame.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Noto+Sans+KR:wght@400;500;600;700&family=Noto+Serif+KR:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../shared/cv-theme.css">
+  <link rel="stylesheet" href="../../shared/cv-bingo.css">
+  <link rel="stylesheet" href="../pages.css">
+</head>
+<!-- Game host: iframe + postMessage (docs/game-integration.md). ?game=<registry key> -->
+<body>
+  <main class="cv-app cv-host" id="app">
+    <header class="cv-host__bar">
+      <a class="cv-host__back" id="link-home">&larr; 캐비어 선택</a>
+      <p class="cv-host__title" id="host-title">Caviar</p>
+      <button class="cv-host__bingo" id="btn-bingo" type="button">빙고</button>
+    </header>
+    <div class="cv-hud cv-host__hud" aria-hidden="true"></div>
+    <div class="cv-host__stage" id="stage"></div>
+
+    <!-- Result card after each run (filled by cv-bingo-ui showRun) -->
+    <div class="cv-overlay" id="screen-result" role="dialog" aria-labelledby="result-title">
+      <div class="cv-panel">
+        <p class="cv-eyebrow" id="result-eyebrow">RESULT</p>
+        <h2 class="cv-heading" id="result-title">한 판 끝!</h2>
+        <div class="cv-rule"><span class="cv-rule__mark"></span></div>
+        <dl class="cv-menu cv-menu--score">
+          <div class="cv-menu__row"><dt>점수</dt><dd id="result-score">0</dd></div>
+        </dl>
+        <div class="cv-actions">
+          <button class="cv-btn cv-btn--primary" id="btn-close-result" type="button">계속하기</button>
+          <button class="cv-btn" id="btn-exit" type="button">캐비어 선택</button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script src="../../shared/cv-storage.js"></script>
+  <script src="../../shared/cv-campaign.js"></script>
+  <script src="../../shared/cv-hub.js"></script>
+  <script src="../../shared/cv-account.js"></script>
+  <script src="../../shared/cv-bingo.js"></script>
+  <script src="../../shared/cv-bingo-ui.js"></script>
+  <script src="../../shared/cv-brand.js"></script>
+  <script src="../../shared/cv-presave.js"></script>
+  <script src="../../shared/cv-sound.js"></script>
+  <script src="../../shared/cv-host.js"></script>
+  <script src="play.js"></script>
+</body>
+</html>

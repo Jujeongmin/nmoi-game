@@ -1,6 +1,6 @@
-/* PRE-SAVE LANDING — site menu and the records / leaderboard sheet.
-   Leaderboard and login are placeholders until the server exists; "my records"
-   are real (localStorage best scores of each game). */
+/* PRE-SAVE LANDING — site menu, records / weekly leaderboard, invite sheet.
+   The leaderboard is weekly (3 seasons, shared/cv-campaign.js) on the Verse8 server;
+   "my records" are local best scores of each game. */
 (function (NS) {
   'use strict';
 
@@ -34,8 +34,25 @@
     });
     body.appendChild(list);
 
-    body.appendChild(el('p', 'lp-rank__head', '전체 리더보드 · TOP 20'));
+    body.appendChild(el('p', 'lp-rank__head', '주간 리더보드 · TOP 20'));
+    // Season tabs: W1 · W2 · W3 (the running week first selected)
+    var cur = NS.campaign.season();
+    // Before W1 (demo) the scores land in a 'pre' season — shown as its own tab.
+    var seasons = (cur === 'pre' ? ['pre'] : []).concat(NS.campaign.weeks.map(function (w) { return w.id; }));
+    var season = seasons.indexOf(cur) >= 0 ? cur : (cur === 'post' ? seasons[seasons.length - 1] : seasons[0]);
+    var stabs = el('div', 'lp-rank__tabs lp-rank__tabs--season');
+    seasons.forEach(function (id) {
+      var t = el('button', 'lp-rank__tab', id.toUpperCase());
+      t.type = 'button';
+      t.dataset.season = id;
+      t.addEventListener('click', function () { season = id; select(current); });
+      stabs.appendChild(t);
+    });
+    body.appendChild(stabs);
+    var seasonNote = el('p', 'lp-rank__season');
+    body.appendChild(seasonNote);
     var tabs = el('div', 'lp-rank__tabs');
+    var current = 0;
     var board = el('div', 'lp-rank__board');
     var ids = ['total'].concat(Object.keys(NS.bingo.games));
     ids.forEach(function (id, i) {
@@ -48,10 +65,13 @@
     body.appendChild(board);
 
     function select(i) {
+      current = i;
       Array.prototype.forEach.call(tabs.children, function (t, k) { t.classList.toggle('is-on', k === i); });
+      Array.prototype.forEach.call(stabs.children, function (t) { t.classList.toggle('is-on', t.dataset.season === season); });
+      seasonNote.textContent = NS.campaign.seasonLabel(season) + (season === cur && cur !== 'pre' ? ' · 진행 중' : '');
       board.innerHTML = '';
       board.appendChild(el('p', 'lp-rank__note', '불러오는 중…'));
-      NS.leaderboard.load(ids[i], 20).then(function (res) {
+      NS.leaderboard.load(ids[i], 20, season).then(function (res) {
         board.innerHTML = '';
         if (!res.top.length) { board.appendChild(el('p', 'lp-rank__note', '아직 기록이 없어요. 첫 번째 주인공이 되어보세요!')); return; }
         var ol = el('ol', 'lp-rank__list');
@@ -92,7 +112,15 @@
 
   NS.landingMenu = {
     init: function () {
-      var menu = $('menu-sheet'), ranking = $('ranking-sheet'), privacy = $('privacy-sheet');
+      var menu = $('menu-sheet'), ranking = $('ranking-sheet'), privacy = $('privacy-sheet'), invite = $('invite-sheet');
+      bind(invite);
+      handlers.invite = function () {
+        var box = $('invite-body');
+        box.innerHTML = '';
+        box.appendChild(el('p', 'lp-invite__lead', '친구가 내 링크로 들어와 새 이메일로 프리세이브하면 1명 인정 (최대 ' + NS.campaign.config.maxReferrals + '명). 인정될 때마다 빙고 초대 미션이 채워져요.'));
+        box.appendChild(NS.bingoUI.inviteBlock());
+        open(invite);
+      };
       bind(privacy);
       $('btn-privacy').addEventListener('click', function () { open(privacy); });
       // Links resolved from the site root (works on a CDN / proxied preview too)
@@ -104,7 +132,7 @@
       $('btn-menu').addEventListener('click', function () { open(menu); });
       handlers.ranking = function () { renderRanking(); open(ranking); };
       document.addEventListener('keydown', function (e) {
-        if (e.key === 'Escape') { close(menu); close(ranking); }
+        if (e.key === 'Escape') { close(menu); close(ranking); close(invite); close(privacy); }
       });
     },
     on: function (name, fn) { handlers[name] = fn; }

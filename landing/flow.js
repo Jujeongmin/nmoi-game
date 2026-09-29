@@ -13,7 +13,7 @@
   function LandingFlow(cfg) {
     this.cfg = cfg;
     this.step = 'table';
-    this.answers = { nickname: '', mood: null, caviar: null, eat: null, drink: null, consent: false };
+    this.answers = { nickname: '', email: '', mood: null, caviar: null, eat: null, drink: null, consent: false };
   }
 
   var P = LandingFlow.prototype;
@@ -36,12 +36,16 @@
 
   P.set = function (key, value) {
     if (key === 'nickname') value = String(value || '').trim().slice(0, this.cfg.nicknameMax);
+    if (key === 'email') value = String(value || '').trim().toLowerCase();
     this.answers[key] = value;
   };
 
+  var EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+  P.emailOk = function () { return EMAIL.test(this.answers.email) && this.answers.email.length <= 120; };
+
   P.isComplete = function () {
     var a = this.answers;
-    return !!(a.nickname && a.mood && a.caviar && a.eat && a.drink);
+    return !!(a.nickname && this.emailOk() && a.consent && a.mood && a.caviar && a.eat && a.drink);
   };
 
   P.caviar = function () { return find(this.cfg.caviars, this.answers.caviar); };
@@ -54,11 +58,12 @@
     var c = this.caviar();
     return {
       nickname: this.answers.nickname,
+      email: this.answers.email,          // winner notice + de-dup only (hashed on the server side)
       mood: this.answers.mood,
       caviar: this.answers.caviar,
       eat: this.answers.eat,
       drink: this.answers.drink,
-      consent: !!this.answers.consent,   // leaderboard (optional)
+      consent: !!this.answers.consent,   // required: email use + leaderboard name
       member: c ? c.member : null,
     };
   };
@@ -68,6 +73,7 @@
     if (!order) return false;
     var a = this.answers;
     a.nickname = order.nickname || '';
+    a.email = order.email || '';
     a.mood = find(this.cfg.moods, order.mood) ? order.mood : null;
     a.caviar = find(this.cfg.caviars, order.caviar) ? order.caviar : null;
     a.eat = find(this.cfg.eats, order.eat) ? order.eat : null;

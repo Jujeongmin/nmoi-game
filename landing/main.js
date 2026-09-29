@@ -42,12 +42,15 @@
   ui.on('prev', function () { flow.prev(); render(); });
   ui.on('answer', function (a) {
     flow.set(a.key, a.value);
+    if (a.key === 'email' && flow.emailOk()) ui.setEmailState(false);
     ui.setComplete(flow.isComplete());
   });
+  ui.on('emailBlur', function () { ui.setEmailState(!!flow.answers.email && !flow.emailOk()); });
   ui.on('submit', function () {
     if (!flow.isComplete()) return;
-    NS.hub.setOrder(flow.toOrder());
-    if (flow.answers.consent) NS.leaderboard.syncNickname(flow.answers.nickname);   // leaderboard name (opt-in)
+    var order = flow.toOrder();
+    NS.hub.setOrder(order);
+    NS.account.profile(order);   // TIER 0 entry: nickname + email on the Verse8 server
     go('serve');
   });
   ui.on('secret', function () { go('cans'); });
@@ -65,11 +68,51 @@
   NS.landingMenu.on('bingo', function () { NS.bingoUI.open(); });
   NS.landingMenu.on('presave', function () { NS.presave.interstitial(); });
   NS.landingMenu.on('restart', function () { flow.step = 'table'; render(); });
+  // TIER 1 · V8 login — placeholder: the bingo board shows the login gate / slot.
+  NS.landingMenu.on('login', function () { NS.bingoUI.open(); });
+  // Demo reset (for presentations): bingo, tickets, runs, login flag. Keeps the order.
+  NS.landingMenu.on('reset', function () {
+    if (!window.confirm('시연용 초기화: 빙고·응모권·오늘 판수·데모 로그인을 지울까요?')) return;
+    NS.bingo.reset();
+    NS.account.reset();
+    syncBingo();
+  });
+
+  // Pre-save on the home and selection screens (overview: 선택 · HUD · 결과 · 홈)
+  document.getElementById('table-presave').appendChild(NS.presave.chip());
+  document.getElementById('cans-presave').appendChild(NS.presave.chip());
+  // This week's mission progress + booster nudge under the cans
+  var progressHost = document.getElementById('cans-progress');
+  function syncProgress() {
+    progressHost.innerHTML = '';
+    progressHost.appendChild(NS.bingoUI.progressBlock(false));
+  }
+  NS.bingo.onChange(syncProgress);
+  NS.account.onChange(syncProgress);
+  syncProgress();
+
+  // Week lock on the cans: W1 매치 10/26 · W2 훔쳐라 11/2 · W3 셰프 11/9
+  function gameIdOf(can) { return can.game.replace(/^games\/|\/$/g, ''); }
+  function syncCans() {
+    var now = NS.campaign.weekIndex();
+    ui.setCanLocks(function (id) {
+      var can = flow.can(id), gid = gameIdOf(can);
+      var wi = NS.campaign.weekOfGame(gid), w = NS.campaign.weeks[wi];
+      var open = NS.campaign.isGameOpen(gid);
+      return {
+        open: open,
+        now: wi === now,
+        badge: w.label + ' · ' + (open ? NS.campaign.md(w.start) + ' OPEN' : NS.campaign.md(w.start) + ' 공개')
+      };
+    });
+  }
+  syncCans();
 
   NS.sound.bgm('landing');   // restaurant loop, starts on the first tap
   ui.on('can', function (id) {
     var can = flow.can(id);
     if (!can) return;
+    if (!NS.campaign.isGameOpen(gameIdOf(can))) { ui.nudgeCan(id); return; }
     NS.hub.setOrder(flow.toOrder());
     ui.chooseCan(id, function () { window.location.href = NS.hub.gameUrl(can.game); });
   });
