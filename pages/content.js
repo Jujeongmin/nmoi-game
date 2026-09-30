@@ -43,18 +43,18 @@
       { title: 'Tasting Note',  text: '예시 · 멤버 모두 한 입 먹고 눈이 반짝였던 그 순간', image: null }
     ],
 
-    /* Trailer basket: hotspot positions are % of the basket photo (x, y).
+    /* Trailer basket: hotspot positions are % of the basket picture (x, y) — re-check them when the picture changes.
        video: YouTube URL (watch or youtu.be) — null shows the video slot. locked: 공개 예정. */
     basket: 'assets/pages/basket.webp',
     trailers: [
-      { no: '01', label: 'Trailer', title: '나라 Trailer',   x: 14, y: 20, video: null },
-      { no: '02', label: 'Trailer', title: '나탈리 Trailer', x: 31, y: 37, video: null },
-      { no: '03', label: 'Trailer', title: '세린 Trailer',   x: 48, y: 31, video: null },
-      { no: '04', label: 'Trailer', title: '티야 Trailer',   x: 66, y: 38, video: null },
-      { no: '05', label: 'Trailer', title: '유온 Trailer',   x: 84, y: 34, video: null },
-      { no: '06', label: 'Group',   title: 'NMOI Group Trailer', x: 22, y: 58, video: null },
-      { no: '07', label: 'Teaser',  title: 'Teaser',          x: 40, y: 53, video: null, locked: true },
-      { no: '08', label: 'M/V',     title: 'Official M/V',    x: 51, y: 69, video: null, locked: true }
+      { no: '01', label: 'Trailer', title: '나라 Trailer',   x: 14, y: 24, video: null },
+      { no: '02', label: 'Trailer', title: '나탈리 Trailer', x: 31, y: 41, video: null },
+      { no: '03', label: 'Trailer', title: '세린 Trailer',   x: 50, y: 34, video: null },
+      { no: '04', label: 'Trailer', title: '티야 Trailer',   x: 66, y: 42, video: null },
+      { no: '05', label: 'Trailer', title: '유온 Trailer',   x: 83, y: 38, video: null },
+      { no: '06', label: 'Group',   title: 'NMOI Group Trailer', x: 21, y: 62, video: null },
+      { no: '07', label: 'Teaser',  title: 'Teaser',          x: 40, y: 57, video: null, locked: true },
+      { no: '08', label: 'M/V',     title: 'Official M/V',    x: 50, y: 72, video: null, locked: true }
     ]
   };
 })(window.CAVIAR = window.CAVIAR || {});
