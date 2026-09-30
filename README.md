@@ -8,7 +8,7 @@ leaderboard and a Spotify pre-save push after every run. Portrait (세로형) on
 **Group name**: **n Moi** (lower-case n, space, capital M) — Korean **앤무아** (French *moi*).
 Never NMOI / nMoi / 앤모아 in page text; `nmoi` only in code names and file names.
 
-**CAVIAR COURSE** (the campaign): 3 weeks, one new game per week — W1 상어 (캐비어를 훔쳐라)
+**CAVIAR COURSE** (the campaign): 3 weeks, one new game per week — W1 상어 (캐비어 이스케이프)
 10/26 · W2 캐비어 매치 11/2 · W3 마스터 셰프 11/9, release 11/16. The game bodies
 come from the Verse8 game team (iframe, `pages/play`); the repo games stand in for them.
 Every date and number lives in `shared/cv-campaign.js`.

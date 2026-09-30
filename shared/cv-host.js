@@ -13,7 +13,7 @@
   var GAMES = {
     // Verse8 game team builds go here when delivered (src: null = not delivered yet).
     'caviar-match':       { src: null, name: '캐비어 매치' },
-    'caviar-escape':      { src: null, name: '캐비어를 훔쳐라' },
+    'caviar-escape':      { src: null, name: '캐비어 이스케이프' },
     'caviar-master-chef': { src: null, name: '마스터 셰프 캐비어' },
     // Reference game that follows the spec (reports as caviar-match for the missions).
     'sample':             { src: 'pages/play/sample/index.html', name: '연동 샘플 (매치 규격)', gameId: 'caviar-match' }

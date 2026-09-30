@@ -8,7 +8,7 @@
    CAVIAR.sound.volume('bgm' | 'sfx') / setVolume(kind, 0..1)   (settings sliders, remembered)
 
    BGM: picked in the Caviar Sound Room (claude.ai artifact 2pKoSYb7wwRdDQk135rUTE):
-   레스토랑 L1 라운지 피아노 · 훔쳐라 E1 8bit 추격 A · 매치 M3 뮤직박스 왈츠 · 셰프 C1 스윙 키친.
+   레스토랑 L1 라운지 피아노 · 이스케이프 E1 8bit 추격 A · 매치 M3 뮤직박스 왈츠 · 셰프 C1 스윙 키친.
    They are synthesized loops (LOOPS below). When the real inst tracks arrive, set
    BGM[key] to a file path from the site root (mp3/ogg) — a file always wins over the loop.
    Effects: all A (the originals) were picked. */

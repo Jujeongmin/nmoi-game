@@ -46,10 +46,10 @@
       { id: 'highball', label: '위스키하이볼', glass: 'tall',  tint: '#d9a857', image: 'assets/landing/drink-highball.webp' },
     ],
 
-    /* 04 캐비어 캔 → game, in week order (W1 훔쳐라 · W2 매치 · W3 셰프, shared/cv-campaign.js).
+    /* 04 캐비어 캔 → game, in week order (W1 이스케이프 · W2 매치 · W3 셰프, shared/cv-campaign.js).
        Paths are from the repo root. */
     cans: [
-      { id: 'almas',    latin: 'ALMAS',    label: '알마스',   sub: '화이트', color: 'white', game: 'games/caviar-escape/',      gameName: '캐비어를 훔쳐라',   image: 'assets/landing/tin-almas.webp' },
+      { id: 'almas',    latin: 'ALMAS',    label: '알마스',   sub: '화이트', color: 'white', game: 'games/caviar-escape/',      gameName: '캐비어 이스케이프',   image: 'assets/landing/tin-almas.webp' },
       { id: 'classic',  latin: 'CLASSIC',  label: '클래식',   sub: '블랙',   color: 'black', game: 'games/caviar-match/',       gameName: '캐비어 매치',       image: 'assets/landing/tin-classic.webp' },
       { id: 'imperial', latin: 'IMPERIAL', label: '임페리얼', sub: '녹색',   color: 'green', game: 'games/caviar-master-chef/', gameName: '마스터 셰프 캐비어', image: 'assets/landing/tin-imperial.webp' },
     ],

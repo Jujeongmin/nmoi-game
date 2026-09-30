@@ -124,7 +124,7 @@
   NS.account.onChange(syncProgress);
   syncProgress();
 
-  // Week lock on the cans: W1 훔쳐라 10/26 · W2 매치 11/2 · W3 셰프 11/9
+  // Week lock on the cans: W1 이스케이프 10/26 · W2 매치 11/2 · W3 셰프 11/9
   function gameIdOf(can) { return can.game.replace(/^games\/|\/$/g, ''); }
   function syncCans() {
     var now = NS.campaign.weekIndex();

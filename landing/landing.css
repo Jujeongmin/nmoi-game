@@ -731,7 +731,7 @@
 }
 
 /* Leaderboard tabs + list */
-/* Tabs size to their names (통합 is short, 캐비어를 훔쳐라 long) so every name stays on one line. */
+/* Tabs size to their names (통합 is short, 캐비어 이스케이프 long) so every name stays on one line. */
 .lp-rank__tabs { display: flex; gap: 4px; margin-bottom: 10px; }
 .lp-rank__tab { appearance: none; flex: 1 1 auto; min-width: 0; min-height: 34px; padding: 4px; border: 1px solid var(--cv-line-faint); background: transparent; font: 600 11px/1.2 var(--cv-font-ui); color: var(--cv-ink-soft); white-space: nowrap; cursor: pointer; }
 .lp-rank__tabs--season .lp-rank__tab { flex: 1 1 0; }
@@ -840,3 +840,6 @@
 
 /* Touch: "다음 ›" in the serving bubble gets a finger-sized hit area */
 .lp-bubble__next { min-width: 44px; min-height: 34px; padding: 8px 2px 4px; }
+@media (max-width: 340px) {
+  .lp-can__game { font-size: 10px; letter-spacing: -0.02em; white-space: nowrap; }   /* 마스터 셰프 캐비어 on one line */
+}

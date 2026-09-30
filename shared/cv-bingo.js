@@ -13,8 +13,8 @@
   /* ---------------- Data (edit freely) ---------------- */
 
   var GAMES = {
-    // week order (cv-campaign.js weeks): W1 훔쳐라 · W2 매치 · W3 셰프
-    'caviar-escape':      { name: '캐비어를 훔쳐라', caviar: 'ALMAS',    tone: 'white', path: 'games/caviar-escape/' },
+    // week order (cv-campaign.js weeks): W1 이스케이프 · W2 매치 · W3 셰프
+    'caviar-escape':      { name: '캐비어 이스케이프', caviar: 'ALMAS',    tone: 'white', path: 'games/caviar-escape/' },
     'caviar-match':       { name: '캐비어 매치',     caviar: 'CLASSIC',  tone: 'black', path: 'games/caviar-match/' },
     'caviar-master-chef': { name: '마스터 셰프',     caviar: 'IMPERIAL', tone: 'green', path: 'games/caviar-master-chef/' }
   };
