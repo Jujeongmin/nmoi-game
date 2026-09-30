@@ -44,11 +44,15 @@ ITEMS = {
                  prompt=TOP + "One small delicate sprig of fresh green dill."),
     "salmon": dict(out="assets/chef/salmon.webp", px=256,
                    prompt=TOP + "One folded rose of thinly sliced smoked salmon, glistening coral pink."),
-    # Caviar Escape — the shark, drawn facing right (+x) and seen from above
+    # Caviar Escape — the shark: a cute character, side view, facing right (+x); the game rotates
+    # it to its heading and flips it when it swims left, so the fin stays on top.
     "shark": dict(out="assets/escape/shark.webp", px=384,
-                  prompt="A sleek stylized shark seen from directly above, body horizontal and facing right, "
-                         "dark slate-grey back with a subtle gold sheen along the fins, elegant rather than scary, "
-                         "centred, filling about 85% of the width."),
+                  prompt="A cute chibi-style shark character mascot for a casual mobile game, side view, body "
+                         "horizontal and facing right, full body visible, round chubby body, big shiny friendly "
+                         "eyes, small smile with a couple of tiny rounded teeth, soft slate-blue and grey with a "
+                         "cream belly, a small gold bow tie, clean soft cel shading, centred",
+                  style="clean cel-shaded character art for a mobile game, isolated on a fully transparent "
+                        "background, no text, no logo"),
 }
 
 
@@ -58,7 +62,7 @@ def generate(prompt):
         sys.exit("OPENAI_API_KEY is not set (see README: Game art).")
     body = json.dumps({
         "model": os.environ.get("OPENAI_IMAGE_MODEL", "gpt-image-1"),
-        "prompt": prompt + ". " + STYLE,
+        "prompt": prompt,
         "size": "1024x1024",
         "background": "transparent",
         "output_format": "png",
@@ -101,7 +105,7 @@ def main(args):
         item = ITEMS[name]
         print("generating", name, "...", flush=True)
         raw = RAW / (name + ".png")
-        raw.write_bytes(generate(item["prompt"]))
+        raw.write_bytes(generate(item["prompt"] + ". " + item.get("style", STYLE)))
         finish(raw, ROOT / item["out"], item["px"])
         print("  ->", item["out"])
 

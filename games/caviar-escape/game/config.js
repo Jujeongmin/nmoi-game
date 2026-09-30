@@ -59,7 +59,7 @@
        Remaining asset slots: leave null to use the Canvas placeholder,
        or set an image URL. Sprites are drawn centred, facing right (+x). */
     assets: {
-      shark: null
+      shark: '../../assets/escape/shark.webp'   // tools/gen-art.py (top-down, facing right)
     },
 
     /* Result-card art (paths from the site root; null = labelled placeholder slot). */
