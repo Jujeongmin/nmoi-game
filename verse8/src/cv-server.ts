@@ -41,9 +41,11 @@ const api = {
   checkIn: () => call<Me>("checkIn"),
   markPresave: () => call<Me>("markPresave"),
   claimLine: (lineId: string) => call<Me>("claimLine", [lineId]),
-  submitScore: (gameId: string, score: number) =>
+  startRun: (gameId: string) =>
+    call<{ ok: boolean; reason?: string; runId?: string; playsLeft: number }>("startRun", [gameId]),
+  submitScore: (gameId: string, score: number, runId: string) =>
     call<{ counted: boolean; reason?: string; score?: number; boosted?: boolean; best?: number; improved?: boolean; rank?: number; season?: string; playsLeft: number }>(
-      "submitScore", [gameId, score]),
+      "submitScore", [gameId, score, runId]),
   getLeaderboard: (gameId: string, limit = 20, season?: string) =>
     call<{ season: string; top: LeaderRow[]; mine: LeaderRow | null }>("getLeaderboard", [gameId, limit, season]),
 };

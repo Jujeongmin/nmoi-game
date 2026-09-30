@@ -145,6 +145,12 @@ a combined board, score x1.2 after pre-save. The page keeps a local mirror so ev
 in a preview; the server is the authority on Verse8. The server logic is plain JS: it can be
 tested without Verse8 by passing an in-memory `$global` / `$sender` into the `Server` class.
 
+Score checks: the start / retry button opens a run on the server (`startRun`, which also counts
+the run against today's limit). `submitScore` accepts one score per run, and only up to
+`maxScore x elapsed / duration` since the start (`GAMES` in `verse8/server.js`). Other scores are
+not recorded (`reason: 'no-run' | 'rejected'`). Caviar Match has no tight `maxScore` yet — set it
+from real play data. Ranks are counted with `countCollectionItems` (no row limit).
+
 ## Game integration (pages/play, docs/game-integration.md)
 
 The weekly games may come from the Verse8 game team as separate builds. They run in an iframe

@@ -87,6 +87,7 @@
   })();
 
   var last = {};   // gameId -> promise of the latest submit
+  var runs = {};   // gameId -> promise of the server run opened at start ({ ok, runId })
 
   NS.account = {
     state: function () { return state; },
@@ -129,9 +130,11 @@
 
     playsLeft: function (gameId) { return Math.max(0, limit() - (state.plays.counts[gameId] || 0)); },
 
+    /** A run starts: counts locally and opens the run the server will accept a score for. */
     consumePlay: function (gameId) {
       state.plays.counts[gameId] = (state.plays.counts[gameId] || 0) + 1;
       save();
+      runs[gameId] = quiet(server().then(function (s) { return s.startRun(gameId); }));
     },
 
     inviteLink: function () {
@@ -224,7 +227,13 @@
       if (!order || !order.email) {
         last[gameId] = Promise.reject(new Error('no-profile'));
       } else {
-        last[gameId] = NS.account.profile(order).then(server).then(function (s) { return s.submitScore(gameId, Math.floor(score)); });
+        var run = runs[gameId];
+        runs[gameId] = null;   // one score per run
+        last[gameId] = !run ? Promise.resolve({ counted: false, reason: 'no-run' }) : NS.account.profile(order).then(server).then(function (s) {
+          return run.then(function (r) {
+            return r && r.ok ? s.submitScore(gameId, Math.floor(score), r.runId) : { counted: false, reason: (r && r.reason) || 'no-run' };
+          });
+        });
       }
       last[gameId].catch(function () {});
       return last[gameId];
@@ -242,7 +251,9 @@
         line.textContent = '';
         if (!r.counted) {
           line.classList.add('is-off');
-          line.textContent = '오늘 판을 모두 써서 이번 판은 리더보드에 기록되지 않았어요';
+          line.textContent = r.reason === 'limit'
+            ? '오늘 판을 모두 써서 이번 판은 리더보드에 기록되지 않았어요'
+            : '이번 판은 리더보드에 기록되지 않았어요';
           return;
         }
         line.appendChild(el('span', 'cv-rank-line__tag', 'RANK'));

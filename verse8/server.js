@@ -10,7 +10,8 @@
 // User state ($global user state — only this server reads it):
 //   { nickname, email, emailHash, emailNew, ref, refCredited, inviteCode,
 //     presaved, presavedAt, tickets, referrals, days: [YYYY-MM-DD], lines: [id],
-//     plays: { date, counts: { gameId: n } }, lb: { 'gameId:season': itemId } }
+//     plays: { date, counts: { gameId: n } }, lb: { 'gameId:season': itemId },
+//     runs: { gameId: { id, at } | null } }                the run startRun opened, per game
 // Collections:
 //   emails            { hash, account, at }                  e-mail de-dup (hash only)
 //   invites           { code, account }                      invite code -> account
@@ -25,11 +26,18 @@ const WEEKS = [
   { id: 'w2', start: '2026-11-02', end: '2026-11-08' },
   { id: 'w3', start: '2026-11-09', end: '2026-11-15' },
 ];
+// Score checks. The page reports the score, so the server only accepts one that the run
+// could have reached: a run must be opened with startRun, and a score may grow at most
+// maxScore / duration per second since then (countdown and result delay only add slack).
+//   caviar-master-chef: 60 s, orders 3,4,5,6,6... steps at best ~15,300 with instant picks.
+//   caviar-escape: 30 s, 3,000 survival + 1,500 lives + close calls.
+//   caviar-match: no tight bound yet — tune from real play data.
 const GAMES = {
-  'caviar-escape': { maxScore: 20000 },
-  'caviar-match': { maxScore: 300000 },
-  'caviar-master-chef': { maxScore: 300000 },
+  'caviar-escape': { maxScore: 20000, duration: 30 },
+  'caviar-match': { maxScore: 300000, duration: 60 },
+  'caviar-master-chef': { maxScore: 20000, duration: 60 },
 };
+const MIN_RUN_MS = 3000;
 const DAILY_PLAYS = 3;
 const PRESAVE_BONUS_PLAYS = 1;
 const BOOSTER = 1.2;
@@ -67,11 +75,10 @@ async function myState() {
 }
 
 async function rankOf(col, score) {
-  const above = await $global.getCollectionItems(col, {
+  const above = await $global.countCollectionItems(col, {
     filters: [{ field: 'score', operator: '>', value: score }],
-    limit: 1000,
   });
-  return above.length + 1;
+  return above + 1;
 }
 
 function randomCode() {
@@ -86,6 +93,10 @@ function playsToday(me) {
   return me.plays && me.plays.date === today ? me.plays : { date: today, counts: {} };
 }
 
+function dailyLimit(me) {
+  return DAILY_PLAYS + (me.presaved ? PRESAVE_BONUS_PLAYS : 0);
+}
+
 function summary(me) {
   const plays = playsToday(me);
   return {
@@ -98,7 +109,7 @@ function summary(me) {
     lines: me.lines || [],
     inviteCode: me.inviteCode || '',
     playsToday: plays.counts,
-    dailyLimit: DAILY_PLAYS + (me.presaved ? PRESAVE_BONUS_PLAYS : 0),
+    dailyLimit: dailyLimit(me),
     booster: me.presaved ? BOOSTER : 1,
     season: seasonOf(),
   };
@@ -225,19 +236,45 @@ class Server {
     return summary(Object.assign({}, me, patch));
   }
 
-  // One finished run. Counts against today's runs, applies the booster, updates the
-  // current season's game board and combined board. Returns rank info.
-  async submitScore(gameId, score) {
+  // A run starts (start / retry button): counts against today's runs and opens the run
+  // that submitScore will accept. A new start replaces an unfinished run of the same game.
+  async startRun(gameId) {
+    if (!GAMES[gameId]) throw new Error('unknown game');
+    const me = await myState();
+    const plays = playsToday(me);
+    const limit = dailyLimit(me);
+    const used = plays.counts[gameId] || 0;
+    if (used >= limit) return { ok: false, reason: 'limit', playsLeft: 0 };
+    plays.counts[gameId] = used + 1;
+
+    const runId = randomCode() + randomCode();
+    const runs = Object.assign({}, me.runs, { [gameId]: { id: runId, at: Date.now() } });
+    await $global.updateMyState({ plays, runs });
+    return { ok: true, runId, playsLeft: limit - plays.counts[gameId] };
+  }
+
+  // The run opened by startRun finished. Accepted once per run, and only a score the run
+  // could have reached in its time (see GAMES). Applies the booster, updates the current
+  // season's game board and combined board. Returns rank info.
+  async submitScore(gameId, score, runId) {
     if (!GAMES[gameId]) throw new Error('unknown game');
     const raw = Math.floor(Number(score));
-    if (!Number.isFinite(raw) || raw < 0 || raw > GAMES[gameId].maxScore) throw new Error('invalid score');
+    if (!Number.isFinite(raw) || raw < 0) throw new Error('invalid score');
 
     const me = await myState();
     const plays = playsToday(me);
-    const limit = DAILY_PLAYS + (me.presaved ? PRESAVE_BONUS_PLAYS : 0);
-    const used = plays.counts[gameId] || 0;
-    if (used >= limit) return { counted: false, reason: 'limit', playsLeft: 0 };
-    plays.counts[gameId] = used + 1;
+    const limit = dailyLimit(me);
+    const playsLeft = Math.max(0, limit - (plays.counts[gameId] || 0));
+    const run = me.runs && me.runs[gameId];
+    if (!run || typeof runId !== 'string' || run.id !== runId) return { counted: false, reason: 'no-run', playsLeft };
+
+    const runs = Object.assign({}, me.runs, { [gameId]: null });
+    const game = GAMES[gameId];
+    const elapsed = Date.now() - run.at;
+    const cap = Math.floor(game.maxScore * Math.min(1, elapsed / (game.duration * 1000)));
+    // Close the run first, so the same run cannot be submitted twice.
+    await $global.updateMyState({ runs });
+    if (elapsed < MIN_RUN_MS || raw > cap) return { counted: false, reason: 'rejected', playsLeft };
 
     const boosted = me.presaved ? Math.floor(raw * BOOSTER) : raw;
     const season = seasonOf();
@@ -264,7 +301,7 @@ class Server {
       lb[tkey] = t.itemId;
     }
 
-    await $global.updateMyState({ lb, plays });
+    await $global.updateMyState({ lb });
     return {
       counted: true,
       score: boosted,
@@ -273,7 +310,7 @@ class Server {
       improved: res.improved,
       rank: await rankOf(col, res.best),
       season,
-      playsLeft: limit - plays.counts[gameId],
+      playsLeft,
     };
   }
 
