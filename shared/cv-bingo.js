@@ -30,7 +30,7 @@
       { id: k + '-score', week: i, type: 'score', game: w.game, score: BC.score[w.game],
         title: w.label + ' ' + fmt(BC.score[w.game]) + '점', desc: g.name + ' 한 판 ' + fmt(BC.score[w.game]) + '점 이상 (부스터 적용 점수)' },
       { id: k + '-rank', week: i, type: 'rank', game: w.game,
-        title: w.label + ' 상위 ' + BC.rankTopPct + '%', desc: w.label + ' ' + g.name + ' 주간 리더보드 상위 ' + BC.rankTopPct + '% (' + end + ' 마감 순위로 판정)' },
+        title: w.label + ' 상위 ' + BC.rankTopPct + '%', desc: g.name + ' 주간 리더보드 상위 ' + BC.rankTopPct + '% (' + end + ' 마감 순위로 판정)' },
       { id: k + '-refrank', week: i, type: 'refrank',
         title: w.label + ' 초대 TOP ' + BC.refRankTop, desc: w.label + ' 동안 내 초대 링크로 프리세이브한 친구 수 주간 상위 ' + BC.refRankTop + '명 (' + end + ' 마감 순위로 판정)' },
       { id: k + '-ref', week: i, type: 'ref', need: BC.refNeed[i], fromStart: true,

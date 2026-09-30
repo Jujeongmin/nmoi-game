@@ -1,0 +1,204 @@
+/* Settings — one panel on every page (landing menu, game title cards, page headers).
+     언어         ko · en · ja · 繁中 · 简中 (cv-i18n.js; the page reloads in the new language)
+     사운드       on/off, BGM volume, effects volume (cv-sound.js, remembered)
+     화면         reduce motion (follows the system setting until changed)
+     내 정보      nickname / e-mail of the entry sheet, edit on the landing, privacy notice
+     계정         V8 login state (placeholder until the Verse8 login is wired)
+   CAVIAR.settings.open() / button(extraClass)
+   Needs cv-storage, cv-i18n, cv-sound (and cv-hub, cv-account when present). */
+(function (NS) {
+  'use strict';
+
+  var store = NS.storage.scope('settings');
+
+  function el(tag, cls, text) {
+    var n = document.createElement(tag);
+    if (cls) n.className = cls;
+    if (text !== undefined) n.textContent = text;
+    return n;
+  }
+
+  /* ---------- reduce motion ---------- */
+
+  function reduceMotion() {
+    var v = store.get('motion', '');
+    if (v) return v === 'reduce';
+    return !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+  }
+  function applyMotion() { document.documentElement.classList.toggle('cv-reduce-motion', reduceMotion()); }
+  applyMotion();
+
+  /* ---------- panel ---------- */
+
+  var box = null;
+
+  function section(panel, title) {
+    var s = el('section', 'cv-settings__section');
+    s.appendChild(el('h3', 'cv-settings__head', title));
+    panel.appendChild(s);
+    return s;
+  }
+
+  function slider(label, kind) {
+    var row = el('label', 'cv-settings__row');
+    row.appendChild(el('span', 'cv-settings__label', label));
+    var input = el('input', 'cv-settings__range');
+    input.type = 'range';
+    input.min = '0';
+    input.max = '100';
+    input.step = '5';
+    input.value = String(Math.round(NS.sound.volume(kind) * 100));
+    input.setAttribute('aria-label', label);
+    var out = el('output', 'cv-settings__value', input.value);
+    input.addEventListener('input', function () {
+      NS.sound.setVolume(kind, Number(input.value) / 100);
+      out.textContent = input.value;
+    });
+    input.addEventListener('change', function () { if (kind === 'sfx') NS.sound.play('tap'); });
+    row.appendChild(input);
+    row.appendChild(out);
+    return row;
+  }
+
+  function toggleRow(label, on, onChange) {
+    var row = el('div', 'cv-settings__row');
+    row.appendChild(el('span', 'cv-settings__label', label));
+    var b = el('button', 'cv-settings__switch');
+    b.type = 'button';
+    b.setAttribute('role', 'switch');
+    function render() { b.setAttribute('aria-checked', on ? 'true' : 'false'); b.textContent = on ? 'ON' : 'OFF'; }
+    b.addEventListener('click', function () { on = !on; render(); onChange(on); });
+    render();
+    row.appendChild(b);
+    return row;
+  }
+
+  function build() {
+    box = el('div', 'cv-overlay cv-settings');
+    box.setAttribute('role', 'dialog');
+    box.setAttribute('aria-label', '설정');
+    box.addEventListener('click', function (e) { if (e.target === box) close(); });
+    var panel = el('div', 'cv-panel cv-settings__panel');
+    box.appendChild(panel);
+    (document.getElementById('app') || document.body).appendChild(box);
+    return panel;
+  }
+
+  function render() {
+    var panel = box ? box.querySelector('.cv-settings__panel') : build();
+    panel.innerHTML = '';
+    panel.appendChild(el('p', 'cv-eyebrow', 'SETTINGS'));
+    panel.appendChild(el('h2', 'cv-settings__title', '설정'));
+
+    // Language
+    var lang = section(panel, '언어');
+    var langs = el('div', 'cv-settings__langs');
+    NS.i18n.langs.forEach(function (l) {
+      var b = el('button', 'cv-settings__lang' + (l.id === NS.i18n.lang ? ' is-on' : ''), l.label);
+      b.type = 'button';
+      b.lang = l.id;
+      b.setAttribute('aria-pressed', l.id === NS.i18n.lang ? 'true' : 'false');
+      b.addEventListener('click', function () { NS.i18n.set(l.id); });
+      langs.appendChild(b);
+    });
+    lang.appendChild(langs);
+
+    // Sound
+    if (NS.sound) {
+      var snd = section(panel, '사운드');
+      snd.appendChild(toggleRow('사운드', !NS.sound.muted(), function (on) { if (on === NS.sound.muted()) NS.sound.toggle(); }));
+      snd.appendChild(slider('배경음악', 'bgm'));
+      snd.appendChild(slider('효과음', 'sfx'));
+    }
+
+    // Screen
+    var scr = section(panel, '화면');
+    scr.appendChild(toggleRow('모션 줄이기', reduceMotion(), function (on) { store.set('motion', on ? 'reduce' : 'full'); applyMotion(); }));
+
+    // My info
+    var info = section(panel, '내 정보');
+    var order = NS.hub && NS.hub.getOrder && NS.hub.getOrder();
+    var dl = el('dl', 'cv-menu cv-settings__info');
+    [['닉네임', order && order.nickname], ['이메일', order && order.email]].forEach(function (r) {
+      var row = el('div', 'cv-menu__row');
+      row.appendChild(el('dt', '', r[0]));
+      row.appendChild(el('dd', '', r[1] || '—'));
+      dl.appendChild(row);
+    });
+    info.appendChild(dl);
+    var links = el('div', 'cv-settings__links');
+    var edit = el('a', 'cv-settings__link', order ? '주문서 다시 작성' : '주문서 작성하기');
+    edit.href = NS.hub && NS.hub.link ? NS.hub.link('index.html') + '#order' : NS.url('index.html') + '#order';
+    links.appendChild(edit);
+    var privacy = el('button', 'cv-settings__link', '개인정보 처리 안내');
+    privacy.type = 'button';
+    privacy.addEventListener('click', function () { privacyNotice(info); privacy.remove(); });
+    links.appendChild(privacy);
+    info.appendChild(links);
+
+    // Account
+    if (NS.account) {
+      var acc = section(panel, '계정');
+      acc.appendChild(el('p', 'cv-settings__note', NS.account.loggedIn()
+        ? 'V8 로그인됨 · 부스터·레퍼럴·출석이 기기를 바꿔도 유지돼요'
+        : 'V8 로그인 전 · 로그인하면 기기를 바꿔도 진행이 유지되고 매주 첫 판 x' + NS.campaign.config.v8Booster));
+    }
+
+    var actions = el('div', 'cv-actions');
+    var done = el('button', 'cv-btn cv-btn--primary', '닫기');
+    done.type = 'button';
+    done.addEventListener('click', close);
+    actions.appendChild(done);
+    panel.appendChild(actions);
+  }
+
+  function privacyNotice(host) {
+    var dl = el('dl', 'cv-menu cv-settings__privacy');
+    [
+      ['수집 항목', '닉네임, 이메일 (가입·비밀번호 없음). 게임 점수와 미션 기록'],
+      ['이용 목적', '이메일: 당첨 안내와 중복 참여 방지만. 닉네임: 리더보드 표시'],
+      ['보관 기간', '캠페인 종료 후 30일 이내 파기']
+    ].forEach(function (r) {
+      var row = el('div', 'cv-menu__row');
+      row.appendChild(el('dt', '', r[0]));
+      row.appendChild(el('dd', '', r[1]));
+      dl.appendChild(row);
+    });
+    host.appendChild(dl);
+  }
+
+  function open() {
+    render();
+    box.classList.add('is-open');
+    var first = box.querySelector('.cv-settings__lang.is-on');
+    if (first) first.focus();
+  }
+  function close() { if (box) box.classList.remove('is-open'); }
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') close(); });
+
+  /** A settings button (gear) for title cards and page headers. */
+  function button(extraClass) {
+    var b = el('button', 'cv-settings-btn' + (extraClass ? ' ' + extraClass : ''), '⚙ 설정');
+    b.type = 'button';
+    b.addEventListener('click', open);
+    return b;
+  }
+
+  // Game title cards: next to the sound switch. Page headers: before the bingo button.
+  var sw = document.querySelector('#screen-title .cv-sound-toggle');
+  if (sw) {
+    var row = el('div', 'cv-settings__bar');
+    sw.parentNode.insertBefore(row, sw);
+    row.appendChild(sw);
+    row.appendChild(button());
+  }
+  var bar = document.querySelector('.pg-bar, .cv-host__bar');
+  if (bar) {
+    var bingo = bar.querySelector('#btn-bingo');
+    var holder = el('div', 'cv-settings__headbtns');
+    if (bingo) { bingo.parentNode.insertBefore(holder, bingo); holder.appendChild(button('is-icon')); holder.appendChild(bingo); }
+    else bar.appendChild(button('is-icon'));
+  }
+
+  NS.settings = { open: open, close: close, button: button, reduceMotion: reduceMotion };
+})(window.CAVIAR = window.CAVIAR || {});

@@ -51,6 +51,8 @@ shared/                     used by every page
   verse8-splash/            official Verse8 Splash Module (vendor, unmodified) + its README
   cv-presave.js             pre-save chip (home, cans, HUD), panel after each run, D-day switch
   cv-sound.js               synthesized effects, BGM loops, sound switch
+  cv-i18n.js / -dict.js     languages ko · en · ja · zh-Hant · zh-Hans (Korean text = key)
+  cv-settings.js            settings panel: language, volumes, reduce motion, my info
   cv-frame.js               reports page size to the Verse8 parent frame
 assets/
   brand/                    Verse8 logo (svg/png) + splash sting (from the Verse8 Splash Module)
@@ -205,6 +207,24 @@ Picked in the Caviar Sound Room: restaurant L1 lounge piano, Escape E1 8-bit cha
 Match M3 music box waltz, Chef C1 swing kitchen; all effects A. Everything is synthesized
 (Web Audio, no files), written for this project. Starts on the first tap; switch on title cards
 and in the menu. Real inst tracks: set `BGM[key]` to a file path.
+
+## Settings + languages (shared/cv-settings.js, shared/cv-i18n.js)
+
+Settings open from the landing menu (Settings), a button next to the sound switch on every game
+title card, and the header of the recipe / trailer / play pages:
+- **Language**: 한국어 · English · 日本語 · 繁體中文 · 简体中文. `?lang=en` also works; otherwise the
+  saved choice, then the browser language, then English. Switching reloads the page.
+- **Sound**: on/off, music volume, effects volume (remembered).
+- **Display**: reduce motion (follows the system setting until changed).
+- **My info**: nickname / e-mail of the order sheet, a link back to it, the privacy notice.
+- **Account**: V8 login state.
+
+i18n: the Korean text stays in the markup and scripts and is the key of
+`shared/cv-i18n-dict.js` (`"한국어": [en, ja, zh-Hant, zh-Hans]`). Pages are translated in the DOM,
+also text inserted later; lines with numbers use templates (`"지금 {n}위"`, `{n…}`/`{d…}` = number
+or date) and `A · B` lines are translated part by part. Canvas text, dialogs and share texts call
+`CAVIAR.t(ko, vars)`. **New Korean UI text needs a dictionary entry**, or it shows in Korean.
+Member names stay in Hangul until the official romanization / kana / hanzi is given.
 
 ## Verse8 deploy
 

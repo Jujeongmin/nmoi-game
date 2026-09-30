@@ -5,6 +5,7 @@
    CAVIAR.sound.play(name)                 tap | shoot | collect | combo | success | fail | hit | near | wrong | order | drop
    CAVIAR.sound.bgm(key) / stopBgm()       key = gameId or 'landing'
    CAVIAR.sound.toggle() / muted()
+   CAVIAR.sound.volume('bgm' | 'sfx') / setVolume(kind, 0..1)   (settings sliders, remembered)
 
    BGM: picked in the Caviar Sound Room (claude.ai artifact 2pKoSYb7wwRdDQk135rUTE):
    레스토랑 L1 라운지 피아노 · 훔쳐라 E1 8bit 추격 A · 매치 M3 뮤직박스 왈츠 · 셰프 C1 스윙 키친.
@@ -42,7 +43,14 @@
 
   var store = NS.storage.scope('sound');
   var muted = store.get('muted', '0') === '1';
-  var ctx = null, master = null, bgmNode = null, bgmKey = null, seq = null, pendingBgm = null;
+  var vol = { bgm: readVol('bgm'), sfx: readVol('sfx') };
+  var ctx = null, master = null, fxBus = null, bgmNode = null, bgmKey = null, seq = null, pendingBgm = null, fileBgm = null;
+  var BGM_LEVEL = 0.9, FILE_LEVEL = 0.45;
+
+  function readVol(kind) {
+    var v = parseFloat(store.get(kind + 'Vol', '1'));
+    return isFinite(v) ? Math.max(0, Math.min(1, v)) : 1;
+  }
 
   function ac() {
     if (ctx) return ctx;
@@ -52,6 +60,9 @@
     master = ctx.createGain();
     master.gain.value = muted ? 0 : 0.8;
     master.connect(ctx.destination);
+    fxBus = ctx.createGain();
+    fxBus.gain.value = vol.sfx;
+    fxBus.connect(master);
     return ctx;
   }
 
@@ -72,7 +83,7 @@
     g.gain.setValueAtTime(0.0001, t0);
     g.gain.exponentialRampToValueAtTime(vol || 0.2, t0 + 0.01);
     g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
-    o.connect(g); g.connect(master);
+    o.connect(g); g.connect(fxBus);
     o.start(t0); o.stop(t0 + dur + 0.02);
   }
 
@@ -196,7 +207,7 @@
   var bgmBus = null;
   function playLoop(loop) {
     var c = ctx;
-    if (!bgmBus) { bgmBus = c.createGain(); bgmBus.gain.value = 0.9; bgmBus.connect(master); }
+    if (!bgmBus) { bgmBus = c.createGain(); bgmBus.gain.value = BGM_LEVEL * vol.bgm; bgmBus.connect(master); }
     var stepDur = 60 / loop.bpm / 4, step = 0, next = c.currentTime + 0.06;
     var timer = setInterval(function () {
       while (next < c.currentTime + 0.15) {
@@ -221,7 +232,8 @@
     if (src) {
       var a = new Audio(NS.url(src));
       a.loop = true;
-      a.volume = 0.45;
+      a.volume = FILE_LEVEL * vol.bgm;
+      fileBgm = a;
       a.play().catch(function () { pendingBgm = key; });
       bgmNode = { stop: function () { a.pause(); a.src = ''; } };
     } else if (LOOPS[key]) {
@@ -245,6 +257,17 @@
       b.setAttribute('aria-pressed', muted ? 'false' : 'true');
       b.classList.toggle('is-off', muted);
     });
+  }
+
+  function setVolume(kind, v) {
+    if (kind !== 'bgm' && kind !== 'sfx') return;
+    vol[kind] = Math.max(0, Math.min(1, Number(v) || 0));
+    store.set(kind + 'Vol', String(vol[kind]));
+    if (kind === 'sfx' && fxBus) fxBus.gain.value = vol.sfx;
+    if (kind === 'bgm') {
+      if (bgmBus) bgmBus.gain.value = BGM_LEVEL * vol.bgm;
+      if (fileBgm) fileBgm.volume = FILE_LEVEL * vol.bgm;
+    }
   }
 
   function toggle() {
@@ -274,6 +297,8 @@
     stopBgm: function () { stopBgm(); bgmKey = null; pendingBgm = null; },
     toggle: toggle,
     muted: function () { return muted; },
+    volume: function (kind) { return vol[kind]; },
+    setVolume: setVolume,
     button: button,
 
     /** Map a game event to an effect; also starts / stops that game's BGM. */

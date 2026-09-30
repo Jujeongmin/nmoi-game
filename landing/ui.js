@@ -255,7 +255,7 @@
   /** 03: member, line, dish and drink from the order. */
   P.fillServe = function (d) {
     var e = this.el;
-    var parts = this.cfg.copy.serve.split('{name}');
+    var parts = (NS.t ? NS.t(this.cfg.copy.serve) : this.cfg.copy.serve).split('{name}');
     e.serveLine.textContent = '';
     e.serveLine.appendChild(document.createTextNode(parts[0]));
     e.serveLine.appendChild(el('b', '', d.nickname));

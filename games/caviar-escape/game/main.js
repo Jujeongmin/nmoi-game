@@ -102,7 +102,7 @@
       case 'nearMiss':
         ui.bonusFeedback();
         renderer.pulse(ev.x, ev.y, 'gold');
-        renderer.float(ev.x, ev.y - 34, '아슬아슬 +' + ev.amount);
+        renderer.float(ev.x, ev.y - 34, NS.t('아슬아슬 +{n}', { n: ev.amount }));
         break;
       case 'end':
         if (ev.result === 'clear') {

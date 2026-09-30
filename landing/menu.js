@@ -34,7 +34,7 @@
     });
     body.appendChild(list);
 
-    body.appendChild(el('p', 'lp-rank__head', '주간 리더보드 · TOP 20'));
+    body.appendChild(el('p', 'lp-rank__head', '주간 리더보드 · TOP ' + NS.campaign.config.leaderboardTop));
     // Season tabs: W1 · W2 · W3 (the running week first selected)
     var cur = NS.campaign.season();
     // Before W1 (demo) the scores land in a 'pre' season — shown as its own tab.
@@ -131,6 +131,7 @@
       bind(ranking);
       $('btn-menu').addEventListener('click', function () { open(menu); });
       handlers.ranking = function () { renderRanking(); open(ranking); };
+      handlers.settings = function () { NS.settings.open(); };
       document.addEventListener('keydown', function (e) {
         if (e.key === 'Escape') { close(menu); close(ranking); close(invite); close(privacy); }
       });

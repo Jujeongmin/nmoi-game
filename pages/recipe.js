@@ -109,7 +109,7 @@
     g.font = '600 64px Cinzel, serif'; g.fillText('B-CUT ' + two(no), c.width / 2, 600);
     g.font = '500 44px "Noto Sans KR", sans-serif'; g.fillText(b.member, c.width / 2, 690);
     g.fillStyle = '#7a5f2e'; g.font = '500 32px "Noto Sans KR", sans-serif';
-    g.fillText('멤버 B컷 이미지가 들어올 자리 (에셋 교체 예정)', c.width / 2, 780);
+    g.fillText(NS.t('멤버 B컷 이미지가 들어올 자리 (에셋 교체 예정)'), c.width / 2, 780);
     return new Promise(function (resolve) { c.toBlob(resolve, 'image/png'); });
   }
 

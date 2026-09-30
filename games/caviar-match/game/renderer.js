@@ -212,7 +212,7 @@ CM.BoardView = (function () {
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       if ('letterSpacing' in ctx) ctx.letterSpacing = '1px';
-      ctx.fillText('다음', nx, s.y - nr - 12);
+      ctx.fillText(CAVIAR.t ? CAVIAR.t('다음') : '다음', nx, s.y - nr - 12);
       if ('letterSpacing' in ctx) ctx.letterSpacing = '0px';
       ctx.strokeStyle = col.goldA(0.3);
       ctx.beginPath();

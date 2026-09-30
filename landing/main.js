@@ -73,7 +73,7 @@
   NS.landingMenu.on('login', function () { NS.bingoUI.open(); });
   // Demo reset (for presentations): bingo, tickets, runs, login flag. Keeps the order.
   NS.landingMenu.on('reset', function () {
-    if (!window.confirm('시연용 초기화: 빙고·응모권·오늘 판수·데모 로그인을 지울까요?')) return;
+    if (!window.confirm(NS.t('시연용 초기화: 빙고·응모권·오늘 판수·데모 로그인을 지울까요?'))) return;
     NS.bingo.reset();
     NS.account.reset();
     syncBingo();
@@ -153,6 +153,7 @@
     ui.fillForm(flow.answers);
     ui.setComplete(true);
     if (window.location.hash === '#cans') flow.go('cans');
+    else if (window.location.hash === '#order') flow.go('order');
   }
   render();
 

@@ -349,7 +349,7 @@
     }
     b.addEventListener('click', function () {
       var url = A.inviteLink() || NS.url('index.html');
-      var text = 'NMOI 캐비어 레스토랑에서 게임하고 프리세이브!';
+      var text = NS.t('NMOI 캐비어 레스토랑에서 게임하고 프리세이브!');
       var finish = function () { A.share(gameId); render(); };
       var copied = function () { finish(); b.textContent = '링크를 복사했어요 · 응모권 +' + CFG.tickets.share; };
       // Clipboard API can be refused (permissions, embedded frames): copy through a hidden field.
@@ -365,7 +365,7 @@
         try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
         f.remove();
         if (ok) { copied(); return; }
-        try { window.prompt('이 링크를 복사해서 공유해 주세요', url); } catch (e) { /* no dialogs here */ }
+        try { window.prompt(NS.t('이 링크를 복사해서 공유해 주세요'), url); } catch (e) { /* no dialogs here */ }
       };
       if (navigator.share) navigator.share({ title: 'NMOI Caviar', text: text, url: url }).then(finish, function () {});
       else if (navigator.clipboard) navigator.clipboard.writeText(url).then(copied, fallback);
