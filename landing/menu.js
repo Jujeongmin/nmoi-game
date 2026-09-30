@@ -136,6 +136,7 @@
         if (e.key === 'Escape') { close(menu); close(ranking); close(invite); close(privacy); }
       });
     },
-    on: function (name, fn) { handlers[name] = fn; }
+    on: function (name, fn) { handlers[name] = fn; },
+    run: function (name) { if (handlers[name]) handlers[name](); }
   };
 })(window.CAVIAR = window.CAVIAR || {});

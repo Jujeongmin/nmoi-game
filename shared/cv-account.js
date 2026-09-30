@@ -341,8 +341,30 @@
         if (left <= 0) {
           line.classList.add('is-out');
           line.appendChild(document.createElement('br'));
-          line.appendChild(document.createTextNode(state.presaved ? '오늘은 모두 플레이했어요. 내일 다시 만나요!' : '오늘 판을 모두 썼어요. 프리세이브하면 1판 더!'));
+          // A way on: pre-save (+1 run), or invite (+1 run a day per friend), or come back tomorrow.
+          var more = null;
+          if (!state.presaved && NS.presave && !NS.campaign.isReleased()) more = ['프리세이브하고 1판 더 ›', function () { NS.presave.interstitial(); }];
+          else if ((state.referrals || 0) < CFG.referralRunCap) more = ['친구 초대하고 1판 더 ›', function () { NS.hub.invite(); }];
+          line.appendChild(document.createTextNode(more ? '오늘 판을 모두 썼어요.' : '오늘은 모두 플레이했어요. 내일 다시 만나요!'));
+          if (more) {
+            var go = document.createElement('button');
+            go.type = 'button';
+            go.className = 'cv-plays__more';
+            go.textContent = more[0];
+            go.addEventListener('click', more[1]);
+            line.appendChild(document.createTextNode(' '));
+            line.appendChild(go);
+          }
         }
+        // Out of runs: start / retry take the guest back to the restaurant instead of doing nothing.
+        ['btn-start', 'btn-retry'].forEach(function (id) {
+          var btn = document.getElementById(id);
+          if (!btn) return;
+          if (!btn.dataset.label) btn.dataset.label = btn.textContent;
+          var out = left <= 0;
+          btn.dataset.out = out ? '1' : '';
+          if (btn.getAttribute('aria-busy') !== 'true') btn.textContent = out ? '레스토랑으로 돌아가기' : btn.dataset.label;
+        });
       }
       render();
       NS.account.onChange(render);
@@ -356,7 +378,6 @@
         var pass = false;
         function outOfRuns() {
           if (NS.campaign.isGameOpen(gameId) && !state.presaved && NS.presave) NS.presave.interstitial();
-          else if (id === 'btn-retry') btn.textContent = '오늘은 모두 플레이했어요';
           render();
         }
         btn.addEventListener('click', function (e) {
@@ -364,6 +385,7 @@
           e.stopImmediatePropagation();
           e.preventDefault();
           if (btn.getAttribute('aria-busy') === 'true') return;
+          if (btn.dataset.out === '1') { NS.hub.exit(); return; }
           if (!NS.campaign.isGameOpen(gameId) || NS.account.playsLeft(gameId) <= 0) { outOfRuns(); return; }
 
           var label = btn.textContent;

@@ -56,6 +56,11 @@
       window.location.href = withParams(NS.url('index.html') + '#cans');
     },
 
+    /** Leave a game for the landing's invite sheet (a referral = +1 run a day). */
+    invite: function () {
+      window.location.href = withParams(NS.url('index.html') + '#invite');
+    },
+
     /** Wrap a game's own "back" handler: hub visitors return to the cans, others keep `fallback`. */
     backOr: function (fallback) {
       if (!fromHub) return fallback;

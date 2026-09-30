@@ -160,6 +160,7 @@
   if (restore(NS.hub.getOrder())) {
     if (window.location.hash === '#cans') flow.go('cans');
     else if (window.location.hash === '#order') flow.go('order');
+    else if (window.location.hash === '#invite') { flow.go('cans'); setTimeout(function () { NS.landingMenu.run('invite'); }, 0); }
   } else {
     // Same Verse8 account, new device: the server remembers the order sheet (not the e-mail).
     NS.account.serverOrder().then(function (order) {

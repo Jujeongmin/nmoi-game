@@ -413,10 +413,16 @@ html, body {
   max-height: 100%;
   overflow-y: auto;
   padding: 34px 26px 26px;
-  background: var(--cv-ivory);
+  /* The inner gold frame is drawn in the background with attachment "local": it belongs to the
+     scrolled content, so a tall card scrolls like a long paper card and the text never
+     crosses the frame (an outline stays put while the text scrolls over it). */
+  background:
+    linear-gradient(var(--cv-gold), var(--cv-gold)) 8px 8px / calc(100% - 16px) 1px no-repeat local,
+    linear-gradient(var(--cv-gold), var(--cv-gold)) 8px calc(100% - 8px) / calc(100% - 16px) 1px no-repeat local,
+    linear-gradient(var(--cv-gold), var(--cv-gold)) 8px 8px / 1px calc(100% - 16px) no-repeat local,
+    linear-gradient(var(--cv-gold), var(--cv-gold)) calc(100% - 8px) 8px / 1px calc(100% - 16px) no-repeat local,
+    var(--cv-ivory);
   color: var(--cv-ink);
-  outline: 1px solid var(--cv-gold);
-  outline-offset: -9px;
   text-align: center;
 }
 
@@ -673,3 +679,15 @@ html[data-splash-active="true"] #app { visibility: hidden; }
 /* the part span stays a plain inline run, whatever span rules its host has */
 .cv-part { display: inline !important; flex: none !important; margin: 0 !important; padding: 0 !important; border: 0 !important; background: none !important; transform: none !important; }
 .cv-parts { display: inline !important; flex: 0 1 auto; min-width: 0; margin: 0 !important; padding: 0 !important; border: 0 !important; background: none !important; }
+
+/* Out of today's runs: the way on (pre-save / invite) under the runs line */
+.cv-plays__more {
+  appearance: none;
+  padding: 6px 0 3px;
+  border: 0;
+  border-bottom: 1px solid var(--cv-gold);
+  background: none;
+  font: 700 12px/1.2 var(--cv-font-ui);
+  color: #7c6230;
+  cursor: pointer;
+}

@@ -7,10 +7,14 @@
 .cv-bingo__panel {
   width: min(100%, 390px);
   padding: 24px 18px 18px;
-  background: #0e0c0a;
+  /* frame scrolls with the content (see .cv-panel in cv-theme.css) */
+  background:
+    linear-gradient(var(--cv-line), var(--cv-line)) 7px 7px / calc(100% - 14px) 1px no-repeat local,
+    linear-gradient(var(--cv-line), var(--cv-line)) 7px calc(100% - 7px) / calc(100% - 14px) 1px no-repeat local,
+    linear-gradient(var(--cv-line), var(--cv-line)) 7px 7px / 1px calc(100% - 14px) no-repeat local,
+    linear-gradient(var(--cv-line), var(--cv-line)) calc(100% - 7px) 7px / 1px calc(100% - 14px) no-repeat local,
+    #0e0c0a;
   color: var(--cv-ivory);
-  outline: 1px solid var(--cv-line);
-  outline-offset: -8px;
   box-shadow: 0 30px 60px -20px rgba(0, 0, 0, 0.8);
 }
 
