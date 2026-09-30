@@ -17,8 +17,8 @@
 
   function pearlEl(cav) {
     var el = document.createElement('span');
-    el.className = 'cv-pearl cv-pearl--' + cav.tone;
-    if (cav.image) el.style.background = 'center / cover url("' + cav.image + '")';
+    el.className = 'cv-pearl cv-pearl--' + cav.tone + (cav.image ? ' cm-mound' : '');
+    if (cav.image) el.style.background = 'center / contain no-repeat url("' + cav.image + '")';
     return el;
   }
 
@@ -80,8 +80,15 @@
     config.ingredients.forEach(function (item) {
       var b = document.createElement('button');
       b.type = 'button';
-      b.className = 'cv-btn cm-pick';
-      b.textContent = item.label;
+      b.className = 'cv-btn cm-pick' + (item.image ? ' cm-pick--art' : '');
+      if (item.image) {
+        var art = document.createElement('img');
+        art.className = 'cm-pick__art';
+        art.src = item.image;
+        art.alt = '';
+        b.appendChild(art);
+      }
+      b.appendChild(document.createTextNode(item.label));
       b.addEventListener('click', function () { self._fire('select', { kind: 'ingredient', id: item.id }); });
       self.el.ingredientRow.appendChild(b);
       self.buttons.ingredient[item.id] = b;
@@ -216,7 +223,7 @@
   P._placeCaviar = function (cav) {
     var dish = this.el.sigDish;
     dish.replaceChildren();
-    PEARL_LAYOUT.forEach(function (p, i) {
+    (cav.image ? [[50, 50]] : PEARL_LAYOUT).forEach(function (p, i) {
       var pearl = pearlEl(cav);
       pearl.style.setProperty('--x', p[0] + '%');
       pearl.style.setProperty('--y', p[1] + '%');

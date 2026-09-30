@@ -531,7 +531,7 @@ html, body {
 .cv-pearl--green { background-image: url("../assets/caviar/pearl-imperial.webp"); }
 .cv-pearl--black { background-image: url("../assets/caviar/pearl-classic.webp"); }
 .cv-pearl--gold  { background-image: url("../assets/caviar/pearl-platinum.webp"); }
-.cv-pearl--pearl { --pearl: #f2ede9; background-image: url("../assets/caviar/roe-whitepearl.webp"); }
+.cv-pearl--pearl { --pearl: #f2ede9; background-image: url("../assets/caviar/pearl-whitepearl.webp"); }
 .cv-pearl.is-empty {
   background: transparent;
   box-shadow: inset 0 0 0 1px var(--cv-line);

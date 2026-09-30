@@ -23,19 +23,19 @@
     assetRoot: '../../',
 
     ingredients: [
-      { id: 'cracker', label: '크래커', image: null },
-      { id: 'cream',   label: '크림',   image: null },
-      { id: 'lemon',   label: '레몬',   image: null },
-      { id: 'herb',    label: '허브',   image: null },
-      { id: 'salmon',  label: '연어',   image: null }
+      { id: 'cracker', label: '크래커', image: '../../assets/chef/cracker.webp' },
+      { id: 'cream',   label: '크림',   image: '../../assets/chef/cream.webp' },
+      { id: 'lemon',   label: '레몬',   image: '../../assets/chef/lemon.webp' },
+      { id: 'herb',    label: '허브',   image: '../../assets/chef/herb.webp' },
+      { id: 'salmon',  label: '연어',   image: '../../assets/chef/salmon.webp' }
     ],
 
     // tone: white | green | black | gold  (maps to .cv-pearl--{tone})
     caviars: [
-      { id: 'almas',    label: '알마스',   tone: 'white', image: '../../assets/caviar/roe-almas.webp' },
-      { id: 'imperial', label: '임페리얼', tone: 'green', image: '../../assets/caviar/roe-imperial.webp' },
-      { id: 'classic',  label: '클래식',   tone: 'black', image: '../../assets/caviar/roe-classic.webp' },
-      { id: 'platinum', label: '플래티넘', tone: 'gold',  image: '../../assets/caviar/roe-platinum.webp' }
+      { id: 'almas',    label: '알마스',   tone: 'white', image: '../../assets/chef/caviar-almas.webp' },
+      { id: 'imperial', label: '임페리얼', tone: 'green', image: '../../assets/chef/caviar-imperial.webp' },
+      { id: 'classic',  label: '클래식',   tone: 'black', image: '../../assets/chef/caviar-classic.webp' },
+      { id: 'platinum', label: '플래티넘', tone: 'gold',  image: '../../assets/chef/caviar-platinum.webp' }
     ]
   };
 })(window.CAVIAR = window.CAVIAR || {});
