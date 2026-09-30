@@ -43,9 +43,17 @@
     host.hidden = true;
     var actions = panel.querySelector(':scope > .cv-actions');
     panel.insertBefore(host, actions);
-    whoAmI().then(function (me) {
+    whoAmI().catch(function (err) {
+      // The server did not answer: still show the id the game connection knows.
+      var id = NS.server && NS.server.accountId ? NS.server.accountId() : '';
+      return { account: id || '', admin: false, error: err };
+    }).then(function (me) {
       host.innerHTML = '';
       host.hidden = false;
+      if (!me.account) {
+        host.appendChild(el('p', 'cv-settings__note', '계정 ID를 불러오지 못했어요. 새로고침 후 다시 열어주세요.'));
+        return;
+      }
       if (me.admin) {
         host.appendChild(el('h3', 'cv-settings__head', '관리자'));
         var links = el('div', 'cv-settings__links');
@@ -72,7 +80,7 @@
         });
         host.appendChild(show);
       }
-    }, function () { host.remove(); });
+    });
   }
 
   /* ---------- overlay ---------- */

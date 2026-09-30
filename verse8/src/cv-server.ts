@@ -42,6 +42,7 @@ async function call<T>(fn: string, args: unknown[] = []): Promise<T> {
 
 const api = {
   account: server.account,
+  accountId: () => server.account,   // read when asked (set once the SDK knows the guest)
   connect,
   connected: () => server.connected,
   setProfile: (p: { nickname: string; email: string; emailHash: string; ref?: string; order?: Record<string, string | null> }) => call<Me>("setProfile", [p]),

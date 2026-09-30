@@ -318,14 +318,19 @@ async function judgeBingo(me) {
 async function isAdmin(account) {
   if (!account) return false;
   if (ADMINS.includes(account)) return true;
-  const rows = await $global.getCollectionItems('admins', { filters: [{ field: 'account', operator: '==', value: account }], limit: 1 });
-  return rows.length > 0;
+  try {
+    const rows = await $global.getCollectionItems('admins', { filters: [{ field: 'account', operator: '==', value: account }], limit: 1 });
+    return rows.length > 0;
+  } catch (e) {
+    return false;   // no 'admins' collection yet
+  }
 }
 async function requireAdmin() {
   if (!(await isAdmin($sender.account))) throw new Error('not admin');
 }
 async function adminRoster() {
-  const rows = await $global.getCollectionItems('admins', { limit: 100 });
+  let rows = [];
+  try { rows = await $global.getCollectionItems('admins', { limit: 100 }); } catch (e) { rows = []; }
   return {
     fixed: ADMINS.slice(),
     added: rows.map((r) => ({ account: r.account, name: r.name || '', addedBy: r.addedBy || '', at: r.at || 0 })),
@@ -558,7 +563,9 @@ class Server {
 
   // Anyone: their own account id (to be added as an admin) and whether they are one.
   async whoAmI() {
-    return { account: $sender.account, admin: await isAdmin($sender.account) };
+    let admin = false;
+    try { admin = await isAdmin($sender.account); } catch (e) { admin = false; }
+    return { account: $sender.account, admin };
   }
 
   // One page of participants: everyone who registered an e-mail, oldest first. `after` is the
