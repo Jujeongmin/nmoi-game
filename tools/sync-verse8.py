@@ -10,6 +10,7 @@ so every static file goes there, and the landing page becomes the Vite entry
 Replaced on every run: <verse8>/index.html and <verse8>/public/{shared,landing,games,assets}.
 Nothing else in the Verse8 repo (.agent8.lock, .env, src/, package.json ...) is touched.
 """
+import hashlib
 import os
 import re
 import shutil
@@ -35,6 +36,20 @@ ASSET_DIRS = sorted("assets/" + p.name for p in (Path(__file__).resolve().parent
                     if p.is_dir() and p.name != "source")
 
 
+# A quoted or url() path into assets/ ending in a media extension, without a query yet.
+asset_ref = re.compile(r"""(["'(])((?:\.\./|\./|/)*)(assets/[^"'()?*\s]+\.(?:webp|png|jpe?g|gif|svg|mp3|ogg|m4a|wav|woff2?))(?=["')])""")
+_hashes = {}
+
+
+def hash_ref(m):
+    rel = m.group(3)
+    if rel not in _hashes:
+        f = ROOT / rel
+        _hashes[rel] = hashlib.md5(f.read_bytes()).hexdigest()[:8] if f.is_file() else None
+    h = _hashes[rel]
+    return m.group(0) if h is None else m.group(1) + m.group(2) + rel + "?v=" + h
+
+
 def main():
     if len(sys.argv) != 2:
         sys.exit(__doc__)
@@ -50,7 +65,7 @@ def main():
 
     # Cache-busting: every local script/stylesheet gets ?v=<build>, so a CDN or browser
     # never pairs a fresh page with a stale members.js / config that points at files
-    # which no longer exist. Images get new names when they change, so they need none.
+    # which no longer exist.
     version = time.strftime("%Y%m%d%H%M%S")
     local_ref = re.compile(r'((?:src|href)=")(?!https?:|//|#|data:)([^"?]+\.(?:js|css))(")')
 
@@ -81,6 +96,16 @@ def main():
     html = re.sub(r'(href|src)="(?!https?:|/|#|data:)([^"]+)"', r'\1="/\2"', html)
     html = bust(html).replace("</body>", '  <script type="module" src="/src/cv-server.ts"></script>\n</body>', 1)
     (target / "index.html").write_text(html, encoding="utf-8", newline="\n")
+
+    # Art and sound keep their file names when they are redrawn, so every reference to a
+    # file under assets/ gets ?v=<content hash>: a changed file gets a new URL and no phone
+    # mixes a cached old picture with new ones; unchanged files keep theirs (cache stays warm).
+    texts = [p for ext in ("*.js", "*.css", "*.html") for p in public.rglob(ext)] + [target / "index.html"]
+    for f in texts:
+        text = f.read_text(encoding="utf-8")
+        new = asset_ref.sub(hash_ref, text)
+        if new != text:
+            f.write_text(new, encoding="utf-8", newline="\n")
 
     count = sum(1 for _ in public.rglob("*") if _.is_file())
     print(f"synced -> {target} ({count} files in public/)")
