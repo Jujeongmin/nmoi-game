@@ -1,4 +1,4 @@
-/* NMOI Spotify pre-save — the campaign's goal. Links live in cv-campaign.js (links.presave /
+/* n Moi Spotify pre-save — the campaign's goal. Links live in cv-campaign.js (links.presave /
    links.stream). A booster, not an ad (overview §5) — never interrupts a run:
      S2 booster  before the first run, once: 기본 캔 vs 알마스 캔 (= pre-save) — boosterChoice()
      HUD         multiplier under every game's HUD: x1.0 grey / x1.2 gold (injected here)
@@ -79,7 +79,7 @@
 
     var ad = el('div', 'cv-presave-ad');
     ad.setAttribute('role', 'dialog');
-    ad.setAttribute('aria-label', released() ? 'NMOI Spotify' : 'NMOI Spotify 프리세이브');
+    ad.setAttribute('aria-label', released() ? 'n Moi Spotify' : 'n Moi Spotify 프리세이브');
 
     var close = el('button', 'cv-presave-ad__close', String(PRESAVE.closeAfter));
     close.type = 'button';
@@ -88,7 +88,7 @@
     ad.appendChild(close);
 
     var body = el('div', 'cv-presave-ad__body');
-    body.appendChild(el('p', 'cv-presave-ad__eyebrow', released() ? 'NMOI · OUT NOW' : 'NMOI · NEW RELEASE'));
+    body.appendChild(el('p', 'cv-presave-ad__eyebrow', released() ? 'n Moi · OUT NOW' : 'n Moi · NEW RELEASE'));
     body.appendChild(NS.assetSlot({ name: '앨범 커버 이미지', spec: '정사각형 1:1', src: PRESAVE.albumArt, className: 'cv-presave-ad__art' }));
     body.appendChild(el('h2', 'cv-presave-ad__title', released() ? 'Listen on Spotify' : 'Pre-save on Spotify'));
     var sub = el('p', 'cv-presave-ad__sub');
@@ -100,7 +100,7 @@
     function render() {
       after.innerHTML = '';
       if (released()) {
-        sub.textContent = 'NMOI 신곡이 나왔어요. 지금 Spotify에서 들어보세요.';
+        sub.textContent = 'n Moi 신곡이 나왔어요. 지금 Spotify에서 들어보세요.';
         after.appendChild(linkBlock());
       } else if (done()) {
         sub.textContent = '프리세이브 완료! 응모권 +' + CFG.tickets.presave + ' · 점수 x' + CFG.booster + ' 부스터가 적용됐어요.';
@@ -244,11 +244,11 @@
         b.classList.toggle('is-off', m <= 1);
         b.appendChild(el('b', '', 'x' + m.toFixed(1)));
         b.appendChild(el('span', '', m === CFG.v8Booster ? 'V8 주간 첫 판 부스터' : m > 1 ? '알마스 캔 부스터 적용 중'
-          : released() ? 'NMOI 신곡 듣기' : '프리세이브하면 매 판 x' + CFG.booster));
+          : released() ? 'n Moi 신곡 듣기' : '프리세이브하면 매 판 x' + CFG.booster));
         b.appendChild(progress);
       } else if (released()) {
         b.appendChild(el('b', '', '▶ SPOTIFY'));
-        b.appendChild(el('span', '', 'NMOI 신곡 듣기'));
+        b.appendChild(el('span', '', 'n Moi 신곡 듣기'));
       } else if (done()) {
         b.appendChild(el('b', '', 'PRE-SAVED'));
         b.appendChild(el('span', '', '부스터 x' + CFG.booster + ' 적용 중 · 응모권 ' + NS.account.state().tickets + '장'));

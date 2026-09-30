@@ -1,6 +1,6 @@
 # nmoi game
 
-NMOI PRE-SAVE interactive page — "Caviar at a fine-dining restaurant".
+n Moi PRE-SAVE interactive page — "Caviar at a fine-dining restaurant".
 A light restaurant flow (table → order → serving → caviar cans) leads into three mini games
 that share one design system, one set of member sprites, a 4x4 mission bingo, a weekly Verse8
 leaderboard and a Spotify pre-save push after every run. Portrait (세로형) only.
@@ -126,7 +126,7 @@ that day (KST) and shows the real week locks — carried across pages.
 
 ## Bingo (shared/cv-bingo.js) — TIER 1
 
-4x4 = 15 missions + the NMOI pre-save cell (on a diagonal, so it counts for 3 lines). Overview §4:
+4x4 = 15 missions + the n Moi pre-save cell (on a diagonal, so it counts for 3 lines). Overview §4:
 per week 5 — game score (booster score ≥ N) · game rank (weekly top 10 %) · referral rank (weekly
 top 10 of pre-saves through my invite link) · referral count (3 / 5 / 10, cumulative) · attendance
 (7 / 10 / 14 days with a finished run, of 21). Game and referral-rank cells open with their week

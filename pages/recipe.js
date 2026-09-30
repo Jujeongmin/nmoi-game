@@ -115,7 +115,7 @@
 
   function fileName(no, type) {
     var ext = /png/.test(type) ? 'png' : /webp/.test(type) ? 'webp' : 'jpg';
-    return 'NMOI_Caviar_Bcut_' + two(no) + '.' + ext;
+    return 'nMoi_Caviar_Bcut_' + two(no) + '.' + ext;
   }
 
   function download(blob, name) {

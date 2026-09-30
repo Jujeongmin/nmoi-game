@@ -52,7 +52,7 @@
       { no: '03', label: 'Trailer', title: '세린 Trailer',   x: 50, y: 34, video: null },
       { no: '04', label: 'Trailer', title: '티야 Trailer',   x: 66, y: 42, video: null },
       { no: '05', label: 'Trailer', title: '유온 Trailer',   x: 83, y: 38, video: null },
-      { no: '06', label: 'Group',   title: 'NMOI Group Trailer', x: 21, y: 62, video: null },
+      { no: '06', label: 'Group',   title: 'n Moi Group Trailer', x: 21, y: 62, video: null },
       { no: '07', label: 'Teaser',  title: 'Teaser',          x: 40, y: 57, video: null, locked: true },
       { no: '08', label: 'M/V',     title: 'Official M/V',    x: 50, y: 72, video: null, locked: true }
     ]

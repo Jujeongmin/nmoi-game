@@ -1,5 +1,5 @@
 /* CAVIAR BINGO — missions, board and progress. No DOM (see cv-bingo-ui.js).
-   Overview §4: 4x4 = 15 mission cards + NMOI pre-save. Per week 5: game score · game rank ·
+   Overview §4: 4x4 = 15 mission cards + n Moi pre-save. Per week 5: game score · game rank ·
    referral rank · referral count · attendance. Rewards: each mission = one B-cut card ·
    a line = +3 tickets · full board = top tier.
    Game and referral-rank cells open with their week; referral count and attendance count
@@ -41,7 +41,7 @@
   });
   function fmt(n) { return Number(n).toLocaleString('en-US'); }
 
-  var PRESAVE = { id: 'presave', type: 'presave', tone: 'pearl', title: 'NMOI 프리세이브', desc: 'Spotify에서 프리세이브하고 채우기' };
+  var PRESAVE = { id: 'presave', type: 'presave', tone: 'pearl', title: 'n Moi 프리세이브', desc: 'Spotify에서 프리세이브하고 채우기' };
 
   /* Board, row by row (W1 gold, W2 green, W3 ivory). Pre-save sits on a diagonal so it
      counts for 3 lines (overview §4). Same layout as BINGO.layout in verse8/server.js. */

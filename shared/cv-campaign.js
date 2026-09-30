@@ -48,7 +48,7 @@
     },
 
     links: {
-      presave: '',                  // TODO: NMOI Spotify pre-save smart link
+      presave: '',                  // TODO: n Moi Spotify pre-save smart link
       stream: ''                    // TODO: Spotify link used from the release date
     },
 
