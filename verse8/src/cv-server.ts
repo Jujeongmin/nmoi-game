@@ -43,7 +43,8 @@ const api = {
   getMe: () => call<Me>("getMe"),
   claimShare: (gameId: string) => call<Me & { granted: number }>("claimShare", [gameId]),
   markPresave: () => call<Me>("markPresave"),
-  claimLine: (lineId: string) => call<Me>("claimLine", [lineId]),
+  getBingo: () =>
+    call<{ done: string[]; lines: string[]; status: Record<string, unknown>; me: Me }>("getBingo"),
   startRun: (gameId: string) =>
     call<{ ok: boolean; reason?: string; runId?: string; playsLeft: number }>("startRun", [gameId]),
   submitScore: (gameId: string, score: number, runId: string) =>

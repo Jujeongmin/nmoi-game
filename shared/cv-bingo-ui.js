@@ -159,7 +159,7 @@
     var box = el('div', 'cv-invite');
     var link = A.inviteLink();
     var st = A.state();
-    box.appendChild(el('p', 'cv-invite__count', '지금까지 인정된 친구 ' + st.referrals + ' / ' + CFG.maxReferrals + '명'));
+    box.appendChild(el('p', 'cv-invite__count', '지금까지 인정된 친구 ' + st.referrals + '명'));
     if (!link) {
       box.appendChild(el('p', 'cv-bingo__desc', '레스토랑 주문서(닉네임·이메일)를 작성하면 내 초대 링크가 만들어져요. (Verse8 서버 연결 필요)'));
       return box;
@@ -200,8 +200,9 @@
       return;
     }
     var q = cell.quest;
+    var kind = { score: '게임 스코어', rank: '게임 순위', refrank: '레퍼럴 순위', ref: '레퍼럴', att: '출석' }[cell.type];
     var metaText = cell.type === 'presave' ? 'SPECIAL · 프리세이브'
-      : weekLabel(cell.week) + ' · ' + (cell.type === 'game' ? cell.game.name : cell.type === 'ref' ? '레퍼럴' : '출석');
+      : weekLabel(cell.week) + ' · ' + (cell.game ? cell.game.name + ' · ' : '') + kind;
     d.appendChild(el('p', 'cv-bingo__meta', metaText));
     var qt = el('p', 'cv-bingo__q', q.title);
     if (cell.done) qt.appendChild(el('span', 'cv-tag cv-bingo__done', '완료'));
@@ -215,19 +216,32 @@
       return;
     }
     if (cell.done) return;
+    var status = statusText(cell);
+    if (status) d.appendChild(el('p', 'cv-bingo__hint', status));
     if (cell.type === 'presave' && NS.presave) {
       d.appendChild(NS.presave.linkBlock(function () { renderBoard(); refreshLinks(); }));
-    } else if (cell.type === 'ref') {
+    } else if (cell.type === 'ref' || cell.type === 'refrank') {
       d.appendChild(inviteBlock());
     } else if (cell.type === 'att') {
-      d.appendChild(el('p', 'cv-bingo__hint', '매일 레스토랑에 들르면 채워져요 · 지금까지 ' + A.days() + '일'));
-    } else if (cell.type === 'game' && cell.gameId !== currentGame) {
+      d.appendChild(el('p', 'cv-bingo__hint', '방문해서 게임을 1판 끝낸 날만 출석이에요 · 지금까지 ' + A.days() + '일'));
+    } else if (cell.game && cell.gameId !== currentGame) {
       var actions = el('div', 'cv-bingo__actions');
       var play = el('a', 'cv-bingo__link', '게임하러 가기 →');
       play.href = NS.hub ? NS.hub.gameUrl(cell.game.path) : NS.url(cell.game.path + 'index.html');
       actions.appendChild(play);
       d.appendChild(actions);
     }
+  }
+
+  /* Progress the server reported for a cell (ranks: current standing until the week ends). */
+  function statusText(cell) {
+    var st = cell.status;
+    if (cell.type === 'score' && st && st.need) return '지금 최고 ' + st.best.toLocaleString('en-US') + '점 · ' + (st.need - st.best).toLocaleString('en-US') + '점 남음';
+    if (cell.type !== 'rank' && cell.type !== 'refrank') return '';
+    if (!st) return 'Verse8 서버에서 순위를 집계해요';
+    if (!st.rank) return st.final ? '이번 주 기록이 없어 달성하지 못했어요' : '이번 주 기록이 생기면 순위가 표시돼요';
+    var line = (st.final ? '최종 ' : '지금 ') + st.rank + '위 / ' + st.total + '명 · ' + st.cutoff + '위 안이면 달성';
+    return st.final ? line + ' — 아쉽게 달성하지 못했어요' : line + ' (주 마감 때 판정)';
   }
 
   /* ---------- progress bar + booster nudge (landing + result cards) ---------- */

@@ -8,7 +8,7 @@
    CAVIAR.account.state()                  { tickets, presaved, referrals, days, lines, inviteCode, ... }
    CAVIAR.account.profile(order)           entry: nickname + email (+ ?ref invite code)
    CAVIAR.account.presave()                pre-save click → +2 tickets, booster, +1 run/day
-   CAVIAR.account.claimLine(id)            bingo line → +3 tickets (once per line)
+   CAVIAR.account.lineTicket(id)           bingo line → +3 tickets (local mirror; the server pays in getBingo)
    CAVIAR.account.recordRun(gameId)        finished run → attendance day + run tickets (returns grants)
    CAVIAR.account.share(gameId)            result-screen share → +1 ticket (once per game per day)
    CAVIAR.account.playsLeft(gameId)        runs left today
@@ -165,13 +165,15 @@
       return quiet(server().then(function (s) { return s.markPresave(); }).then(merge));
     },
 
-    claimLine: function (lineId) {
+    lineTicket: function (lineId) {
       if (state.lines.indexOf(lineId) >= 0) return;
       state.lines.push(lineId);
       state.tickets += CFG.tickets.line;
       save();
-      quiet(server().then(function (s) { return s.claimLine(lineId); }).then(merge));
     },
+
+    /** Server summary (getMe / getBingo / submitScore) into the local mirror. */
+    merge: merge,
 
     /** A run finished: today counts as attendance; first run of the game +1 ticket (once),
         a run +1 (once per game per day). Mirrors the server, which decides when online. */

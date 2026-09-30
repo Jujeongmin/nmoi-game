@@ -41,15 +41,12 @@ Game → hub: `source: 'caviar-game'`, plus `gameId`. Hub → game: `source: 'ca
 | game → hub | `event` | `name, data` | Optional (analytics, sounds). Not counted. |
 | game → hub | `exit` | | Hub returns to the caviar selection. |
 
-## `stats` per game (bingo missions)
+## Bingo missions need only `score`
 
-| Week | gameId | Required `stats` fields | Missions |
-|---|---|---|---|
-| W1 10/26 | `caviar-match` | `total` (caviar collected) | 20 collected · 5,000 points |
-| W2 11/2 | `caviar-escape` | `result` (`'clear'` \| `'over'`), `closeCalls` | escape once · 5 close calls in a run |
-| W3 11/9 | `caviar-master-chef` | `ordersCompleted`, `perfectOrders` | 1 order · 3 perfect orders |
-
-Extra fields are allowed and ignored. Missions live in `shared/cv-bingo.js`.
+Every game cell of the bingo (overview §4) is judged from the score the hub records: per week a
+score cell (booster score ≥ N) and a rank cell (weekly top N %, judged on the final weekly board).
+`stats` is optional — extra fields are passed on to analytics and ignored by the missions.
+Numbers: `bingo` in `shared/cv-campaign.js` and `BINGO` in `verse8/server.js`.
 
 ## Rules the hub enforces
 

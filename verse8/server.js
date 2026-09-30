@@ -4,31 +4,55 @@
 //
 // What the server decides (never the page):
 //   profile + email de-dup, invite codes, pre-save record (+2 tickets, x1.2 booster, +1 run/day),
-//   referral credit (only a NEW email that pre-saves counts), attendance days (a day counts
-//   only with a finished run), runs per day, weekly leaderboard seasons (+ combined board),
-//   tickets: pre-save +2, bingo line +3, per game first run +1 (once), a run +1 and a share +1
-//   (each once per game per day).
+//   referral credit (only a NEW email that pre-saves counts, 5 a day), attendance days (a day
+//   counts only with a finished run), runs per day, weekly leaderboard seasons (+ combined
+//   board, + referral board), the bingo board (every cell, see BINGO) and its tickets:
+//   pre-save +2, bingo line +3, per game first run +1 (once), a run +1 and a share +1 (each
+//   once per game per day).
 //
 // User state ($global user state — only this server reads it):
 //   { nickname, email, emailHash, emailNew, ref, refCredited, inviteCode,
 //     presaved, presavedAt, tickets, referrals, days: [YYYY-MM-DD], lines: [id],
 //     plays: { date, counts: { gameId: n } }, lb: { 'gameId:season': itemId },
 //     runs: { gameId: { id, at } | null },                 the run startRun opened, per game
-//     ticketLog: { first: { gameId: true }, daily: { gameId: date }, share: { gameId: date } } }
+//     ticketLog: { first: { gameId: true }, daily: { gameId: date }, share: { gameId: date } },
+//     refDay: { date, n },                                   referrals credited today (cap)
+//     bingo: [cellId] }                                      cells done (kept once done)
 // Collections:
 //   emails            { hash, account, at }                  e-mail de-dup (hash only)
 //   invites           { code, account }                      invite code -> account
-//   lb-<game>-<season>, lb-total-<season>
+//   lb-<game>-<season>, lb-total-<season>, ref-<season>
 //                     { account, nickname, score, updatedAt } one row per account
+//                     (ref-: pre-saves credited to the account's invite link that week)
 //
 // NOTE email "암호화": the raw address is kept only in the private user state for the
 // winner notice; encrypt-at-rest / 30-day deletion needs a Verse8 platform key or job.
 
 const WEEKS = [
-  { id: 'w1', start: '2026-10-26', end: '2026-11-01' },
-  { id: 'w2', start: '2026-11-02', end: '2026-11-08' },
-  { id: 'w3', start: '2026-11-09', end: '2026-11-15' },
+  { id: 'w1', start: '2026-10-26', end: '2026-11-01', game: 'caviar-match' },
+  { id: 'w2', start: '2026-11-02', end: '2026-11-08', game: 'caviar-escape' },
+  { id: 'w3', start: '2026-11-09', end: '2026-11-15', game: 'caviar-master-chef' },
 ];
+
+// Bingo (overview §4): 16 = per week 5 cells (game score · game rank · referral rank ·
+// referral count · attendance) x 3 + pre-save. Cell n (0..14 in MISSION order) = B-cut n.
+// Game and referral-rank cells open with their week; referral count and attendance count
+// from D1. Rank cells are judged when their week has ended (the final weekly board).
+// Numbers are provisional until the alpha data (10/13) — keep shared/cv-campaign.js in step.
+const BINGO = {
+  score: { 'caviar-match': 5000, 'caviar-escape': 4000, 'caviar-master-chef': 5000 },  // booster score
+  rankTopPct: 10,          // game rank cell: weekly top 10 %
+  refRankTop: 10,          // referral rank cell: weekly top 10
+  refNeed: [3, 5, 10],     // referral count cells (cumulative)
+  attNeed: [7, 10, 14],    // attendance cells (days with a finished run, of 21)
+  layout: [
+    'w1-score', 'w1-refrank', 'w2-score', 'w2-refrank',
+    'w1-rank', 'presave', 'w2-rank', 'w3-score',
+    'w1-att', 'w2-att', 'w3-refrank', 'w3-rank',
+    'w1-ref', 'w2-ref', 'w3-att', 'w3-ref',
+  ],
+};
+const REF_DAILY_CAP = 5;
 // Score checks. The page reports the score, so the server only accepts one that the run
 // could have reached: a run must be opened with startRun, and a score may grow at most
 // maxScore / duration per second since then (countdown and result delay only add slack).
@@ -45,7 +69,6 @@ const DAILY_PLAYS = 3;
 const PRESAVE_BONUS_PLAYS = 1;
 const BOOSTER = 1.2;
 const TICKETS = { presave: 2, line: 3, firstRun: 1, dailyRun: 1, share: 1 };
-const MAX_REFERRALS = 6;
 const NICK_MAX = 12;
 const TOTAL = 'total';
 
@@ -154,6 +177,71 @@ async function upsertBest(col, itemId, score, nickname) {
   return { best: score, improved: true, itemId: added.__id };
 }
 
+function bingoLines(done) {
+  const n = 4, lines = [];
+  for (let r = 0; r < n; r++) lines.push({ id: 'r' + r, cells: [0, 1, 2, 3].map(c => r * n + c) });
+  for (let c = 0; c < n; c++) lines.push({ id: 'c' + c, cells: [0, 1, 2, 3].map(r => r * n + c) });
+  lines.push({ id: 'd0', cells: [0, 5, 10, 15] }, { id: 'd1', cells: [3, 6, 9, 12] });
+  return lines.filter(l => l.cells.every(k => done.includes(BINGO.layout[k]))).map(l => l.id);
+}
+
+// My row in a weekly board: { rank, total, cutoff } (cutoff = last rank that counts).
+async function weeklyStanding(col, itemId, cutoffOf) {
+  if (!itemId) return null;
+  let item = null;
+  try { item = await $global.getCollectionItem(col, itemId); } catch (e) { item = null; }
+  if (!item || !(item.score > 0)) return null;
+  const total = await $global.countCollectionItems(col, {});
+  return { rank: await rankOf(col, item.score), total, cutoff: cutoffOf(total), score: item.score };
+}
+
+// Judges every bingo cell from the server's own records. Done cells stay done.
+// Returns { done, status } — status: progress per open cell for the board's detail view.
+async function judgeBingo(me) {
+  const today = kstDate();
+  const done = (me.bingo || []).slice();
+  const status = {};
+  const lb = me.lb || {};
+  const mark = id => { if (!done.includes(id)) done.push(id); };
+
+  if (me.presaved) mark('presave');
+  for (let i = 0; i < WEEKS.length; i++) {
+    const w = WEEKS[i], key = 'w' + (i + 1);
+    const open = today >= w.start, ended = today > w.end;
+
+    if ((me.referrals || 0) >= BINGO.refNeed[i]) mark(key + '-ref');
+    if ((me.days || []).length >= BINGO.attNeed[i]) mark(key + '-att');
+    if (!open) continue;
+
+    // Game score: best booster score of the week's game in any season since it opened.
+    if (!done.includes(key + '-score')) {
+      let best = 0;
+      for (const s of WEEKS.slice(i)) {
+        const id = lb[w.game + ':' + s.id];
+        if (!id) continue;
+        try { const item = await $global.getCollectionItem(collectionOf(w.game, s.id), id); best = Math.max(best, (item && item.score) || 0); } catch (e) { /* gone */ }
+      }
+      if (best >= BINGO.score[w.game]) mark(key + '-score');
+      else status[key + '-score'] = { best, need: BINGO.score[w.game] };
+    }
+
+    // Game rank: weekly top N % of that week's board, judged on the final board.
+    if (!done.includes(key + '-rank')) {
+      const st = await weeklyStanding(collectionOf(w.game, w.id), lb[w.game + ':' + w.id], t => Math.max(1, Math.ceil(t * BINGO.rankTopPct / 100)));
+      if (st && ended && st.rank <= st.cutoff) mark(key + '-rank');
+      else status[key + '-rank'] = Object.assign({ final: ended }, st || { rank: 0 });
+    }
+
+    // Referral rank: weekly top N of pre-saves credited to my invite link.
+    if (!done.includes(key + '-refrank')) {
+      const st = await weeklyStanding('ref-' + w.id, (me.refLb || {})[w.id], () => BINGO.refRankTop);
+      if (st && ended && st.rank <= st.cutoff) mark(key + '-refrank');
+      else status[key + '-refrank'] = Object.assign({ final: ended }, st || { rank: 0 });
+    }
+  }
+  return { done, status };
+}
+
 class Server {
   // Entry (TIER 0): nickname + email, one-line consent on the page. No sign-up.
   // emailHash = SHA-256(lower-cased trimmed email) computed by the page, used for de-dup.
@@ -206,6 +294,10 @@ class Server {
         await $global.updateCollectionItem(collectionOf(gameId, season, true), { __id: lb[key], nickname: nick });
       } catch (e) { /* row may be gone */ }
     }
+    const refLb = me.refLb || {};
+    for (const season of Object.keys(refLb)) {
+      try { await $global.updateCollectionItem('ref-' + season, { __id: refLb[season], nickname: nick }); } catch (e) { /* row may be gone */ }
+    }
     return summary(Object.assign({}, me, patch));
   }
 
@@ -223,9 +315,23 @@ class Server {
     if (me.ref && me.emailNew === true && !me.refCredited) {
       const inv = await $global.getCollectionItems('invites', { filters: [{ field: 'code', operator: '==', value: me.ref }], limit: 1 });
       const inviter = inv[0] && inv[0].account;
-      if (inviter && inviter !== $sender.account) {
-        const other = (await $global.getUserState(inviter)) || {};
-        await $global.updateUserState(inviter, { referrals: Math.min(MAX_REFERRALS, (other.referrals || 0) + 1) });
+      const other = inviter && inviter !== $sender.account ? ((await $global.getUserState(inviter)) || {}) : null;
+      const today = kstDate();
+      const refDay = other && other.refDay && other.refDay.date === today ? other.refDay : { date: today, n: 0 };
+      if (other && refDay.n < REF_DAILY_CAP) {
+        const upd = { referrals: (other.referrals || 0) + 1, refDay: { date: today, n: refDay.n + 1 } };
+        // Weekly referral board (bingo referral-rank cells).
+        const season = seasonOf();
+        if (season !== 'pre' && season !== 'post') {
+          const refLb = Object.assign({}, other.refLb);
+          const col = 'ref-' + season;
+          let row = null;
+          if (refLb[season]) { try { row = await $global.getCollectionItem(col, refLb[season]); } catch (e) { row = null; } }
+          if (row) await $global.updateCollectionItem(col, { __id: row.__id, score: (row.score || 0) + 1, updatedAt: Date.now() });
+          else refLb[season] = (await $global.addCollectionItem(col, { account: inviter, nickname: cleanNickname(other.nickname) || 'Guest', score: 1, updatedAt: Date.now() })).__id;
+          upd.refLb = refLb;
+        }
+        await $global.updateUserState(inviter, upd);
         patch.refCredited = true;
       }
     }
@@ -233,17 +339,20 @@ class Server {
     return summary(Object.assign({}, me, patch));
   }
 
-  // Bingo line reward: +3 tickets, once per line id (r0-r3 rows, c0-c3 columns, d0-d1 diagonals).
-  // Lines are judged on the page (small reward, "검증 못 하면 작게 준다").
-  async claimLine(lineId) {
-    if (typeof lineId !== 'string' || !/^(r[0-3]|c[0-3]|d[01])$/.test(lineId)) throw new Error('invalid line');
+  // The bingo board as the server judges it; a newly finished line pays +3 tickets once
+  // (r0-r3 rows, c0-c3 columns, d0-d1 diagonals). Returns { done, lines, status, me }.
+  async getBingo() {
     const me = await myState();
-    const lines = me.lines || [];
-    if (lines.includes(lineId)) return summary(me);
-    lines.push(lineId);
-    const patch = { lines, tickets: (me.tickets || 0) + TICKETS.line };
-    await $global.updateMyState(patch);
-    return summary(Object.assign({}, me, patch));
+    const judged = await judgeBingo(me);
+    const lines = bingoLines(judged.done);
+    const paid = me.lines || [];
+    const fresh = lines.filter(id => !paid.includes(id));
+    const patch = {};
+    if (judged.done.length !== (me.bingo || []).length) patch.bingo = judged.done;
+    if (fresh.length) { patch.lines = paid.concat(fresh); patch.tickets = (me.tickets || 0) + fresh.length * TICKETS.line; }
+    if (Object.keys(patch).length) await $global.updateMyState(patch);
+    Object.assign(me, patch);
+    return { done: judged.done, lines, status: judged.status, me: summary(me) };
   }
 
   // Result-screen share (the page cannot verify it): +1 ticket once per game per day.

@@ -24,7 +24,17 @@
     presaveBonusPlays: 1,           // +1 run per day after pre-saving
     booster: 1.2,                   // leaderboard score multiplier after pre-saving
     tickets: { presave: 2, line: 3, firstRun: 1, dailyRun: 1, share: 1 },   // run / share: once per game per day
-    maxReferrals: 6,
+    referralDailyCap: 5,            // referrals credited per inviter per day (abuse cap)
+
+    // Bingo numbers (overview §4) — provisional until the alpha data (10/13).
+    // verse8/server.js keeps the same numbers in BINGO and judges every cell.
+    bingo: {
+      score: { 'caviar-match': 5000, 'caviar-escape': 4000, 'caviar-master-chef': 5000 },  // booster score
+      rankTopPct: 10,               // game rank cell: weekly top 10 %
+      refRankTop: 10,               // referral rank cell: weekly top 10
+      refNeed: [3, 5, 10],          // referral count cells (cumulative)
+      attNeed: [7, 10, 14]          // attendance cells (days with a finished run, of 21)
+    },
 
     links: {
       presave: '',                  // TODO: NMOI Spotify pre-save smart link

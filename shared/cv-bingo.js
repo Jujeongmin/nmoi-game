@@ -1,7 +1,11 @@
 /* CAVIAR BINGO — missions, board and progress. No DOM (see cv-bingo-ui.js).
-   4x4 = 15 mission cards (5 per week: game 2 · referral 2 · attendance 1) + NMOI pre-save.
-   Rewards: each mission = one B-cut card · a line = +3 tickets · full board = top tier.
-   Missions of a week can only be completed once that week is open (cv-campaign.js).
+   Overview §4: 4x4 = 15 mission cards + NMOI pre-save. Per week 5: game score · game rank ·
+   referral rank · referral count · attendance. Rewards: each mission = one B-cut card ·
+   a line = +3 tickets · full board = top tier.
+   Game and referral-rank cells open with their week; referral count and attendance count
+   from D1. Rank cells are judged on the final weekly board, after the week ends.
+   The Verse8 server judges every cell (getBingo); this page mirrors what it can (score,
+   referral count, attendance, pre-save) so a local preview still fills the board.
    Needs cv-storage.js, cv-campaign.js (and cv-account.js for referral / attendance / tickets). */
 (function (NS) {
   'use strict';
@@ -9,46 +13,43 @@
   /* ---------------- Data (edit freely) ---------------- */
 
   var GAMES = {
-    // week order: W1 매치 · W2 훔쳐라 · W3 셰프
+    // week order (cv-campaign.js weeks): W1 매치 · W2 훔쳐라 · W3 셰프
     'caviar-match':       { name: '캐비어 매치',     caviar: 'IMPERIAL', tone: 'green', path: 'games/caviar-match/' },
     'caviar-escape':      { name: '캐비어를 훔쳐라', caviar: 'ALMAS',    tone: 'white', path: 'games/caviar-escape/' },
     'caviar-master-chef': { name: '마스터 셰프',     caviar: 'CLASSIC',  tone: 'black', path: 'games/caviar-master-chef/' }
   };
 
   /* Mission cards in B-cut order: mission n unlocks B-cut n (pages/content.js).
-     week: 0..2 · type: game | ref | att.  game: test(stats) on a finished run.
-     A score mission sets `score` and is judged on the booster score (x1.2 after pre-save),
-     so the result-screen nudge "부스터였으면 N점 → 달성" is true (overview §5).
-     ref / att: need = referrals / attendance days required (a day = a visit with a finished run). */
-  var MISSIONS = [
-    // W1 · Caviar Match
-    { id: 'w1-g1', week: 0, type: 'game', game: 'caviar-match', title: '첫 컬렉션', desc: '캐비어 매치 한 판에 캐비어 20개 수집', test: function (s) { return s.total >= 20; } },
-    { id: 'w1-g2', week: 0, type: 'game', game: 'caviar-match', score: 5000, title: '5,000점', desc: '캐비어 매치 한 판 5,000점 이상 (부스터 적용 점수)', test: function (s) { return s.boostedScore >= 5000; } },
-    { id: 'w1-r1', week: 0, type: 'ref', need: 1, title: '친구 초대 1', desc: '초대 링크로 들어온 새 친구 1명이 프리세이브' },
-    { id: 'w1-r2', week: 0, type: 'ref', need: 2, title: '친구 초대 2', desc: '초대 링크로 들어온 새 친구 2명이 프리세이브' },
-    { id: 'w1-a1', week: 0, type: 'att', need: 1, title: '출석 1일', desc: '하루 방문해서 게임 1판 플레이' },
-    // W2 · Caviar Escape
-    { id: 'w2-g1', week: 1, type: 'game', game: 'caviar-escape', title: '첫 탈출', desc: '캐비어를 훔쳐라 30초 버티고 탈출', test: function (s) { return s.result === 'clear'; } },
-    { id: 'w2-g2', week: 1, type: 'game', game: 'caviar-escape', title: '아슬아슬 5', desc: '캐비어를 훔쳐라 한 판에 아슬아슬 5번', test: function (s) { return s.closeCalls >= 5; } },
-    { id: 'w2-r1', week: 1, type: 'ref', need: 3, title: '친구 초대 3', desc: '초대 링크로 들어온 새 친구 3명이 프리세이브' },
-    { id: 'w2-r2', week: 1, type: 'ref', need: 4, title: '친구 초대 4', desc: '초대 링크로 들어온 새 친구 4명이 프리세이브' },
-    { id: 'w2-a1', week: 1, type: 'att', need: 2, title: '출석 2일', desc: '서로 다른 날 2번 방문해서 플레이' },
-    // W3 · Caviar Master Chef
-    { id: 'w3-g1', week: 2, type: 'game', game: 'caviar-master-chef', title: '첫 주문', desc: '마스터 셰프 주문 1개 완성', test: function (s) { return s.ordersCompleted >= 1; } },
-    { id: 'w3-g2', week: 2, type: 'game', game: 'caviar-master-chef', title: '퍼펙트 3', desc: '마스터 셰프 실수 없는 주문 3개', test: function (s) { return s.perfectOrders >= 3; } },
-    { id: 'w3-r1', week: 2, type: 'ref', need: 5, title: '친구 초대 5', desc: '초대 링크로 들어온 새 친구 5명이 프리세이브' },
-    { id: 'w3-r2', week: 2, type: 'ref', need: 6, title: '친구 초대 6', desc: '초대 링크로 들어온 새 친구 6명이 프리세이브' },
-    { id: 'w3-a1', week: 2, type: 'att', need: 3, title: '출석 3일', desc: '서로 다른 날 3번 방문해서 플레이' }
-  ];
+     week: 0..2 · type: score | rank | refrank | ref | att.  `fromStart`: counts from D1
+     (not gated by its week). Numbers: cv-campaign.js bingo. */
+  var BC = NS.campaign.config.bingo;
+  var MISSIONS = [];
+  NS.campaign.weeks.forEach(function (w, i) {
+    var g = GAMES[w.game], k = 'w' + (i + 1), end = NS.campaign.md(w.end);
+    MISSIONS.push(
+      { id: k + '-score', week: i, type: 'score', game: w.game, score: BC.score[w.game],
+        title: w.label + ' ' + fmt(BC.score[w.game]) + '점', desc: g.name + ' 한 판 ' + fmt(BC.score[w.game]) + '점 이상 (부스터 적용 점수)' },
+      { id: k + '-rank', week: i, type: 'rank', game: w.game,
+        title: w.label + ' 상위 ' + BC.rankTopPct + '%', desc: w.label + ' ' + g.name + ' 주간 리더보드 상위 ' + BC.rankTopPct + '% (' + end + ' 마감 순위로 판정)' },
+      { id: k + '-refrank', week: i, type: 'refrank',
+        title: w.label + ' 초대 TOP ' + BC.refRankTop, desc: w.label + ' 동안 내 초대 링크로 프리세이브한 친구 수 주간 상위 ' + BC.refRankTop + '명 (' + end + ' 마감 순위로 판정)' },
+      { id: k + '-ref', week: i, type: 'ref', need: BC.refNeed[i], fromStart: true,
+        title: '친구 초대 ' + BC.refNeed[i], desc: '초대 링크로 들어온 새 친구 ' + BC.refNeed[i] + '명이 프리세이브 (누적)' },
+      { id: k + '-att', week: i, type: 'att', need: BC.attNeed[i], fromStart: true,
+        title: '출석 ' + BC.attNeed[i] + '일', desc: '서로 다른 ' + BC.attNeed[i] + '일, 방문해서 게임 1판 (캠페인 21일 중)' }
+    );
+  });
+  function fmt(n) { return Number(n).toLocaleString('en-US'); }
 
   var PRESAVE = { id: 'presave', type: 'presave', tone: 'pearl', title: 'NMOI 프리세이브', desc: 'Spotify에서 프리세이브하고 채우기' };
 
-  /* Board, row by row — the overview's layout (W1 gold, W2 green, W3 ivory, PRE inside). */
+  /* Board, row by row (W1 gold, W2 green, W3 ivory). Pre-save sits on a diagonal so it
+     counts for 3 lines (overview §4). Same layout as BINGO.layout in verse8/server.js. */
   var LAYOUT = [
-    'w1-g1', 'w1-r1', 'w2-g1', 'w2-r1',
-    'w1-g2', 'presave', 'w2-g2', 'w3-g1',
-    'w1-a1', 'w2-a1', 'w3-r1', 'w3-g2',
-    'w1-r2', 'w2-r2', 'w3-a1', 'w3-r2'
+    'w1-score', 'w1-refrank', 'w2-score', 'w2-refrank',
+    'w1-rank', 'presave', 'w2-rank', 'w3-score',
+    'w1-att', 'w2-att', 'w3-refrank', 'w3-rank',
+    'w1-ref', 'w2-ref', 'w3-att', 'w3-ref'
   ];
   var SIZE = 4;
 
@@ -76,6 +77,7 @@
   var store = NS.storage.scope('bingo');
   var listeners = [];
   var lastRun = {};   // gameId -> stats of the latest finished run (result screen)
+  var serverStatus = {};   // cellId -> progress from the server ({ rank, cutoff, total, final } | { best, need })
 
   function readDone() {
     try {
@@ -90,7 +92,7 @@
     for (var i = 0; i < MISSIONS.length; i++) if (MISSIONS[i].id === id) return MISSIONS[i];
     return null;
   }
-  function weekOpen(m) { return m.week === undefined || NS.campaign.isWeekOpen(m.week); }
+  function weekOpen(m) { return m.week === undefined || m.fromStart || NS.campaign.isWeekOpen(m.week); }
   function isDone(id) { return readDone().indexOf(id) >= 0; }
 
   function lineList() {
@@ -116,9 +118,24 @@
     var before = finishedLines().length;
     writeDone(readDone().concat(ids));
     var now = finishedLines();
-    // A finished line pays +3 tickets once (server keeps the record).
-    if (NS.account) now.forEach(function (l) { NS.account.claimLine(l.id); });
+    // A finished line pays +3 tickets once (the server pays it on its own board, getBingo).
+    if (NS.account) now.forEach(function (l) { NS.account.lineTicket(l.id); });
     emit({ added: ids, newLines: now.length - before });
+  }
+
+  /* Cells the server has judged (getBingo): its board wins — done cells, progress, and its
+     ticket count (line tickets included). */
+  function fromServer(b) {
+    if (!b || !b.done) return;
+    serverStatus = b.status || {};
+    var done = readDone();
+    complete(b.done.filter(function (id) { return !!mission(id) && done.indexOf(id) < 0; }));
+    if (b.me && NS.account) NS.account.merge(b.me);   // after complete: the server's ticket count wins
+    emit({ added: [], newLines: 0 });
+  }
+  function refresh() {
+    if (!NS.whenServer) return;
+    NS.whenServer(function (s) { if (s && s.getBingo) s.getBingo().then(fromServer, function () {}); });
   }
 
   /** Referral / attendance / pre-save cells from the account state. */
@@ -144,6 +161,7 @@
       game: game, gameId: m.game || null,
       tone: m.type === 'presave' ? PRESAVE.tone : WEEK_TONE[m.week],
       locked: !weekOpen(m),
+      status: serverStatus[id] || null,
       done: done.indexOf(id) >= 0
     };
   }
@@ -178,6 +196,8 @@
       var done = readDone();
       return { week: i, done: list.filter(function (m) { return done.indexOf(m.id) >= 0; }).length, total: list.length };
     },
+
+    refresh: refresh,
 
     /** Game missions of one game (for its title and result cards). */
     questsFor: function (gameId) {
@@ -222,18 +242,24 @@
       lastRun[gameId] = { score: stats.score || 0, boosted: booster > 1, need: this.scoreMission(gameId) };
       if (NS.account) { NS.account.recordRun(gameId); sync(); }   // attendance day + run tickets
       var done = readDone();
+      // Score cells from this run; rank cells only come from the server's final boards.
       var fresh = MISSIONS.filter(function (m) {
-        if (m.game !== gameId || done.indexOf(m.id) >= 0 || !weekOpen(m)) return false;
-        try { return !!m.test(stats || {}); } catch (e) { return false; }
+        return m.type === 'score' && m.game === gameId && done.indexOf(m.id) < 0 && weekOpen(m) && stats.boostedScore >= m.score;
       });
       complete(fresh.map(function (m) { return m.id; }));
-      if (NS.leaderboard) NS.leaderboard.submit(gameId, stats.score);
+      if (NS.leaderboard) {
+        var sent = NS.leaderboard.submit(gameId, stats.score);
+        if (sent && sent.then) sent.then(function (r) { if (r && r.counted) refresh(); }, function () {});
+      }
       return fresh.map(function (m) { return { id: m.id, title: m.title, desc: m.desc }; });
     },
 
     /** Pre-save cell (self-reported: click-based, see cv-presave.js). */
     completePresave: function () {
-      if (NS.account) NS.account.presave();
+      if (NS.account) {
+        var sent = NS.account.presave();
+        if (sent && sent.then) sent.then(refresh, function () {});
+      }
       if (!isDone(PRESAVE.id)) complete([PRESAVE.id]);
     },
 
@@ -251,4 +277,5 @@
     NS.account.onChange(function () { sync(); });
     sync();
   }
+  refresh();
 })(window.CAVIAR = window.CAVIAR || {});

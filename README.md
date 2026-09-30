@@ -122,13 +122,21 @@ that day (KST) and shows the real week locks — carried across pages.
 
 ## Bingo (shared/cv-bingo.js) — TIER 1
 
-4x4 = 15 missions + the NMOI pre-save cell. Per week 5 missions: 2 game, 2 referral, 1 attendance
-(overall game 6 · referral 6 · attendance 3 · pre-save 1). Future weeks show "11/2 공개".
+4x4 = 15 missions + the NMOI pre-save cell (on a diagonal, so it counts for 3 lines). Overview §4:
+per week 5 — game score (booster score ≥ N) · game rank (weekly top 10 %) · referral rank (weekly
+top 10 of pre-saves through my invite link) · referral count (3 / 5 / 10, cumulative) · attendance
+(7 / 10 / 14 days with a finished run, of 21). Game and referral-rank cells open with their week
+("11/2 공개"); referral count and attendance count from D1. Rank cells are judged on the final
+weekly board after the week ends. Numbers are provisional (alpha data 10/13): `bingo` in
+`shared/cv-campaign.js` and `BINGO` in `verse8/server.js`.
 Each mission opens a B-cut card; a finished line → +3 tickets (once per line); the full board →
 top tier (showcase invite draw). Real name only when a reward is claimed. Without V8 login the
 board shows the login gate.
-Games call `CAVIAR.bingo.report(gameId, stats)` on their result; referral / attendance come from
-the account. Reset: menu → Demo Reset.
+The Verse8 server judges every cell (`getBingo`, from its own leaderboards, referral boards,
+attendance and pre-save records) and pays the line tickets; the page mirrors score, referral
+count, attendance and pre-save so a local preview still fills the board. Referrals are credited
+at most 5 per inviter per day. Games only report their score (`CAVIAR.bingo.report(gameId, stats)`).
+Reset: menu → Demo Reset.
 
 ## Pre-save (shared/cv-presave.js)
 
