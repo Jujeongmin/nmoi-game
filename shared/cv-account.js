@@ -87,7 +87,51 @@
   })();
 
   var last = {};   // gameId -> promise of the latest submit
-  var runs = {};   // gameId -> promise of the server run opened at start ({ ok, runId })
+  var runs = {};   // gameId -> the server run opened at start ({ ok, runId }), until its score is sent
+  var RUN_WAIT_MS = 8000;
+
+  /* The Verse8 build loads the server bridge (shared/cv-server.js) on every game page; a local
+     preview has none and plays on the local mirror. */
+  function serverExpected() {
+    return !!NS.server || !!document.querySelector('script[src*="cv-server"]');
+  }
+
+  /* Server not reachable when a run should start: ask to retry or reload. */
+  function offlineNotice(retry) {
+    var host = document.getElementById('app') || document.body;
+    var old = host.querySelector('.cv-offline');
+    if (old) old.remove();
+    var box = el('div', 'cv-overlay cv-offline is-open');
+    box.setAttribute('role', 'alertdialog');
+    box.setAttribute('aria-labelledby', 'cv-offline-title');
+    var panel = el('div', 'cv-panel');
+    panel.appendChild(el('p', 'cv-eyebrow', 'SERVER'));
+    var h = el('h2', 'cv-offline__title', '서버에 연결되지 않았어요');
+    h.id = 'cv-offline-title';
+    panel.appendChild(h);
+    panel.appendChild(el('p', 'cv-body cv-offline__text', '점수와 순위는 서버에서 기록돼요. 연결을 다시 시도하거나 페이지를 새로고침해 주세요.'));
+    var actions = el('div', 'cv-actions');
+    var again = el('button', 'cv-btn cv-btn--primary', '다시 시도');
+    var reload = el('button', 'cv-btn', '새로고침');
+    again.type = reload.type = 'button';
+    again.addEventListener('click', function () {
+      again.disabled = true;
+      again.textContent = '연결 중…';
+      var up = NS.server ? NS.server.connect() : Promise.resolve(false);
+      up.then(function (ok) {
+        if (!ok) { again.disabled = false; again.textContent = '다시 시도'; return; }
+        box.remove();
+        if (retry) retry();
+      });
+    });
+    reload.addEventListener('click', function () { window.location.reload(); });
+    actions.appendChild(again);
+    actions.appendChild(reload);
+    panel.appendChild(actions);
+    box.appendChild(panel);
+    host.appendChild(box);
+    again.focus();
+  }
 
   NS.account = {
     state: function () { return state; },
@@ -130,12 +174,28 @@
 
     playsLeft: function (gameId) { return Math.max(0, limit() - (state.plays.counts[gameId] || 0)); },
 
-    /** A run starts: counts locally and opens the run the server will accept a score for. */
-    consumePlay: function (gameId) {
-      state.plays.counts[gameId] = (state.plays.counts[gameId] || 0) + 1;
-      save();
-      runs[gameId] = quiet(server().then(function (s) { return s.startRun(gameId); }));
+    /** A run starts. Opens it on the server first (the only run a score is accepted for),
+        then counts it locally. Resolves { ok } or { ok: false, reason: 'limit' | 'offline' };
+        a local preview (no server bridge) always gets { ok: true, local: true }. */
+    startRun: function (gameId) {
+      function count() {
+        state.plays.counts[gameId] = (state.plays.counts[gameId] || 0) + 1;
+        save();
+      }
+      if (!serverExpected()) { count(); return Promise.resolve({ ok: true, local: true }); }
+      runs[gameId] = null;
+      var timeout = new Promise(function (resolve) { setTimeout(function () { resolve({ ok: false, reason: 'offline' }); }, RUN_WAIT_MS); });
+      var call = server().then(function (s) { return s.startRun(gameId); }).then(function (r) {
+        return r && typeof r.ok === 'boolean' ? r : { ok: false, reason: 'offline' };
+      }, function () { return { ok: false, reason: 'offline' }; });
+      return Promise.race([call, timeout]).then(function (r) {
+        if (r.ok) { runs[gameId] = r; count(); }
+        else if (r.reason === 'limit') { state.plays.counts[gameId] = limit(); save(); }
+        return r;
+      });
     },
+
+    offlineNotice: offlineNotice,
 
     inviteLink: function () {
       return state.inviteCode ? NS.url('index.html') + '?ref=' + state.inviteCode : '';
@@ -191,21 +251,34 @@
       render();
       NS.account.onChange(render);
 
-      // Gate the start / retry buttons (capture phase, before the game's own handler).
+      // Gate the start / retry buttons (capture phase, before the game's own handler): the
+      // game starts only after the server opened the run, by clicking the button again.
       ['btn-start', 'btn-retry'].forEach(function (id) {
         var btn = document.getElementById(id);
         if (!btn) return;
+        var pass = false;
+        function outOfRuns() {
+          if (NS.campaign.isGameOpen(gameId) && !state.presaved && NS.presave) NS.presave.interstitial();
+          else if (id === 'btn-retry') btn.textContent = '오늘은 모두 플레이했어요';
+          render();
+        }
         btn.addEventListener('click', function (e) {
-          var blocked = !NS.campaign.isGameOpen(gameId) || NS.account.playsLeft(gameId) <= 0;
-          if (blocked) {
-            e.stopImmediatePropagation();
-            e.preventDefault();
-            if (NS.campaign.isGameOpen(gameId) && !state.presaved && NS.presave) NS.presave.interstitial();
-            else if (id === 'btn-retry') btn.textContent = '오늘은 모두 플레이했어요';
-            render();
-            return;
-          }
-          NS.account.consumePlay(gameId);
+          if (pass) { pass = false; return; }
+          e.stopImmediatePropagation();
+          e.preventDefault();
+          if (btn.getAttribute('aria-busy') === 'true') return;
+          if (!NS.campaign.isGameOpen(gameId) || NS.account.playsLeft(gameId) <= 0) { outOfRuns(); return; }
+
+          var label = btn.textContent;
+          btn.setAttribute('aria-busy', 'true');
+          btn.textContent = '준비 중…';
+          NS.account.startRun(gameId).then(function (r) {
+            btn.removeAttribute('aria-busy');
+            btn.textContent = label;
+            if (r.ok) { pass = true; btn.click(); return; }
+            if (r.reason === 'limit') { outOfRuns(); return; }
+            offlineNotice(function () { btn.click(); });
+          });
         }, true);
       });
     }
@@ -229,10 +302,8 @@
       } else {
         var run = runs[gameId];
         runs[gameId] = null;   // one score per run
-        last[gameId] = !run ? Promise.resolve({ counted: false, reason: 'no-run' }) : NS.account.profile(order).then(server).then(function (s) {
-          return run.then(function (r) {
-            return r && r.ok ? s.submitScore(gameId, Math.floor(score), r.runId) : { counted: false, reason: (r && r.reason) || 'no-run' };
-          });
+        last[gameId] = !run ? (serverExpected() ? Promise.resolve({ counted: false, reason: 'no-run' }) : Promise.reject(new Error('offline'))) : NS.account.profile(order).then(server).then(function (s) {
+          return s.submitScore(gameId, Math.floor(score), run.runId);
         });
       }
       last[gameId].catch(function () {});

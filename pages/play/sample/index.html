@@ -52,7 +52,7 @@
       $('btn-start').addEventListener('click', function () {
         B.requestStart().then(function (r) {
           log('start', r);
-          if (!r.allowed) { $('who').textContent = r.reason === 'locked' ? '아직 열리지 않은 주차예요' : '오늘 판을 모두 썼어요'; return; }
+          if (!r.allowed) { $('who').textContent = r.reason === 'locked' ? '아직 열리지 않은 주차예요' : r.reason === 'offline' ? '서버에 연결되지 않았어요' : '오늘 판을 모두 썼어요'; return; }
           score = 0; total = 0; $('score').textContent = '0';
           $('who').textContent = '플레이 중 · 남은 판 ' + r.playsLeft;
           playing(true);

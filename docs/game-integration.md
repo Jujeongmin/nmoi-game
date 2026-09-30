@@ -35,7 +35,7 @@ Game → hub: `source: 'caviar-game'`, plus `gameId`. Hub → game: `source: 'ca
 | hub → game | `config` | `nickname, member, weekOpen, playsLeft, dailyLimit, presaved, booster, muted` | Guest and run budget. `member` = member id picked on the landing (nara, natalie, serin, tiya, yoon). |
 | game → hub | `start` | | Ask for a run. |
 | hub → game | `start-ok` | `runId, playsLeft` | Run granted (one run is used now). |
-| hub → game | `start-denied` | `reason: 'locked' \| 'limit'` | Week not open, or today's runs are used up (hub shows the pre-save panel). |
+| hub → game | `start-denied` | `reason: 'locked' \| 'limit' \| 'offline'` | Week not open, today's runs are used up (hub shows the pre-save panel), or the Verse8 server is unreachable (hub asks to retry or reload). |
 | game → hub | `end` | `runId, score, stats` | Run finished. `score` integer ≥ 0. |
 | hub → game | `result` | `counted, score, missions[]` or `counted: false, reason` | Missions completed by this run. Hub shows its result card + pre-save panel. |
 | game → hub | `event` | `name, data` | Optional (analytics, sounds). Not counted. |

@@ -146,10 +146,13 @@ in a preview; the server is the authority on Verse8. The server logic is plain J
 tested without Verse8 by passing an in-memory `$global` / `$sender` into the `Server` class.
 
 Score checks: the start / retry button opens a run on the server (`startRun`, which also counts
-the run against today's limit). `submitScore` accepts one score per run, and only up to
-`maxScore x elapsed / duration` since the start (`GAMES` in `verse8/server.js`). Other scores are
-not recorded (`reason: 'no-run' | 'rejected'`). Caviar Match has no tight `maxScore` yet — set it
-from real play data. Ranks are counted with `countCollectionItems` (no row limit).
+the run against today's limit) and the game starts only after that. If the server cannot be
+reached (8 s), the page shows "서버에 연결되지 않았어요" with 다시 시도 / 새로고침 instead of starting.
+A local preview has no server bridge and plays on the local mirror.
+`submitScore` accepts one score per run, and only up to `maxScore x elapsed / duration` since
+the start (`GAMES` in `verse8/server.js`; Caviar Match 80,000 from a bot that aims instantly,
+best of 1,200 runs 49,950). Other scores are not recorded (`reason: 'no-run' | 'rejected'`).
+Ranks are counted with `countCollectionItems` (no row limit).
 
 ## Game integration (pages/play, docs/game-integration.md)
 

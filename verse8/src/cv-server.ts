@@ -12,20 +12,22 @@ type Me = {
 type LeaderRow = { rank: number; nickname: string; score: number; me?: boolean };
 
 const server = new GameServer();
-let ready: Promise<boolean> | null = null;
+let pending: Promise<boolean> | null = null;
 
+// Connects, or reconnects after the socket dropped; resolves whether the server is reachable.
 function connect(): Promise<boolean> {
-  if (!ready) {
-    ready = server
+  if (server.connected) return Promise.resolve(true);
+  if (!pending) {
+    pending = server
       .connect()
-      .then(() => true)
+      .then((ok) => !!ok)
       .catch((err: unknown) => {
         console.warn("[cv-server] connect failed", err);
-        ready = null;
         return false;
-      });
+      })
+      .finally(() => { pending = null; });
   }
-  return ready;
+  return pending;
 }
 
 async function call<T>(fn: string, args: unknown[] = []): Promise<T> {
@@ -36,6 +38,7 @@ async function call<T>(fn: string, args: unknown[] = []): Promise<T> {
 const api = {
   account: server.account,
   connect,
+  connected: () => server.connected,
   setProfile: (p: { nickname: string; email: string; emailHash: string; ref?: string }) => call<Me>("setProfile", [p]),
   getMe: () => call<Me>("getMe"),
   checkIn: () => call<Me>("checkIn"),

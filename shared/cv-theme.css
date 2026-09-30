@@ -308,6 +308,12 @@ html, body {
 .cv-overlay .cv-panel { transform: translateY(10px); transition: transform 0.45s ease; }
 .cv-overlay.is-open .cv-panel { transform: none; }
 
+/* Server unreachable when a run should start (cv-account.js) */
+.cv-offline { z-index: 30; }
+.cv-offline .cv-panel { text-align: center; }
+.cv-offline__title { margin: 6px 0 10px; font: 700 20px/1.3 var(--cv-font-ui); color: var(--cv-onyx); }
+.cv-offline__text { margin: 0 0 20px; }
+
 /* ---------- Caviar pearl (CSS placeholder; swap background for an image) ---------- */
 .cv-pearl {
   --size: 14px;

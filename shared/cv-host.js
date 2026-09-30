@@ -58,17 +58,27 @@
         send('config', config());
         break;
 
-      case 'start':
+      case 'start': {
         if (!NS.campaign.isGameOpen(gameId)) { send('start-denied', { reason: 'locked' }); break; }
-        if (NS.account.playsLeft(gameId) <= 0) {
+        var denyLimit = function () {
           send('start-denied', { reason: 'limit', playsLeft: 0 });
           if (!NS.account.presaved() && NS.presave) NS.presave.interstitial();
-          break;
-        }
-        NS.account.consumePlay(gameId);
-        runId = newRunId();
-        send('start-ok', { runId: runId, playsLeft: NS.account.playsLeft(gameId) });
+        };
+        if (NS.account.playsLeft(gameId) <= 0) { denyLimit(); break; }
+        // The server opens the run first; without it the game may not start.
+        NS.account.startRun(gameId).then(function (r) {
+          if (r.ok) {
+            runId = newRunId();
+            send('start-ok', { runId: runId, playsLeft: NS.account.playsLeft(gameId) });
+          } else if (r.reason === 'limit') {
+            denyLimit();
+          } else {
+            send('start-denied', { reason: 'offline' });
+            NS.account.offlineNotice(null);
+          }
+        });
         break;
+      }
 
       case 'end': {
         // Only the run the hub opened counts, once.

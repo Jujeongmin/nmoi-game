@@ -31,10 +31,10 @@ const WEEKS = [
 // maxScore / duration per second since then (countdown and result delay only add slack).
 //   caviar-master-chef: 60 s, orders 3,4,5,6,6... steps at best ~15,300 with instant picks.
 //   caviar-escape: 30 s, 3,000 survival + 1,500 lives + close calls.
-//   caviar-match: no tight bound yet — tune from real play data.
+//   caviar-match: a greedy bot aiming instantly, 1,200 runs: median ~20,000, best 49,950.
 const GAMES = {
   'caviar-escape': { maxScore: 20000, duration: 30 },
-  'caviar-match': { maxScore: 300000, duration: 60 },
+  'caviar-match': { maxScore: 80000, duration: 60 },
   'caviar-master-chef': { maxScore: 20000, duration: 60 },
 };
 const MIN_RUN_MS = 3000;
