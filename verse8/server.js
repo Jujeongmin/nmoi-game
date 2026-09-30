@@ -315,11 +315,22 @@ async function judgeBingo(me) {
   return { done, status };
 }
 
+// Wallet-style ids (0x + 40 hex) compare without case: the same account can arrive
+// checksum-cased or lower-cased.
+function normAccount(id) {
+  const s = String(id || '').trim();
+  return /^0x[0-9a-fA-F]{40}$/.test(s) ? s.toLowerCase() : s;
+}
+function isFixedAdmin(account) {
+  const a = normAccount(account);
+  return ADMINS.some((x) => normAccount(x) === a);
+}
+
 async function isAdmin(account) {
   if (!account) return false;
-  if (ADMINS.includes(account)) return true;
+  if (isFixedAdmin(account)) return true;
   try {
-    const rows = await $global.getCollectionItems('admins', { filters: [{ field: 'account', operator: '==', value: account }], limit: 1 });
+    const rows = await $global.getCollectionItems('admins', { filters: [{ field: 'account', operator: '==', value: normAccount(account) }], limit: 1 });
     return rows.length > 0;
   } catch (e) {
     return false;   // no 'admins' collection yet
@@ -609,7 +620,7 @@ class Server {
 
   async adminAddAdmin(account, name) {
     await requireAdmin();
-    const id = String(account || '').trim();
+    const id = normAccount(account);
     if (!ACCOUNT_RE.test(id)) throw new Error('계정 ID를 확인해주세요');
     if (!(await isAdmin(id))) {
       await $global.addCollectionItem('admins', {
@@ -621,9 +632,9 @@ class Server {
 
   async adminRemoveAdmin(account) {
     await requireAdmin();
-    const id = String(account || '').trim();
-    if (ADMINS.includes(id)) throw new Error('기본 관리자는 앱에서 뺄 수 없어요');
-    if (id === $sender.account) throw new Error('자기 자신은 뺄 수 없어요');
+    const id = normAccount(account);
+    if (isFixedAdmin(id)) throw new Error('기본 관리자는 앱에서 뺄 수 없어요');
+    if (id === normAccount($sender.account)) throw new Error('자기 자신은 뺄 수 없어요');
     const rows = await $global.getCollectionItems('admins', { filters: [{ field: 'account', operator: '==', value: id }], limit: 10 });
     for (const r of rows) await $global.deleteCollectionItem('admins', r.__id);
     return adminRoster();
