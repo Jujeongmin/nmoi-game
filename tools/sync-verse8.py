@@ -102,11 +102,16 @@ def main():
             text = text.replace("</body>", bridge + "</body>", 1)
         page.write_text(text, encoding="utf-8", newline="\n")
 
-    # Landing page -> Vite entry. Local href/src become root-absolute public URLs;
-    # the bridge is bundled straight from its source.
+    # Landing page -> Vite entry. Local href/src become root-absolute public URLs.
+    # The bridge is the build's shared/cv-server.js (a fixed name, see vite.config.ts); the
+    # landing loads it with ?v=<build> like the game pages. Importing /src/cv-server.ts here
+    # made Vite import "../shared/cv-server.js" without a version, and phones kept a stale
+    # bridge (missing newer server functions) after a deploy.
     html = (ROOT / "index.html").read_text(encoding="utf-8")
     html = re.sub(r'(href|src)="(?!https?:|/|#|data:)([^"]+)"', r'\1="/\2"', html)
-    html = bust(html).replace("</body>", '  <script type="module" src="/src/cv-server.ts"></script>\n</body>', 1)
+    loader = ("  <script>(function () { var s = document.createElement('script'); s.type = 'module'; "
+              "s.src = 'shared/cv-server.js?v=" + version + "'; document.body.appendChild(s); })();</script>\n")
+    html = bust(html).replace("</body>", loader + "</body>", 1)
     (target / "index.html").write_text(html, encoding="utf-8", newline="\n")
 
     # Art and sound keep their file names when they are redrawn, so every reference to a
