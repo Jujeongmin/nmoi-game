@@ -279,6 +279,28 @@
 
   function fmt(n) { return Number(n).toLocaleString('en-US'); }
 
+  /* The guest's member reacts to the run (overview S4 멤버 멘트): a finished mission or a new
+     best → dance, a scored run → idle, nothing → frown. */
+  function memberLine(gameId, fresh) {
+    if (!NS.chibi || !NS.chibi.member()) return null;
+    var run = B.lastRun(gameId);
+    var score = run ? run.score : 0;
+    var best = NS.storage.scope(gameId).getNumber('best', 0);
+    var anim, text;
+    if (fresh && fresh.length) { anim = 'dance'; text = '미션 달성! 빙고판에서 B컷 카드를 확인해봐요'; }
+    else if (score > 0 && score >= best) { anim = 'dance'; text = '최고 기록이에요! 이번 주 순위도 확인해봐요'; }
+    else if (score > 0) { anim = 'idle'; text = '좋아요! 한 판 더 해볼까요?'; }
+    else { anim = 'frown'; text = '괜찮아요, 다음 판엔 더 잘할 수 있어요'; }
+    var wrap = el('div', 'cv-result-member');
+    var chibi = NS.chibi.create(wrap);
+    var line = el('p', 'cv-result-member__line');
+    line.appendChild(el('b', '', chibi.member.name));
+    line.appendChild(document.createTextNode(text));
+    wrap.appendChild(line);
+    setTimeout(function () { chibi.play(anim); }, 0);   // once it is in the card and has a size
+    return wrap;
+  }
+
   /* Tickets the run earned (first run of the game · today's run). */
   function ticketLine(gameId) {
     var got = A.runGrants(gameId);
@@ -427,6 +449,8 @@
       more.addEventListener('click', function () { api.open(); });
       box.appendChild(more);
 
+      var member = memberLine(gameId, fresh);
+      if (member) box.insertBefore(member, box.firstChild);
       box.appendChild(ticketLine(gameId));
       var nudge = boosterNudge(gameId);
       if (nudge) box.appendChild(nudge);

@@ -9,6 +9,15 @@
   var store = NS.storage.scope(cfg.gameId);
 
   var best = store.getNumber('best', 0);
+  // The guest's member beside the plate: frowns at a wrong pick, dances at a perfect order.
+  var chibi = NS.chibi ? NS.chibi.create(document.getElementById('stage'), { className: 'cm-chibi' }) : null;
+  function react(ev) {
+    if (!chibi) return;
+    if (ev.type === 'wrong') chibi.play('frown', 1100);
+    else if (ev.type === 'complete') chibi.play(ev.perfect ? 'dance' : 'idle', 1500);
+    else if (ev.type === 'start') chibi.play('idle');
+    else if (ev.type === 'end') chibi.play(game.ordersCompleted > 0 ? 'dance' : 'frown');
+  }
   NS.bingoUI.attachGame(cfg.gameId, { root: cfg.assetRoot });
   var resultShown = true;
   var paused = false;
@@ -59,6 +68,7 @@
     for (var i = 0; i < events.length; i++) {
       NS.sound.event(cfg.gameId, events[i].type, events[i]);
       ui.handle(events[i], game);
+      react(events[i]);
     }
   }
 

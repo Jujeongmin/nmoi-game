@@ -81,9 +81,19 @@
   overflow: hidden;
   container-type: size;
 }
+/* The guest's member, peeking from behind the plate (cv-chibi.js) */
+.cm-chibi {
+  position: absolute;
+  left: 3%;
+  bottom: 0;
+  z-index: 0;
+  width: min(34cqh, 130px);
+  height: min(44cqh, 168px);
+}
 .cm-plate {
   --plate: min(70cqw, 84cqh);
   position: relative;
+  z-index: 1;
   width: var(--plate);
   height: var(--plate);
   margin-right: 6%;

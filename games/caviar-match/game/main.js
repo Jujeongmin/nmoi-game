@@ -23,8 +23,21 @@
 
   // --- Game events ------------------------------------------------------
 
+  // The guest's member at the bottom right: dances at combos and cleared tables, frowns when
+  // the board steps down or the run is lost.
+  const chibi = CAVIAR.chibi ? CAVIAR.chibi.create(stage, { className: 'cm-chibi' }) : null;
+  function react(type, d) {
+    if (!chibi) return;
+    if (type === 'collect' && d.combo >= 2) chibi.play('dance', 1200);
+    else if (type === 'stageClear') chibi.play('dance', 1800);
+    else if (type === 'drop') chibi.play('frown', 900);
+    else if (type === 'start') chibi.play('idle');
+    else if (type === 'end') chibi.play(d.reason === 'overflow' ? 'frown' : 'dance');
+  }
+
   function onGameEvent(type, d) {
     CAVIAR.sound.event(cfg.gameId, type, d);
+    react(type, d);
     if (type === 'collect') {
       const r = view.scale * cfg.radius * 0.95;
       fx.collect(d.items.map((it, i) => {
