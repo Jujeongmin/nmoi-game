@@ -17,26 +17,28 @@
 
   /* Mission cards in B-cut order: mission n unlocks B-cut n (pages/content.js).
      week: 0..2 · type: game | ref | att.  game: test(stats) on a finished run.
-     ref / att: need = referrals / attendance days required. */
+     A score mission sets `score` and is judged on the booster score (x1.2 after pre-save),
+     so the result-screen nudge "부스터였으면 N점 → 달성" is true (overview §5).
+     ref / att: need = referrals / attendance days required (a day = a visit with a finished run). */
   var MISSIONS = [
     // W1 · Caviar Match
     { id: 'w1-g1', week: 0, type: 'game', game: 'caviar-match', title: '첫 컬렉션', desc: '캐비어 매치 한 판에 캐비어 20개 수집', test: function (s) { return s.total >= 20; } },
-    { id: 'w1-g2', week: 0, type: 'game', game: 'caviar-match', title: '5,000점', desc: '캐비어 매치 한 판 5,000점 이상', test: function (s) { return s.score >= 5000; } },
+    { id: 'w1-g2', week: 0, type: 'game', game: 'caviar-match', score: 5000, title: '5,000점', desc: '캐비어 매치 한 판 5,000점 이상 (부스터 적용 점수)', test: function (s) { return s.boostedScore >= 5000; } },
     { id: 'w1-r1', week: 0, type: 'ref', need: 1, title: '친구 초대 1', desc: '초대 링크로 들어온 새 친구 1명이 프리세이브' },
     { id: 'w1-r2', week: 0, type: 'ref', need: 2, title: '친구 초대 2', desc: '초대 링크로 들어온 새 친구 2명이 프리세이브' },
-    { id: 'w1-a1', week: 0, type: 'att', need: 1, title: '출석 1일', desc: '레스토랑에 하루 방문' },
+    { id: 'w1-a1', week: 0, type: 'att', need: 1, title: '출석 1일', desc: '하루 방문해서 게임 1판 플레이' },
     // W2 · Caviar Escape
     { id: 'w2-g1', week: 1, type: 'game', game: 'caviar-escape', title: '첫 탈출', desc: '캐비어를 훔쳐라 30초 버티고 탈출', test: function (s) { return s.result === 'clear'; } },
     { id: 'w2-g2', week: 1, type: 'game', game: 'caviar-escape', title: '아슬아슬 5', desc: '캐비어를 훔쳐라 한 판에 아슬아슬 5번', test: function (s) { return s.closeCalls >= 5; } },
     { id: 'w2-r1', week: 1, type: 'ref', need: 3, title: '친구 초대 3', desc: '초대 링크로 들어온 새 친구 3명이 프리세이브' },
     { id: 'w2-r2', week: 1, type: 'ref', need: 4, title: '친구 초대 4', desc: '초대 링크로 들어온 새 친구 4명이 프리세이브' },
-    { id: 'w2-a1', week: 1, type: 'att', need: 2, title: '출석 2일', desc: '서로 다른 날 2번 방문' },
+    { id: 'w2-a1', week: 1, type: 'att', need: 2, title: '출석 2일', desc: '서로 다른 날 2번 방문해서 플레이' },
     // W3 · Caviar Master Chef
     { id: 'w3-g1', week: 2, type: 'game', game: 'caviar-master-chef', title: '첫 주문', desc: '마스터 셰프 주문 1개 완성', test: function (s) { return s.ordersCompleted >= 1; } },
     { id: 'w3-g2', week: 2, type: 'game', game: 'caviar-master-chef', title: '퍼펙트 3', desc: '마스터 셰프 실수 없는 주문 3개', test: function (s) { return s.perfectOrders >= 3; } },
     { id: 'w3-r1', week: 2, type: 'ref', need: 5, title: '친구 초대 5', desc: '초대 링크로 들어온 새 친구 5명이 프리세이브' },
     { id: 'w3-r2', week: 2, type: 'ref', need: 6, title: '친구 초대 6', desc: '초대 링크로 들어온 새 친구 6명이 프리세이브' },
-    { id: 'w3-a1', week: 2, type: 'att', need: 3, title: '출석 3일', desc: '서로 다른 날 3번 방문' }
+    { id: 'w3-a1', week: 2, type: 'att', need: 3, title: '출석 3일', desc: '서로 다른 날 3번 방문해서 플레이' }
   ];
 
   var PRESAVE = { id: 'presave', type: 'presave', tone: 'pearl', title: 'NMOI 프리세이브', desc: 'Spotify에서 프리세이브하고 채우기' };
@@ -73,6 +75,7 @@
 
   var store = NS.storage.scope('bingo');
   var listeners = [];
+  var lastRun = {};   // gameId -> stats of the latest finished run (result screen)
 
   function readDone() {
     try {
@@ -199,17 +202,32 @@
     lines: function () { return finishedLines().map(function (l) { return l.cells; }); },
     fullBoard: function () { return readDone().length >= LAYOUT.length; },
     isDone: isDone,
+    lastRun: function (gameId) { return lastRun[gameId] || null; },
+    /** The open, unfinished score mission of a game ({ mission, need }) — for the result nudge. */
+    scoreMission: function (gameId) {
+      var done = readDone();
+      for (var i = 0; i < MISSIONS.length; i++) {
+        var m = MISSIONS[i];
+        if (m.game === gameId && m.score && done.indexOf(m.id) < 0 && weekOpen(m)) return { mission: m, need: m.score };
+      }
+      return null;
+    },
     sync: sync,
 
     /** A run ended. Returns the missions completed by it (may be empty). */
     report: function (gameId, stats) {
+      stats = stats || {};
+      var booster = NS.account && NS.account.presaved() ? NS.campaign.config.booster : 1;
+      stats.boostedScore = Math.floor((stats.score || 0) * booster);
+      lastRun[gameId] = { score: stats.score || 0, boosted: booster > 1, need: this.scoreMission(gameId) };
+      if (NS.account) { NS.account.recordRun(gameId); sync(); }   // attendance day + run tickets
       var done = readDone();
       var fresh = MISSIONS.filter(function (m) {
         if (m.game !== gameId || done.indexOf(m.id) >= 0 || !weekOpen(m)) return false;
         try { return !!m.test(stats || {}); } catch (e) { return false; }
       });
       complete(fresh.map(function (m) { return m.id; }));
-      if (NS.leaderboard && stats) NS.leaderboard.submit(gameId, stats.score);
+      if (NS.leaderboard) NS.leaderboard.submit(gameId, stats.score);
       return fresh.map(function (m) { return { id: m.id, title: m.title, desc: m.desc }; });
     },
 

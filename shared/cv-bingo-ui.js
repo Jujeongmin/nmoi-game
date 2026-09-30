@@ -263,6 +263,104 @@
     if (actions) panel.insertBefore(node, actions); else panel.appendChild(node);
   }
 
+  function fmt(n) { return Number(n).toLocaleString('en-US'); }
+
+  /* Tickets the run earned (first run of the game · today's run). */
+  function ticketLine(gameId) {
+    var got = A.runGrants(gameId);
+    var line = el('p', 'cv-run-tickets');
+    if (!got.length) return line;
+    var names = { first: '첫 플레이', daily: '오늘의 플레이' };
+    var sum = got.reduce(function (t, g) { return t + g.n; }, 0);
+    line.textContent = '응모권 +' + sum + ' · ' + got.map(function (g) { return names[g.reason] || g.reason; }).join(' · ');
+    return line;
+  }
+
+  /* S4 nudge (overview §5): the real score x booster — never a made-up number — and what it
+     would have meant for the score mission. Pre-saved guests get their invite link here. */
+  function boosterNudge(gameId) {
+    var run = B.lastRun(gameId);
+    if (!run || !NS.presave) return null;
+    var need = run.need && run.need.need;
+    var wrap = el('div', 'cv-nudge');
+    if (NS.campaign.isReleased()) {
+      wrap.appendChild(ctaButton('NMOI 신곡 Spotify에서 듣기 →'));
+      return wrap;
+    }
+    if (A.presaved()) {
+      var mine = Math.floor(run.score * CFG.booster);
+      if (need && mine < need) wrap.appendChild(el('p', 'cv-nudge__text', '부스터 x' + CFG.booster + ' 적용 ' + fmt(mine) + '점 · 미션(' + fmt(need) + '점)까지 ' + fmt(need - mine) + '점'));
+      var link = A.inviteLink();
+      if (link) wrap.appendChild(copyButton(link));
+      return wrap.childNodes.length ? wrap : null;
+    }
+    var boosted = Math.floor(run.score * CFG.booster);
+    var text = '부스터였으면 ' + fmt(boosted) + '점';
+    if (need && run.score < need && boosted >= need) text += ' → 미션 달성이었어요';
+    else if (need && boosted < need) text += ' · 미션(' + fmt(need) + '점)까지 ' + fmt(need - boosted) + '점';
+    wrap.appendChild(el('p', 'cv-nudge__text', text));
+    wrap.appendChild(ctaButton('Spotify 프리세이브 · 다음 판부터 x' + CFG.booster + ' →'));
+    return wrap;
+  }
+
+  function ctaButton(label) {
+    var ps = el('button', 'cv-presave-cta');
+    ps.type = 'button';
+    ps.appendChild(el('span', 'cv-presave-cta__tag', NS.campaign.isReleased() ? 'SPOTIFY' : 'PRE-SAVE'));
+    ps.appendChild(el('span', '', label));
+    ps.addEventListener('click', function () { if (!NS.presave.open()) NS.presave.interstitial(); });
+    return ps;
+  }
+
+  function copyButton(link) {
+    var b = el('button', 'cv-presave-cta', '');
+    b.type = 'button';
+    b.appendChild(el('span', 'cv-presave-cta__tag', 'INVITE'));
+    var label = el('span', '', '내 초대 링크 복사 · 친구가 프리세이브하면 미션 +1');
+    b.appendChild(label);
+    b.addEventListener('click', function () {
+      if (navigator.clipboard) navigator.clipboard.writeText(link).then(function () { label.textContent = '초대 링크를 복사했어요'; }, function () {});
+    });
+    return b;
+  }
+
+  /* Share: +1 ticket once per game per day (overview §3). */
+  function shareButton(gameId) {
+    var b = el('button', 'cv-share');
+    b.type = 'button';
+    function render() {
+      var done = A.shared(gameId);
+      b.disabled = done;
+      b.textContent = done ? '오늘 공유 완료 · 응모권 +' + CFG.tickets.share : '공유하고 응모권 +' + CFG.tickets.share;
+    }
+    b.addEventListener('click', function () {
+      var url = A.inviteLink() || NS.url('index.html');
+      var text = 'NMOI 캐비어 레스토랑에서 게임하고 프리세이브!';
+      var finish = function () { A.share(gameId); render(); };
+      var copied = function () { finish(); b.textContent = '링크를 복사했어요 · 응모권 +' + CFG.tickets.share; };
+      // Clipboard API can be refused (permissions, embedded frames): copy through a hidden field.
+      var fallback = function () {
+        var f = el('textarea', 'cv-share__field');
+        f.value = url;
+        f.setAttribute('readonly', '');
+        f.style.position = 'fixed';
+        f.style.opacity = '0';
+        document.body.appendChild(f);
+        f.select();
+        var ok = false;
+        try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
+        f.remove();
+        if (ok) { copied(); return; }
+        try { window.prompt('이 링크를 복사해서 공유해 주세요', url); } catch (e) { /* no dialogs here */ }
+      };
+      if (navigator.share) navigator.share({ title: 'NMOI Caviar', text: text, url: url }).then(finish, function () {});
+      else if (navigator.clipboard) navigator.clipboard.writeText(url).then(copied, fallback);
+      else fallback();
+    });
+    render();
+    return b;
+  }
+
   var api = {
     progressBlock: progressBlock,
     inviteBlock: inviteBlock,
@@ -294,7 +392,7 @@
       A.attachGame(gameId);
     },
 
-    /** Result card: new missions, rank, weekly progress + nudge, pre-save CTA. */
+    /** Result card: new missions, run tickets, booster nudge (S4), rank, share. */
     showRun: function (gameId, fresh) {
       refreshLinks();
       var panel = document.querySelector('#screen-result .cv-panel');
@@ -315,17 +413,12 @@
       more.addEventListener('click', function () { api.open(); });
       box.appendChild(more);
 
-      if (!A.presaved() && NS.presave) {
-        var ps = el('button', 'cv-presave-cta');
-        ps.type = 'button';
-        ps.appendChild(el('span', 'cv-presave-cta__tag', 'PRE-SAVE'));
-        ps.appendChild(el('span', '', NS.campaign.isReleased() ? 'NMOI 신곡 Spotify에서 듣기 →' : '프리세이브 +' + CFG.tickets.presave + ' 응모권 · 점수 x' + CFG.booster + ' →'));
-        ps.addEventListener('click', function () { NS.presave.interstitial(); });
-        box.appendChild(ps);
-      }
+      box.appendChild(ticketLine(gameId));
+      var nudge = boosterNudge(gameId);
+      if (nudge) box.appendChild(nudge);
       if (NS.leaderboard) NS.leaderboard.renderResult(box, gameId);
+      box.appendChild(shareButton(gameId));
       if (NS.brand) NS.brand.badge(panel);
-      if (NS.presave) setTimeout(NS.presave.interstitial, 450);
     }
   };
 

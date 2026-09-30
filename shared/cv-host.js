@@ -65,8 +65,9 @@
           if (!NS.account.presaved() && NS.presave) NS.presave.interstitial();
         };
         if (NS.account.playsLeft(gameId) <= 0) { denyLimit(); break; }
-        // The server opens the run first; without it the game may not start.
-        NS.account.startRun(gameId).then(function (r) {
+        // Booster choice (once), then the server opens the run; without it the game may not start.
+        var choice = NS.presave ? NS.presave.boosterChoice() : Promise.resolve();
+        choice.then(function () { return NS.account.startRun(gameId); }).then(function (r) {
           if (r.ok) {
             runId = newRunId();
             send('start-ok', { runId: runId, playsLeft: NS.account.playsLeft(gameId) });

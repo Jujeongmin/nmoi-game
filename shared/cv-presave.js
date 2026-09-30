@@ -1,9 +1,9 @@
 /* NMOI Spotify pre-save — the campaign's goal. Links live in cv-campaign.js (links.presave /
-   links.stream). Shown in four places (overview: 선택 · HUD · 결과 · 홈):
-     selection   the caviar-can screen of the landing
-     HUD         a slim bar under every game's HUD (injected here)
-     result      CTA on the result card + this full-screen panel after every run
-     home        the landing's table screen
+   links.stream). A booster, not an ad (overview §5) — never interrupts a run:
+     S2 booster  before the first run, once: 기본 캔 vs 알마스 캔 (= pre-save) — boosterChoice()
+     HUD         multiplier under every game's HUD: x1.0 grey / x1.2 gold (injected here)
+     result      booster nudge on the result card (cv-bingo-ui.js) — the only re-offer
+     home        the landing's table and can screens (chip)
    Click-based (no Spotify check): the click records the pre-save on the server
    (+2 tickets, score x1.2, +1 run per day) and fills the bingo cell.
    From the release date (campaign.releaseDate) every button becomes "listen on Spotify".
@@ -16,6 +16,8 @@
     albumArt: null,   // e.g. 'assets/brand/album-cover.jpg' (1:1)
     closeAfter: 3     // seconds before the panel can be closed (interstitial feel)
   };
+
+  var store = NS.storage.scope('presave');
 
   function el(tag, cls, text) {
     var n = document.createElement(tag);
@@ -68,7 +70,7 @@
     return wrap;
   }
 
-  /** Full-screen panel after a run. */
+  /** Full-screen pre-save panel (opened from a chip or a CTA, never on its own). */
   function interstitial() {
     var host = document.getElementById('app') || document.body;
     var old = host.querySelector('.cv-presave-ad');
@@ -135,14 +137,97 @@
     host.appendChild(ad);
   }
 
+  /** S2 — before the first run, once: 기본 캔 (no booster) or 알마스 캔 (Spotify pre-save →
+      x1.2, +1 run a day, invite link). Skippable. Resolves when the run may start. */
+  function boosterChoice() {
+    if (done() || released() || store.get('boosterAsked', '')) return Promise.resolve();
+    store.set('boosterAsked', '1');
+    return new Promise(function (resolve) {
+      var host = document.getElementById('app') || document.body;
+      var box = el('div', 'cv-overlay cv-booster is-open');
+      box.setAttribute('role', 'dialog');
+      box.setAttribute('aria-label', '부스터 선택');
+      var panel = el('div', 'cv-panel');
+      box.appendChild(panel);
+
+      function finish() { box.remove(); resolve(); }
+
+      function can(cls, art, name, sub) {
+        var b = el('button', 'cv-booster__can ' + cls);
+        b.type = 'button';
+        var img = el('img', 'cv-booster__art');
+        img.src = NS.url(art);
+        img.alt = '';
+        b.appendChild(img);
+        b.appendChild(el('b', 'cv-booster__name', name));
+        b.appendChild(el('span', 'cv-booster__sub', sub));
+        return b;
+      }
+
+      function choose() {
+        panel.innerHTML = '';
+        panel.appendChild(el('p', 'cv-eyebrow', 'BOOSTER'));
+        panel.appendChild(el('h2', 'cv-booster__title', '어떤 캔으로 시작할까요?'));
+        var row = el('div', 'cv-booster__cans');
+        var basic = can('is-basic', 'assets/bingo/tin-empty.webp', '기본 캔', '부스터 없이 바로 시작');
+        var almas = can('is-almas', 'assets/bingo/tin-almas.webp', '알마스 캔', 'Spotify 프리세이브 10초 → 점수 x' + CFG.booster + ' · 하루 1판 더 · 내 초대 링크');
+        basic.addEventListener('click', finish);
+        almas.addEventListener('click', function () {
+          if (!open()) complete();   // no smart link yet (demo): record the pre-save directly
+          active();
+        });
+        row.appendChild(basic);
+        row.appendChild(almas);
+        panel.appendChild(row);
+        var skip = el('button', 'cv-booster__skip', '건너뛰기');
+        skip.type = 'button';
+        skip.addEventListener('click', finish);
+        panel.appendChild(skip);
+      }
+
+      // S5 — back from Spotify: the booster is on, here is the invite link.
+      function active() {
+        panel.innerHTML = '';
+        panel.appendChild(el('p', 'cv-eyebrow', 'ALMAS CAN'));
+        panel.appendChild(el('h2', 'cv-booster__title', '알마스 캔 활성!'));
+        panel.appendChild(el('p', 'cv-body cv-booster__text', '이제 매 판 점수 x' + CFG.booster + ' · 하루 1판 더 · 응모권 +' + CFG.tickets.presave +
+          (url() ? '' : ' (데모: 스마트링크 연결 전이라 바로 완료 처리)')));
+        var link = NS.account && NS.account.inviteLink();
+        if (link && navigator.clipboard) {
+          var copy = el('button', 'cv-booster__skip', '내 초대 링크 복사');
+          copy.type = 'button';
+          copy.addEventListener('click', function () {
+            navigator.clipboard.writeText(link).then(function () { copy.textContent = '복사했어요'; }, function () {});
+          });
+          panel.appendChild(copy);
+        }
+        var go = el('div', 'cv-actions');
+        var start = el('button', 'cv-btn cv-btn--primary', '게임 시작');
+        start.type = 'button';
+        start.addEventListener('click', finish);
+        go.appendChild(start);
+        panel.appendChild(go);
+      }
+
+      choose();
+      host.appendChild(box);
+    });
+  }
+
   /** Slim pre-save button for the selection screen, the home screen and game HUDs. */
   function chip(extraClass) {
     var b = el('button', 'cv-presave-chip' + (extraClass ? ' ' + extraClass : ''));
+    var hudChip = /cv-presave-chip--hud/.test(extraClass || '');
     b.type = 'button';
     function render() {
       b.innerHTML = '';
       b.classList.toggle('is-done', done() && !released());
-      if (released()) {
+      b.classList.toggle('is-off', hudChip && !done() && !released());
+      if (hudChip && !released()) {
+        // HUD multiplier (overview §5): x1.0 grey / x1.2 gold
+        b.appendChild(el('b', '', done() ? 'x' + CFG.booster.toFixed(1) : 'x1.0'));
+        b.appendChild(el('span', '', done() ? '알마스 캔 부스터 적용 중' : '프리세이브하면 매 판 x' + CFG.booster));
+      } else if (released()) {
         b.appendChild(el('b', '', '▶ SPOTIFY'));
         b.appendChild(el('span', '', 'NMOI 신곡 듣기'));
       } else if (done()) {
@@ -163,5 +248,5 @@
   var hud = document.querySelector('.cv-app > .cv-hud');
   if (hud && document.getElementById('screen-title')) hud.insertAdjacentElement('afterend', chip('cv-presave-chip--hud'));
 
-  NS.presave = { open: open, linkBlock: linkBlock, interstitial: interstitial, chip: chip, isDone: done, config: PRESAVE };
+  NS.presave = { open: open, linkBlock: linkBlock, interstitial: interstitial, boosterChoice: boosterChoice, chip: chip, isDone: done, config: PRESAVE };
 })(window.CAVIAR = window.CAVIAR || {});

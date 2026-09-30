@@ -233,6 +233,26 @@
 .cv-quest-result.is-new .cv-presave-cta { color: var(--cv-ivory); }   /* dark card after a new quest */
 .cv-presave-cta__tag { flex: none; padding: 3px 5px 2px; background: var(--cv-onyx); font: 700 9px/1 var(--cv-font-ui); letter-spacing: 0.14em; color: var(--cv-gold); }
 
+/* Result card: run tickets, booster nudge, share (overview §3, §5) */
+.cv-run-tickets { margin: 0 0 8px; font: 700 12px/1.4 var(--cv-font-ui); color: var(--cv-gold); }
+.cv-run-tickets:empty { display: none; }
+.cv-nudge__text { margin: 0 0 6px; font: 600 12.5px/1.4 var(--cv-font-ui); color: var(--cv-ink); word-break: keep-all; }
+.cv-quest-result.is-new .cv-nudge__text { color: var(--cv-ivory); }
+.cv-share {
+  appearance: none;
+  display: block;
+  width: 100%;
+  margin: 0 0 12px;
+  padding: 8px 10px;
+  border: 1px dashed var(--cv-gold);
+  background: transparent;
+  font: 600 12px/1.3 var(--cv-font-ui);
+  color: var(--cv-ink);
+  cursor: pointer;
+}
+.cv-quest-result.is-new .cv-share { color: var(--cv-ivory); }
+.cv-share:disabled { cursor: default; opacity: 0.6; }
+
 /* Leaderboard rank line on result cards */
 .cv-rank-line { margin: 0 0 10px; font: 600 12.5px/1.4 var(--cv-font-ui); color: var(--cv-ink); word-break: keep-all; }
 .cv-quest-result.is-new .cv-rank-line { color: var(--cv-ivory); }
@@ -325,6 +345,42 @@
 .cv-presave-chip b { flex: none; font: 700 10px/1 var(--cv-font-ui); letter-spacing: 0.14em; color: var(--cv-gold-bright); }
 .cv-presave-chip.is-done { border-color: var(--cv-line-faint); background: transparent; color: var(--cv-ivory-dim); cursor: default; }
 .cv-presave-chip--hud { margin: 0; }
+.cv-presave-chip.is-off b { color: var(--cv-ivory-dim); }   /* HUD x1.0: grey until pre-saved */
+
+/* S2 booster choice (cv-presave.js) */
+.cv-booster { z-index: 30; }
+.cv-booster .cv-panel { text-align: center; }
+.cv-booster__title { margin: 6px 0 14px; font: 700 19px/1.3 var(--cv-font-ui); color: var(--cv-onyx); }
+.cv-booster__text { margin: 0 0 14px; }
+.cv-booster__cans { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+.cv-booster__can {
+  appearance: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 12px 8px;
+  border: 1px solid var(--cv-line);
+  background: transparent;
+  color: var(--cv-ink);
+  cursor: pointer;
+}
+.cv-booster__can.is-almas { border-color: var(--cv-gold); background: rgba(201, 174, 120, 0.14); }
+.cv-booster__art { width: 72px; height: 72px; object-fit: contain; }
+.cv-booster__name { font: 700 14px/1.2 var(--cv-font-ui); }
+.cv-booster__sub { font: 500 11px/1.4 var(--cv-font-ui); color: var(--cv-ink-soft); word-break: keep-all; }
+.cv-booster__skip {
+  appearance: none;
+  display: block;
+  margin: 6px auto 12px;
+  padding: 4px 2px;
+  border: 0;
+  border-bottom: 1px solid var(--cv-line);
+  background: transparent;
+  font: 500 12px/1.3 var(--cv-font-ui);
+  color: var(--cv-ink-soft);
+  cursor: pointer;
+}
 
 /* Weekly mission progress + booster nudge */
 .cv-progress { margin: 0 0 12px; text-align: left; }

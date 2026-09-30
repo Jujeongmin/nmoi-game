@@ -9,6 +9,8 @@
    CAVIAR.account.profile(order)           entry: nickname + email (+ ?ref invite code)
    CAVIAR.account.presave()                pre-save click → +2 tickets, booster, +1 run/day
    CAVIAR.account.claimLine(id)            bingo line → +3 tickets (once per line)
+   CAVIAR.account.recordRun(gameId)        finished run → attendance day + run tickets (returns grants)
+   CAVIAR.account.share(gameId)            result-screen share → +1 ticket (once per game per day)
    CAVIAR.account.playsLeft(gameId)        runs left today
    CAVIAR.account.attachGame(gameId)       title card: runs left, week lock, start gating
    CAVIAR.account.inviteLink()             landing URL with this guest's invite code
@@ -32,6 +34,8 @@
     s.days = s.days || [];
     s.lines = s.lines || [];
     s.plays = s.plays && s.plays.date === NS.campaign.today() ? s.plays : { date: NS.campaign.today(), counts: {} };
+    var log = s.ticketLog || {};
+    s.ticketLog = { first: log.first || {}, daily: log.daily || {}, share: log.share || {} };
     return s;
   }
   var state = read();
@@ -72,13 +76,9 @@
 
   function limit() { return CFG.dailyPlays + (state.presaved ? CFG.presaveBonusPlays : 0); }
 
-  /* ---------------- attendance (every page counts) ---------------- */
-
-  (function checkIn() {
-    var today = NS.campaign.today();
-    if (state.days.indexOf(today) < 0) { state.days.push(today); save(); }
-    quiet(server().then(function (s) { return s.checkIn(); }).then(merge));
-  })();
+  /* Attendance = a visit with a finished run (a visit alone does not count; the server
+     marks the day when it records the run). On load only the server's numbers are read. */
+  quiet(server().then(function (s) { return s.getMe(); }).then(merge));
 
   // Invite code from ?ref= (kept until the entry form sends it)
   (function readRef() {
@@ -87,6 +87,7 @@
   })();
 
   var last = {};   // gameId -> promise of the latest submit
+  var grants = {}; // gameId -> tickets the latest finished run earned [{ reason, n }]
   var runs = {};   // gameId -> the server run opened at start ({ ok, runId }), until its score is sent
   var RUN_WAIT_MS = 8000;
 
@@ -172,6 +173,32 @@
       quiet(server().then(function (s) { return s.claimLine(lineId); }).then(merge));
     },
 
+    /** A run finished: today counts as attendance; first run of the game +1 ticket (once),
+        a run +1 (once per game per day). Mirrors the server, which decides when online. */
+    recordRun: function (gameId) {
+      var today = NS.campaign.today(), log = state.ticketLog, got = [];
+      if (state.days.indexOf(today) < 0) state.days.push(today);
+      if (!log.first[gameId]) { log.first[gameId] = true; got.push({ reason: 'first', n: CFG.tickets.firstRun }); }
+      if (log.daily[gameId] !== today) { log.daily[gameId] = today; got.push({ reason: 'daily', n: CFG.tickets.dailyRun }); }
+      got.forEach(function (g) { state.tickets += g.n; });
+      save();
+      grants[gameId] = got;
+      return got;
+    },
+    runGrants: function (gameId) { return grants[gameId] || []; },
+
+    shared: function (gameId) { return state.ticketLog.share[gameId] === NS.campaign.today(); },
+
+    /** Result-screen share: +1 ticket once per game per day (the page cannot verify a share). */
+    share: function (gameId) {
+      if (NS.account.shared(gameId)) return 0;
+      state.ticketLog.share[gameId] = NS.campaign.today();
+      state.tickets += CFG.tickets.share;
+      save();
+      quiet(server().then(function (s) { return s.claimShare(gameId); }).then(merge));
+      return CFG.tickets.share;
+    },
+
     playsLeft: function (gameId) { return Math.max(0, limit() - (state.plays.counts[gameId] || 0)); },
 
     /** A run starts. Opens it on the server first (the only run a score is accepted for),
@@ -252,7 +279,8 @@
       NS.account.onChange(render);
 
       // Gate the start / retry buttons (capture phase, before the game's own handler): the
-      // game starts only after the server opened the run, by clicking the button again.
+      // booster choice first (once, cv-presave.js), then the game starts only after the
+      // server opened the run, by clicking the button again.
       ['btn-start', 'btn-retry'].forEach(function (id) {
         var btn = document.getElementById(id);
         if (!btn) return;
@@ -271,8 +299,11 @@
 
           var label = btn.textContent;
           btn.setAttribute('aria-busy', 'true');
-          btn.textContent = '준비 중…';
-          NS.account.startRun(gameId).then(function (r) {
+          var choice = NS.presave ? NS.presave.boosterChoice() : Promise.resolve();
+          choice.then(function () {
+            btn.textContent = '준비 중…';
+            return NS.account.startRun(gameId);
+          }).then(function (r) {
             btn.removeAttribute('aria-busy');
             btn.textContent = label;
             if (r.ok) { pass = true; btn.click(); return; }
@@ -304,7 +335,7 @@
         runs[gameId] = null;   // one score per run
         last[gameId] = !run ? (serverExpected() ? Promise.resolve({ counted: false, reason: 'no-run' }) : Promise.reject(new Error('offline'))) : NS.account.profile(order).then(server).then(function (s) {
           return s.submitScore(gameId, Math.floor(score), run.runId);
-        });
+        }).then(function (r) { if (r && r.me) merge(r.me); return r; });
       }
       last[gameId].catch(function () {});
       return last[gameId];

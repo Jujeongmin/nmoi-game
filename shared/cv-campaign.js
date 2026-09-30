@@ -23,7 +23,7 @@
     dailyPlays: 3,                  // runs per game per day
     presaveBonusPlays: 1,           // +1 run per day after pre-saving
     booster: 1.2,                   // leaderboard score multiplier after pre-saving
-    tickets: { presave: 2, line: 3 },
+    tickets: { presave: 2, line: 3, firstRun: 1, dailyRun: 1, share: 1 },   // run / share: once per game per day
     maxReferrals: 6,
 
     links: {

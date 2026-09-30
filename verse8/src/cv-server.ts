@@ -41,13 +41,13 @@ const api = {
   connected: () => server.connected,
   setProfile: (p: { nickname: string; email: string; emailHash: string; ref?: string }) => call<Me>("setProfile", [p]),
   getMe: () => call<Me>("getMe"),
-  checkIn: () => call<Me>("checkIn"),
+  claimShare: (gameId: string) => call<Me & { granted: number }>("claimShare", [gameId]),
   markPresave: () => call<Me>("markPresave"),
   claimLine: (lineId: string) => call<Me>("claimLine", [lineId]),
   startRun: (gameId: string) =>
     call<{ ok: boolean; reason?: string; runId?: string; playsLeft: number }>("startRun", [gameId]),
   submitScore: (gameId: string, score: number, runId: string) =>
-    call<{ counted: boolean; reason?: string; score?: number; boosted?: boolean; best?: number; improved?: boolean; rank?: number; season?: string; playsLeft: number }>(
+    call<{ counted: boolean; reason?: string; score?: number; boosted?: boolean; best?: number; improved?: boolean; rank?: number; season?: string; playsLeft: number; grants?: { reason: string; n: number }[]; me?: Me }>(
       "submitScore", [gameId, score, runId]),
   getLeaderboard: (gameId: string, limit = 20, season?: string) =>
     call<{ season: string; top: LeaderRow[]; mine: LeaderRow | null }>("getLeaderboard", [gameId, limit, season]),

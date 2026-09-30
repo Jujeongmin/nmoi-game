@@ -132,9 +132,22 @@ the account. Reset: menu → Demo Reset.
 
 ## Pre-save (shared/cv-presave.js)
 
-Shown at 선택 · HUD · 결과 · 홈: chip on the table and cans screens, a bar under every game HUD,
-a CTA on the result card and a full-screen panel after every run. Click-based (no Spotify check):
-+2 tickets, score x1.2, +1 run per day. From 11/16 every button becomes "Spotify에서 듣기".
+A booster, not an ad (overview §5) — nothing interrupts a run:
+- **S2 booster choice**, once before the first run: 기본 캔 (no booster) or 알마스 캔 (Spotify
+  pre-save → x1.2, +1 run a day, invite link), skippable. Choosing 알마스 opens Spotify and then
+  shows "알마스 캔 활성" with the invite link (S5).
+- **HUD**: multiplier under every game HUD, x1.0 grey / x1.2 gold.
+- **Result (S4)**, the only re-offer: "부스터였으면 N점 → 미션 달성이었어요" — N is the real score x1.2 —
+  or how far the score mission still is, with the Spotify button. Pre-saved guests get their
+  invite link there instead.
+- Chips on the table and cans screens open the full pre-save panel; it never opens on its own.
+
+Click-based (no Spotify check): +2 tickets, score x1.2, +1 run per day. From 11/16 every button
+becomes "Spotify에서 듣기".
+
+Tickets (응모권): pre-save +2, bingo line +3, and per game: first run +1 (once), a run +1 and a
+result-screen share +1 (each once per game per day). Attendance is a day with a finished run — a
+visit alone does not count (the server marks it when it records the run).
 
 ## Account + leaderboard (Verse8 server)
 

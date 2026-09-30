@@ -4,14 +4,17 @@
 //
 // What the server decides (never the page):
 //   profile + email de-dup, invite codes, pre-save record (+2 tickets, x1.2 booster, +1 run/day),
-//   referral credit (only a NEW email that pre-saves counts), attendance days, runs per day,
-//   weekly leaderboard seasons (+ combined board), line tickets (+3, once per line).
+//   referral credit (only a NEW email that pre-saves counts), attendance days (a day counts
+//   only with a finished run), runs per day, weekly leaderboard seasons (+ combined board),
+//   tickets: pre-save +2, bingo line +3, per game first run +1 (once), a run +1 and a share +1
+//   (each once per game per day).
 //
 // User state ($global user state — only this server reads it):
 //   { nickname, email, emailHash, emailNew, ref, refCredited, inviteCode,
 //     presaved, presavedAt, tickets, referrals, days: [YYYY-MM-DD], lines: [id],
 //     plays: { date, counts: { gameId: n } }, lb: { 'gameId:season': itemId },
-//     runs: { gameId: { id, at } | null } }                the run startRun opened, per game
+//     runs: { gameId: { id, at } | null },                 the run startRun opened, per game
+//     ticketLog: { first: { gameId: true }, daily: { gameId: date }, share: { gameId: date } } }
 // Collections:
 //   emails            { hash, account, at }                  e-mail de-dup (hash only)
 //   invites           { code, account }                      invite code -> account
@@ -41,7 +44,7 @@ const MIN_RUN_MS = 3000;
 const DAILY_PLAYS = 3;
 const PRESAVE_BONUS_PLAYS = 1;
 const BOOSTER = 1.2;
-const TICKETS = { presave: 2, line: 3 };
+const TICKETS = { presave: 2, line: 3, firstRun: 1, dailyRun: 1, share: 1 };
 const MAX_REFERRALS = 6;
 const NICK_MAX = 12;
 const TOTAL = 'total';
@@ -91,6 +94,25 @@ function randomCode() {
 function playsToday(me) {
   const today = kstDate();
   return me.plays && me.plays.date === today ? me.plays : { date: today, counts: {} };
+}
+
+function ticketLog(me) {
+  const log = me.ticketLog || {};
+  return { first: Object.assign({}, log.first), daily: Object.assign({}, log.daily), share: Object.assign({}, log.share) };
+}
+
+// A finished run: that day counts as attendance, and the run's tickets
+// (first run of a game +1 once, a run +1 once per game per day). Returns the state patch.
+function runRewards(me, gameId) {
+  const today = kstDate();
+  const days = (me.days || []).slice();
+  if (!days.includes(today)) days.push(today);
+  const log = ticketLog(me);
+  const grants = [];
+  if (!log.first[gameId]) { log.first[gameId] = true; grants.push({ reason: 'first', n: TICKETS.firstRun }); }
+  if (log.daily[gameId] !== today) { log.daily[gameId] = today; grants.push({ reason: 'daily', n: TICKETS.dailyRun }); }
+  const tickets = (me.tickets || 0) + grants.reduce((t, g) => t + g.n, 0);
+  return { patch: { days, ticketLog: log, tickets }, grants };
 }
 
 function dailyLimit(me) {
@@ -191,18 +213,6 @@ class Server {
     return summary(await myState());
   }
 
-  // Attendance: one mark per KST day.
-  async checkIn() {
-    const me = await myState();
-    const today = kstDate();
-    const days = me.days || [];
-    if (!days.includes(today)) {
-      days.push(today);
-      await $global.updateMyState({ days });
-    }
-    return summary(Object.assign({}, me, { days }));
-  }
-
   // Pre-save is click-based (no Spotify check): +2 tickets once, booster, +1 run/day,
   // and — for a NEW email that came from an invite link — one referral for the inviter.
   async markPresave() {
@@ -234,6 +244,19 @@ class Server {
     const patch = { lines, tickets: (me.tickets || 0) + TICKETS.line };
     await $global.updateMyState(patch);
     return summary(Object.assign({}, me, patch));
+  }
+
+  // Result-screen share (the page cannot verify it): +1 ticket once per game per day.
+  async claimShare(gameId) {
+    if (!GAMES[gameId]) throw new Error('unknown game');
+    const me = await myState();
+    const log = ticketLog(me);
+    const today = kstDate();
+    if (log.share[gameId] === today) return Object.assign(summary(me), { granted: 0 });
+    log.share[gameId] = today;
+    const patch = { ticketLog: log, tickets: (me.tickets || 0) + TICKETS.share };
+    await $global.updateMyState(patch);
+    return Object.assign(summary(Object.assign({}, me, patch)), { granted: TICKETS.share });
   }
 
   // A run starts (start / retry button): counts against today's runs and opens the run
@@ -273,8 +296,13 @@ class Server {
     const elapsed = Date.now() - run.at;
     const cap = Math.floor(game.maxScore * Math.min(1, elapsed / (game.duration * 1000)));
     // Close the run first, so the same run cannot be submitted twice.
-    await $global.updateMyState({ runs });
-    if (elapsed < MIN_RUN_MS || raw > cap) return { counted: false, reason: 'rejected', playsLeft };
+    if (elapsed < MIN_RUN_MS || raw > cap) {
+      await $global.updateMyState({ runs });
+      return { counted: false, reason: 'rejected', playsLeft };
+    }
+    const reward = runRewards(me, gameId);
+    await $global.updateMyState(Object.assign({ runs }, reward.patch));
+    Object.assign(me, reward.patch);
 
     const boosted = me.presaved ? Math.floor(raw * BOOSTER) : raw;
     const season = seasonOf();
@@ -311,6 +339,8 @@ class Server {
       rank: await rankOf(col, res.best),
       season,
       playsLeft,
+      grants: reward.grants,
+      me: summary(me),
     };
   }
 
