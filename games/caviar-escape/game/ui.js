@@ -172,47 +172,9 @@
     if (success) parts.push('라이프 보너스 +' + d.lifeBonus);
     el.resultDetail.textContent = parts.join('  ·  ');
 
-    // A vertical game: the success / fail scene fills the screen first (9:16), a tap
-    // brings up the score card.
     el.title.classList.remove('is-open');
-    var self = this;
-    this._showScene(success, function () {
-      el.result.classList.add('is-open');
-      self._focusLater(el.btnRetry);
-    });
-  };
-
-  /* Full-screen 9:16 result scene (real images in config.resultArt; placeholder until then). */
-  P._showScene = function (success, next) {
-    var s = this.scene;
-    if (!s) {
-      s = this.scene = document.createElement('div');
-      s.className = 'cv-overlay ce-scene';
-      s.setAttribute('role', 'dialog');
-      s.setAttribute('aria-label', '결과 연출');
-      s.innerHTML = '<div class="ce-scene__frame"></div>' +
-        '<p class="ce-scene__title"></p>' +
-        '<button class="cv-btn ce-scene__next" type="button">결과 보기 ›</button>';
-      (document.getElementById('app') || document.body).appendChild(s);
-      s.addEventListener('click', function () {
-        if (!s.classList.contains('is-open')) return;
-        s.classList.remove('is-open');
-        var go = s._next; s._next = null;
-        if (go) go();
-      });
-    }
-    var frame = s.querySelector('.ce-scene__frame');
-    frame.innerHTML = '';
-    frame.appendChild(NS.assetSlot({
-      name: success ? '성공 연출 · 스타 셰프가 캐비어 요리를 서빙하는 이미지' : '실패 연출 · 상어 모자를 쓴 멤버 이미지',
-      spec: '세로 9:16 · 1080×1920',
-      src: (this.cfg.resultArt || {})[success ? 'clear' : 'over'],
-      className: 'ce-scene__art'
-    }));
-    s.querySelector('.ce-scene__title').textContent = success ? '성공' : '게임 오버';
-    s._next = next;
-    s.classList.add('is-open');
-    this._focusLater(s.querySelector('.ce-scene__next'));
+    el.result.classList.add('is-open');
+    this._focusLater(el.btnRetry);
   };
 
   // Focus for keyboard players (Enter / Space) without flashing a ring on touch.

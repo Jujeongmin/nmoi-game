@@ -84,7 +84,6 @@ scripts in the same order as the existing games and sets `assetRoot: '../../'` i
 | Verse8 login button | `shared/cv-bingo-ui.js` (gate) |
 | Verse8-team game builds | `shared/cv-host.js` → `GAMES[...].src` |
 | B-cuts (15), member handwriting, trailer videos (YouTube) | `pages/content.js` |
-| Escape success / fail art (star chef, shark-hat member) | `games/caviar-escape/game/config.js` → `resultArt` |
 | Table photo, tins, drinks, paper | `landing/config.js` |
 | Caviar icons | `shared/cv-theme.css` (`.cv-pearl--*`), `games/caviar-match/game/config.js` |
 | BGM files (replace the synthesized loops) | `shared/cv-sound.js` → `BGM` |
