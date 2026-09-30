@@ -29,7 +29,7 @@
         "dance": {
           "row": 2,
           "frames": 6,
-          "fps": 8,
+          "fps": 5,
           "loop": true
         }
       }
@@ -61,7 +61,7 @@
         "dance": {
           "row": 2,
           "frames": 6,
-          "fps": 8,
+          "fps": 5,
           "loop": true
         }
       }
@@ -93,7 +93,7 @@
         "dance": {
           "row": 2,
           "frames": 6,
-          "fps": 8,
+          "fps": 5,
           "loop": true
         }
       }
@@ -125,7 +125,7 @@
         "dance": {
           "row": 2,
           "frames": 6,
-          "fps": 8,
+          "fps": 5,
           "loop": true
         }
       }
@@ -157,7 +157,7 @@
         "dance": {
           "row": 2,
           "frames": 6,
-          "fps": 8,
+          "fps": 5,
           "loop": true
         }
       }

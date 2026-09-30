@@ -619,3 +619,41 @@ html[data-splash-active="true"] #app { visibility: hidden; }
 .cv-sound-toggle { min-height: 34px; padding-top: 6px; padding-bottom: 6px; }
 .cv-settings__range { height: 32px; }
 .cv-settings__link { padding-top: 10px; padding-bottom: 8px; }
+
+/* ---------- Result score grid (all three games) ----------
+   Score and best side by side (big), the other numbers small in the row under them — the
+   result card fits a phone screen without scrolling. */
+.cv-score-grid {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 1px;
+  margin: 0 0 12px;
+  border: 1px solid var(--cv-line-faint);
+  background: var(--cv-line-faint);   /* the 1px gaps draw the cell lines */
+}
+.cv-score-grid .cv-menu__row {
+  grid-column: span 2;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 4px;
+  min-width: 0;
+  padding: 7px 2px 6px;
+  border: 0;
+  background: var(--cv-ivory);
+}
+.cv-score-grid .cv-menu__row.is-main { grid-column: span 3; }
+.cv-score-grid dt { display: flex; align-items: center; font-size: 11px; }
+.cv-score-grid dt .cv-tag { margin-right: 5px; }
+.cv-score-grid dd {
+  text-align: center;
+  font: 400 17px/1 var(--cv-font-num);
+  font-variant-numeric: lining-nums tabular-nums;
+  color: var(--cv-ink);
+}
+.cv-score-grid .is-main dd { font-size: 24px; }
+#screen-result .cv-panel { padding: 26px 22px 18px; }
+#screen-result .cv-eyebrow { margin-bottom: 4px; }
+.cv-score-grid--row .cv-menu__row,
+.cv-score-grid--row .cv-menu__row.is-main { grid-column: span 2; }   /* all cells in one row */
+.cv-score-grid--row .is-main dd { font-size: 22px; }

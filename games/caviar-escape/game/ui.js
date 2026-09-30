@@ -35,13 +35,10 @@
       titleBest: $('title-best'),
       result: $('screen-result'),
       resultTitle: $('result-title'),
-      resultCaption: $('result-caption'),
       resultScore: $('result-score'),
       resultBest: $('result-best'),
       resultNew: $('result-new'),
       resultDetail: $('result-detail'),
-      resultPearls: $('result-pearls'),
-      resultFigure: $('result-figure'),
       picker: $('member-picker'),
       memberName: $('member-name'),
       btnStart: $('btn-start'),
@@ -167,9 +164,6 @@
   P.showResult = function (d) {
     var el = this.el, success = d.result === 'clear';
     el.resultTitle.textContent = success ? '성공' : '게임 오버';
-    el.resultCaption.textContent = success
-      ? '캐비어를 무사히 전달했어요.'
-      : '캐비어는 케이스 안에 안전해요.\n다시 도전해보세요.';
     el.resultScore.textContent = pad(d.score, 5);
     el.resultBest.textContent = pad(d.best, 5);
     el.resultNew.hidden = !d.isNewBest;
@@ -178,19 +172,12 @@
     if (success) parts.push('라이프 보너스 +' + d.lifeBonus);
     el.resultDetail.textContent = parts.join('  ·  ');
 
-    if (this.member) {
-      applySprite(el.resultFigure, this.member, success ? 'dance' : 'idle', 96, 96, 4, true);
-    }
-
-    el.resultPearls.classList.toggle('is-success', success);
-
     // A vertical game: the success / fail scene fills the screen first (9:16), a tap
     // brings up the score card.
     el.title.classList.remove('is-open');
     var self = this;
     this._showScene(success, function () {
       el.result.classList.add('is-open');
-      restartClass(el.resultPearls, 'is-aligning');
       self._focusLater(el.btnRetry);
     });
   };

@@ -310,11 +310,10 @@
 
 /* ---------- Title / result cards ---------- */
 .cm-card__title { margin-top: 12px; font-size: 44px; }
-.cm-card__title--result { font-size: 38px; }
+.cm-card__title--result { margin: 0 0 12px; font-size: 28px; white-space: nowrap; }
 .cm-card__sub { margin: 8px 0 0; font: 500 13px/1 var(--cv-font-ui); letter-spacing: 0.12em; text-indent: 0.12em; color: var(--cv-ink-soft); }
 .cm-card__lede { max-width: 21em; margin: 0 auto 20px; }
 .cm-card__menu { margin: 0 0 22px; }
-.cm-result-pearls { margin: 16px 0 18px; }
 .cm-card .cv-menu--score dd { font-size: 24px; }
 
 /* ---------- Short screens ---------- */

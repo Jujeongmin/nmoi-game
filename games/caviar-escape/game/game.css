@@ -86,30 +86,12 @@
 
 /* ---------- Cards ---------- */
 .ce-card__title { margin-top: 12px; font-size: 50px; }
-.ce-card__title--result { margin-top: 10px; font-size: 34px; }
+.ce-card__title--result { margin: 0 0 14px; font-size: 32px; }
 .ce-card__sub { margin: 8px 0 0; font: 500 13px/1 var(--cv-font-ui); letter-spacing: 0.12em; text-indent: 0.12em; color: var(--cv-ink-soft); }
 .ce-card__lede { max-width: 21em; margin: 0 auto 20px; }
 .ce-card__menu { margin: 0 0 22px; }
-.ce-card__caption { margin: 0 auto 18px; max-width: 24em; font-size: 14px; white-space: pre-line; }
-.ce-card__detail { margin: -10px 0 20px; }
+.ce-card__detail { margin: -6px 0 12px; }
 .ce-num { font-family: var(--cv-font-num); font-size: 18px; font-style: normal !important; font-variant-numeric: lining-nums tabular-nums; }
-
-/* Result pearls drift in from scattered positions and settle into a row. */
-.ce-result-pearls { margin: 20px 0 14px; }
-.ce-result-pearls .cv-pearl { --size: 16px; }
-.ce-result-pearls.is-aligning .cv-pearl { animation: ce-align 0.9s cubic-bezier(.2,.7,.2,1) backwards; }
-.ce-result-pearls.is-aligning .cv-pearl:nth-child(1) { --fx: -26px; --fy: 14px; animation-delay: 0.10s; }
-.ce-result-pearls.is-aligning .cv-pearl:nth-child(2) { --fx: -8px;  --fy: -18px; animation-delay: 0.18s; }
-.ce-result-pearls.is-aligning .cv-pearl:nth-child(3) { --fx: 12px;  --fy: 16px; animation-delay: 0.26s; }
-.ce-result-pearls.is-aligning .cv-pearl:nth-child(4) { --fx: 28px;  --fy: -12px; animation-delay: 0.34s; }
-.ce-result-pearls.is-success .cv-pearl {
-  box-shadow: inset 0 -1px 2px rgba(0,0,0,.3), 0 0 0 3px var(--cv-ivory), 0 0 0 4px var(--cv-line);
-}
-
-@keyframes ce-align {
-  0% { opacity: 0; transform: translate(var(--fx), var(--fy)) scale(0.6); }
-  100% { opacity: 1; transform: none; }
-}
 
 /* ---------- Member picker ---------- */
 .ce-picker { margin: 0 0 18px; }
@@ -145,14 +127,6 @@
   letter-spacing: 0.08em;
   text-indent: 0.08em;
   color: var(--cv-ink);
-}
-
-/* Result: the chosen member dances (success) or stands (game over). */
-.ce-figure {
-  position: relative;
-  width: 96px;
-  height: 92px;
-  margin: 14px auto -6px;
 }
 
 /* Result scene before the score card: 9:16 art (star chef / shark-hat member), tap for the card */
@@ -193,10 +167,8 @@
   .ce-card__lede { margin-bottom: 14px; }
   .cv-menu__row { padding: 7px 0; }
   .ce-card__menu { margin-bottom: 16px; }
-  .ce-result-pearls { margin: 14px 0 10px; }
   .ce-card__lede { display: none; }
   .ce-picker { margin-bottom: 14px; }
-  .ce-figure { margin-top: 8px; }
 }
 
 @media (max-height: 480px) {
@@ -206,3 +178,7 @@
   .cv-value { font-size: 20px; }
   .ce-card__lede { display: none; }
 }
+
+/* Result card fits a phone screen without scrolling */
+#screen-result .ce-card__title--result { margin-bottom: 10px; font-size: 28px; }
+#screen-result .ce-card__detail { margin: -8px 0 8px; }

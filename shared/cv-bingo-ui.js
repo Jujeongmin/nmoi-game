@@ -261,19 +261,28 @@
 
   /* ---------- progress bar + booster nudge (landing + result cards) ---------- */
 
-  function progressBlock(dark) {
+  /* compact (result cards): no pre-save line (the pre-save button says it), and the head
+     links to the bingo board. */
+  function progressBlock(dark, compact, gained) {
     var p = B.weekProgress();
     var box = el('div', 'cv-progress' + (dark ? ' is-dark' : ''));
     var head = el('p', 'cv-progress__head');
     head.appendChild(el('b', '', NS.campaign.weeks[p.week].label + ' 미션 ' + p.done + ' / ' + p.total));
     head.appendChild(document.createTextNode(' · 응모권 ' + A.state().tickets + '장'));
+    if (gained) head.appendChild(el('span', 'cv-progress__gain', '+' + gained));   // this run's tickets
+    if (compact) {
+      var go = el('button', 'cv-progress__link', '빙고판 ›');
+      go.type = 'button';
+      go.addEventListener('click', function () { api.open(); });
+      head.appendChild(go);
+    }
     box.appendChild(head);
     var bar = el('div', 'cv-progress__bar');
     var fill = el('span');
     fill.style.width = Math.round(p.done / p.total * 100) + '%';
     bar.appendChild(fill);
     box.appendChild(bar);
-    if (!A.presaved() && !NS.campaign.isReleased()) {
+    if (!compact && !A.presaved() && !NS.campaign.isReleased()) {
       box.appendChild(el('p', 'cv-progress__nudge', '프리세이브하면 점수 x' + CFG.booster + ' · 하루 1판 더 · 응모권 +' + CFG.tickets.presave));
     }
     return box;
@@ -346,17 +355,6 @@
     }
     setTimeout(function () { chibi.play(anim); }, 0);   // once it is in the card and has a size
     return wrap;
-  }
-
-  /* Tickets the run earned (first run of the game · today's run). */
-  function ticketLine(gameId) {
-    var got = A.runGrants(gameId);
-    var line = el('p', 'cv-run-tickets');
-    if (!got.length) return line;
-    var names = { first: '첫 플레이', daily: '오늘의 플레이' };
-    var sum = got.reduce(function (t, g) { return t + g.n; }, 0);
-    line.textContent = '응모권 +' + sum + ' · ' + got.map(function (g) { return names[g.reason] || g.reason; }).join(' · ');
-    return line;
   }
 
   /* S4 nudge (overview §5): the real score x booster — never a made-up number — and what it
@@ -490,15 +488,11 @@
       } else {
         box.classList.remove('is-new');
       }
-      box.appendChild(progressBlock(fresh && fresh.length));
-      var more = el('button', 'cv-quest-result__more', questLinkText(gameId));
-      more.type = 'button';
-      more.addEventListener('click', function () { api.open(); });
-      box.appendChild(more);
+      var gained = A.runGrants(gameId).reduce(function (t, g) { return t + g.n; }, 0);
+      box.appendChild(progressBlock(fresh && fresh.length, true, gained));
 
       var member = memberLine(gameId, fresh);
       if (member) box.insertBefore(member, box.firstChild);
-      box.appendChild(ticketLine(gameId));
       var nudge = boosterNudge(gameId);
       if (nudge) box.appendChild(nudge);
       if (NS.leaderboard) NS.leaderboard.renderResult(box, gameId);

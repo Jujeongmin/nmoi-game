@@ -422,3 +422,38 @@
 
 /* Touch: the "빙고판 보기" links get a finger-sized hit area */
 .cv-quest-link, .cv-quest-result__more { min-height: 36px; padding-top: 9px; padding-bottom: 7px; }
+
+/* ---------- Result cards, compact (no scrolling on a phone) ---------- */
+.cv-progress__head { display: flex; align-items: baseline; flex-wrap: wrap; column-gap: 4px; }
+.cv-progress__head b { margin-right: 2px; }
+.cv-progress__link {
+  appearance: none;
+  margin-left: auto;
+  padding: 6px 0 4px 10px;
+  border: 0;
+  background: none;
+  font: 700 12px/1 var(--cv-font-ui);
+  color: #7c6230;
+  cursor: pointer;
+}
+.cv-progress.is-dark .cv-progress__link { color: var(--cv-gold-bright); }
+.cv-quest-result .cv-progress { margin-bottom: 10px; }
+.cv-quest-result .cv-progress__head { margin-bottom: 4px; }
+.cv-quest-result .cv-presave-cta { min-height: 38px; margin: 0 0 8px; padding: 6px 10px; }
+.cv-quest-result .cv-nudge__text { margin-bottom: 4px; font-size: 12px; }
+.cv-quest-result .cv-share { margin-bottom: 10px; padding: 7px 10px; }
+.cv-quest-result .cv-rank-line { margin-bottom: 6px; }
+.cv-quest-result .cv-result-member { margin-bottom: 6px; }
+.cv-quest-result .cv-result-member .cv-chibi { width: 52px; height: 70px; }
+.cv-quest-result .cv-result-member__replies { margin-bottom: 4px; }
+.cv-quest-result + .cv-actions, .cv-quest-result ~ .cv-actions { margin-top: 0; }
+#screen-result .cv-brand-badge { margin-top: 10px; padding-top: 8px; }
+.cv-quest-result .cv-result-member__line { padding: 7px 9px; }
+.cv-quest-result .cv-result-member__line b { display: inline; margin: 0 6px 0 0; }   /* name on the same line */
+.cv-quest-result .cv-result-member__replies { flex-wrap: nowrap; gap: 4px; }
+.cv-quest-result .cv-result-member__reply { flex: none; padding: 6px 8px; font-size: 11.5px; white-space: nowrap; }
+.cv-quest-result .cv-share { padding: 6px 10px; }
+#screen-result .cv-brand-badge { margin-top: 8px; padding-top: 6px; }
+.cv-quest-result .cv-presave-cta { gap: 6px; font-size: 12px; }
+.cv-progress__gain { margin-left: 2px; font-weight: 700; color: var(--cv-gold); }
+.cv-progress.is-dark .cv-progress__gain { color: var(--cv-gold-bright); }

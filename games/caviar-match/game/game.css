@@ -99,7 +99,7 @@
 
 /* ---------- Cards ---------- */
 .cm-card__title { margin-top: 12px; font-size: 50px; }
-.cm-card__title--result { margin-top: 10px; font-size: 34px; }
+.cm-card__title--result { margin: 0 0 10px; font-size: 28px; }
 .cm-card__sub { margin: 8px 0 0; font: 500 13px/1 var(--cv-font-ui); letter-spacing: 0.12em; text-indent: 0.12em; color: var(--cv-ink-soft); }
 .cm-card__lede { max-width: 21em; margin: 0 auto 18px; }
 .cm-card__menu { margin: 0 0 20px; }
@@ -133,16 +133,18 @@
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 4px;
-  margin: -6px 0 20px;
+  margin: 0 0 10px;
   padding: 0;
   list-style: none;
 }
 .cm-result-types li {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: auto auto;   /* pearl + name, the count under them */
+  justify-content: center;
   align-items: center;
-  gap: 6px;
+  gap: 3px 4px;
 }
+.cm-result-types__count { grid-column: 1 / -1; text-align: center; }
 .cm-result-types .cv-pearl { --size: 16px; }
 .cm-result-types.is-aligning .cv-pearl { animation: cm-align 0.9s cubic-bezier(.2,.7,.2,1) backwards; }
 .cm-result-types li:nth-child(1) .cv-pearl { --fx: -22px; --fy: 12px;  animation-delay: 0.10s; }
@@ -173,7 +175,7 @@
   .cm-slot__name { font-size: 8px; letter-spacing: 0.03em; }
   .cv-panel { padding: 30px 20px 22px; }
   .cm-card__title { font-size: 44px; }
-  .cm-card__title--result { font-size: 30px; }
+  .cm-card__title--result { font-size: 26px; }
   .cm-legend { gap: 8px; }
 }
 
@@ -185,7 +187,7 @@
   .cv-app { gap: 6px; }
   .cv-panel { padding: 24px 20px 18px; }
   .cm-card__title { font-size: 38px; margin-top: 8px; }
-  .cm-card__title--result { font-size: 28px; }
+  .cm-card__title--result { font-size: 26px; }
   .cv-rule { margin: 12px auto; }
   .cv-menu__row { padding: 7px 0; }
   .cv-menu--score dd { font-size: 24px; }

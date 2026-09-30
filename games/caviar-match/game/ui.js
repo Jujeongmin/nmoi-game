@@ -47,7 +47,6 @@ CM.UI = (function () {
         resultBest: $('result-best'),
         resultNew: $('result-new'),
         resultCombo: $('result-combo'),
-        resultCollected: $('result-collected'),
         resultTypes: $('result-types'),
       };
       this.cache = {};
@@ -155,7 +154,6 @@ CM.UI = (function () {
       e.resultBest.textContent = pad(d.best, 5);
       e.resultNew.hidden = !d.newBest;
       e.resultCombo.textContent = String(d.maxCombo);
-      e.resultCollected.textContent = String(d.total);
 
       const list = e.resultTypes;
       list.innerHTML = '';
