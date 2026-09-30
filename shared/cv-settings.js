@@ -176,10 +176,16 @@
   function close() { if (box) box.classList.remove('is-open'); }
   document.addEventListener('keydown', function (e) { if (e.key === 'Escape') close(); });
 
-  /** A settings button (gear) for title cards and page headers. */
+  var GEAR = '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false">' +
+    '<path fill="currentColor" fill-rule="evenodd" d="M10.3 2h3.4l.5 2.6c.6.2 1.2.5 1.7.9l2.5-.9 1.7 2.9-2 1.8c.1.6.1 1.2 0 1.8l2 1.8-1.7 2.9-2.5-.9c-.5.4-1.1.7-1.7.9l-.5 2.6h-3.4l-.5-2.6c-.6-.2-1.2-.5-1.7-.9l-2.5.9-1.7-2.9 2-1.8c-.1-.6-.1-1.2 0-1.8l-2-1.8 1.7-2.9 2.5.9c.5-.4 1.1-.7 1.7-.9zM12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6z"/></svg>';
+
+  /** A settings button (gear icon only; the name is in aria-label) for title cards and page headers. */
   function button(extraClass) {
-    var b = el('button', 'cv-settings-btn' + (extraClass ? ' ' + extraClass : ''), '⚙ 설정');
+    var b = el('button', 'cv-settings-btn' + (extraClass ? ' ' + extraClass : ''));
     b.type = 'button';
+    b.setAttribute('aria-label', '설정');
+    b.title = '설정';
+    b.innerHTML = GEAR;
     b.addEventListener('click', open);
     return b;
   }

@@ -66,7 +66,7 @@
   };
 
   var REWARDS = [
-    { key: 'card', label: '달성', reward: '칸마다 B컷 카드 1장' },
+    { key: 'card', label: '달성', reward: '칸마다 B컷 1장' },
     { key: 'line', label: '줄 완성', reward: '응모권 +3' },
     { key: 'full', label: '판 완성', reward: '상위 등급 · 쇼케이스 초청 추첨' }
   ];

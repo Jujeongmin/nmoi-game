@@ -323,6 +323,10 @@
   gap: 2px 8px;
 }
 .lp-opts--3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+/* Three narrow columns: the gold frame marks the pick, so no check mark eats the room and a
+   4-letter caviar name (임페리얼, 화이트펄) stays on one line. */
+.lp-opts--3 .lp-opt { gap: 4px; padding-left: 7px; padding-right: 5px; }
+.lp-opts--3 .lp-opt.is-checked::after { content: none; }
 
 .lp-opt {
   position: relative;
@@ -681,7 +685,7 @@
   color: var(--cv-ink);
   cursor: pointer;
 }
-.lp-nav__item b { font: 600 15px/1 var(--cv-font-display); letter-spacing: 0.06em; }
+.lp-nav__item b { flex: none; font: 600 15px/1 var(--cv-font-display); letter-spacing: 0.06em; white-space: nowrap; }   /* the note wraps, never the name */
 .lp-nav__item span { font: 500 12px/1.3 var(--cv-font-ui); color: var(--cv-ink-soft); text-align: right; word-break: keep-all; }
 .lp-nav__item:hover b { color: #7c6230; }
 .lp-nav__item.is-disabled { cursor: default; opacity: 0.45; }
@@ -702,6 +706,7 @@
 @media (max-width: 380px) {
   .lp-sheet { padding: 22px 16px 16px; }
   .lp-opt { padding: 6px 7px; font-size: 12px; }
+  .lp-opts--3 .lp-opt { gap: 3px; padding: 6px 4px 6px 6px; }
   .lp-serve__host { grid-template-columns: minmax(0, 1fr) 140px; }
   .lp-host { width: 140px; height: 176px; }
   .lp-bubble { padding: 14px 12px; font-size: 14px; }
@@ -726,8 +731,11 @@
 }
 
 /* Leaderboard tabs + list */
-.lp-rank__tabs { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 4px; margin-bottom: 10px; }
-.lp-rank__tab { appearance: none; min-height: 34px; padding: 4px; border: 1px solid var(--cv-line-faint); background: transparent; font: 600 11px/1.2 var(--cv-font-ui); color: var(--cv-ink-soft); word-break: keep-all; cursor: pointer; }
+/* Tabs size to their names (통합 is short, 캐비어를 훔쳐라 long) so every name stays on one line. */
+.lp-rank__tabs { display: flex; gap: 4px; margin-bottom: 10px; }
+.lp-rank__tab { appearance: none; flex: 1 1 auto; min-width: 0; min-height: 34px; padding: 4px; border: 1px solid var(--cv-line-faint); background: transparent; font: 600 11px/1.2 var(--cv-font-ui); color: var(--cv-ink-soft); white-space: nowrap; cursor: pointer; }
+.lp-rank__tabs--season .lp-rank__tab { flex: 1 1 0; }
+@media (max-width: 350px) { .lp-rank__tab { padding: 4px 2px; font-size: 10px; letter-spacing: -0.02em; } }
 .lp-rank__tab.is-on { background: var(--cv-onyx); border-color: var(--cv-gold); color: var(--cv-gold-bright); }
 .lp-rank__board { min-height: 150px; }
 .lp-rank__note { margin: 20px 0; font: 500 13px/1.5 var(--cv-font-ui); text-align: center; color: var(--cv-ink-soft); word-break: keep-all; }
@@ -818,7 +826,7 @@
 @keyframes lp-nudge { 20%, 60% { transform: translateX(-4px); } 40%, 80% { transform: translateX(4px); } }
 
 /* Season tabs (ranking) */
-.lp-rank__tabs--season { grid-template-columns: repeat(auto-fit, minmax(0, 1fr)); margin-bottom: 4px; }
+.lp-rank__tabs--season { margin-bottom: 4px; }
 .lp-rank__season { margin: 0 0 10px; font: 500 11px/1.3 var(--cv-font-ui); color: var(--cv-ink-soft); }
 
 /* Invite sheet (ivory panel) */

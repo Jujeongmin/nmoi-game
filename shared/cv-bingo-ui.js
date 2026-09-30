@@ -137,8 +137,23 @@
       els.board.appendChild(b);
     });
     if (lines.length) els.board.appendChild(renderLines(lines));
+    // After the translation pass (a microtask): long names shrink instead of wrapping.
+    setTimeout(function () { oneLine(els.board.querySelectorAll('.cv-bingo__name'), 8); }, 0);
     B.markSeen();
     renderDetail(cells);
+  }
+
+  /* Keep each label on one line: step the font down (to minPx at most) while it overflows. */
+  function oneLine(nodes, minPx) {
+    Array.prototype.forEach.call(nodes, function (n) {
+      n.style.fontSize = '';
+      if (!n.clientWidth) return;   // not laid out (board hidden)
+      var fs = parseFloat(getComputedStyle(n).fontSize);
+      while (n.scrollWidth > n.clientWidth + 0.5 && fs > minPx) {
+        fs -= 0.5;
+        n.style.fontSize = fs + 'px';
+      }
+    });
   }
 
   function rewardTiers() {

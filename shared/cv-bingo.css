@@ -37,7 +37,7 @@
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 4px;
-  padding: 8px;
+  padding: 6px;
   border: 1px solid var(--cv-line-faint);
   background: #080706;
 }
@@ -101,13 +101,14 @@
 }
 
 .cv-bingo__name {
-  max-width: 100%;
-  padding: 1px 3px;
+  max-width: calc(100% + 4px);   /* may reach into the gap between cells */
+  padding: 1px;
+  overflow: hidden;
   background: #080706;   /* masks the bingo rule behind the label */
   font: 600 10px/1.2 var(--cv-font-ui);
-  letter-spacing: -0.01em;
+  letter-spacing: -0.02em;
   text-align: center;
-  word-break: keep-all;
+  white-space: nowrap;   /* one line; cv-bingo-ui.js shrinks the long ones */
 }
 .cv-bingo__cell.is-done .cv-bingo__name { color: var(--cv-gold-bright); }
 .cv-bingo__cell.is-presave .cv-bingo__name { color: var(--cv-gold); }

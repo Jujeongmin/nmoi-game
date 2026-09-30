@@ -316,3 +316,12 @@
 /* Touch: header back link and the B-cut button get finger-sized hit areas */
 .pg-bar__back { display: inline-flex; align-items: center; min-height: 40px; padding: 0 8px 0 0; }
 .pg-polaroid__open { min-height: 36px; }
+
+/* One-line labels: header buttons, basket spots and note titles never break inside a word. */
+.pg-bar__back, .pg-bar__bingo, .pg-bar__title, .cv-host__back, .cv-host__bingo, .pg-spot__label, .pg-note__title { white-space: nowrap; }
+@media (max-width: 360px) {
+  .pg-bar { padding-left: 12px; padding-right: 12px; }
+  .pg-bar__title { font-size: 15px; letter-spacing: 0.08em; text-indent: 0.08em; }
+  .pg-bar__bingo { padding: 0 9px; }
+  .pg-recipe__title { font-size: 26px; }
+}

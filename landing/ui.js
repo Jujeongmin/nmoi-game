@@ -176,6 +176,8 @@
     var form = this.el.form;
     this.el.nickname.value = answers.nickname || '';
     this.el.email.value = answers.email || '';
+    // Same account on another device: the server holds the e-mail, the field may stay empty.
+    this.el.email.placeholder = !answers.email && answers.emailOnServer ? '등록된 이메일 사용 중' : 'name@example.com';
     $('consent').checked = !!answers.consent;
     ['mood', 'caviar', 'eat', 'drink'].forEach(function (name) {
       Array.prototype.forEach.call(form.querySelectorAll('input[name="' + name + '"]'), function (i) {
