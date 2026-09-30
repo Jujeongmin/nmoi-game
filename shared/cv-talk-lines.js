@@ -85,7 +85,7 @@
       bingo:   ['빙고 보러 가요! 빙고~ 빙고~', "Let's check the bingo! Bingo~ bingo~", 'ビンゴ見に行こう! ビンゴ~ ビンゴ~', '去看賓果! 賓果~ 賓果~', '去看宾果! 宾果~ 宾果~'],
       presave: ['프리세이브 해주면 막내가 애교 할게요!', "Pre-save and the maknae will do aegyo!", 'プリセーブしてくれたら末っ子が愛嬌します!', '預存的話忙內就撒嬌給你看!', '预存的话老幺就撒娇给你看!'],
       caviar:  ['{caviar}! 저 편식 안 해요, 다 좋아요!', "{caviar}! I'm not picky, I love them all!", '{caviar}! 好き嫌いないよ、全部好き!', '{caviar}! 我不挑食，都喜歡!', '{caviar}! 我不挑食，都喜欢!'],
-      drink:   ['{drink}? 그럼 저는 막내라 물이요!', "{drink}? Then I'm the maknae, water for me!", '{drink}? じゃあ末っ子のわたしはお水で!', '{drink}? 那我是忙內，我喝水!', '{drink}? 那我是老幺，我喝水!']
+      drink:   ['{drink|이랑/랑} 캐비어라니! 막내 입맛에도 완전 합격이에요!', '{drink} with caviar? Even the maknae says: total pass!', '{drink}とキャビアなんて! 末っ子の舌にも大合格!', '{drink}配魚子醬! 忙內的味蕾也完全合格!', '{drink}配鱼子酱! 老幺的味蕾也完全合格!']
     }
   };
 
