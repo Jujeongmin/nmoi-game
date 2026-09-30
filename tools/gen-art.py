@@ -26,24 +26,37 @@ STYLE = (
     "subtle shadow, ivory and gold palette, isolated object on a fully transparent background, "
     "no text, no logo, no hands, no people"
 )
+CUTE = (
+    "cute chibi mobile-game illustration, clean dark-navy outlines, soft cel shading with glossy highlights, "
+    "rounded friendly shapes, warm ivory and gold accents, isolated on a fully transparent background, "
+    "no text, no logo, no faces on food"
+)
 TOP = "Seen from directly above (top-down, flat lay), centred, filling about 80% of the frame. "
 
 ITEMS = {
-    # Caviar Master Chef — plate, signature dish, ingredients (top-down, they sit on the plate)
-    "plate": dict(out="assets/chef/plate.webp", px=640,
-                  prompt=TOP + "An empty round fine-dining porcelain plate, warm ivory glaze, a thin hand-painted gold rim line."),
-    "signature": dict(out="assets/chef/signature.webp", px=320,
-                      prompt=TOP + "An empty small round black caviar serving dish, mother-of-pearl inlay rim, elegant."),
-    "cracker": dict(out="assets/chef/cracker.webp", px=256,
-                    prompt=TOP + "One round golden crisp cracker with fine docking holes."),
-    "cream": dict(out="assets/chef/cream.webp", px=256,
-                  prompt=TOP + "One neat quenelle of white crème fraîche, glossy and smooth."),
-    "lemon": dict(out="assets/chef/lemon.webp", px=256,
-                  prompt=TOP + "One thin wheel of fresh lemon, juicy and bright yellow."),
-    "herb": dict(out="assets/chef/herb.webp", px=256,
-                 prompt=TOP + "One small delicate sprig of fresh green dill."),
-    "salmon": dict(out="assets/chef/salmon.webp", px=256,
-                   prompt=TOP + "One folded rose of thinly sliced smoked salmon, glistening coral pink."),
+    # Caviar Master Chef — cute illustration set in the shark's style (top-down, they sit on the plate)
+    "plate": dict(out="assets/chef/plate.webp", px=640, style=CUTE,
+                  prompt=TOP + "An empty round ivory porcelain plate with a thin gold rim."),
+    "signature": dict(out="assets/chef/signature.webp", px=320, style=CUTE,
+                      prompt=TOP + "An empty small round black caviar dish with a pearly iridescent rim."),
+    "cracker": dict(out="assets/chef/cracker.webp", px=256, style=CUTE,
+                    prompt=TOP + "One round golden cracker with little docking holes."),
+    "cream": dict(out="assets/chef/cream.webp", px=256, style=CUTE,
+                  prompt=TOP + "One soft swirl dollop of white cream."),
+    "lemon": dict(out="assets/chef/lemon.webp", px=256, style=CUTE,
+                  prompt=TOP + "One round slice of bright yellow lemon."),
+    "herb": dict(out="assets/chef/herb.webp", px=256, style=CUTE,
+                 prompt=TOP + "One small sprig of green dill."),
+    "salmon": dict(out="assets/chef/salmon.webp", px=256, style=CUTE,
+                   prompt=TOP + "One folded rose of pink smoked salmon."),
+    "caviar-almas": dict(out="assets/chef/caviar-almas.webp", px=192, style=CUTE,
+                        prompt=TOP + "A small neat mound of pale ivory-white caviar pearls."),
+    "caviar-imperial": dict(out="assets/chef/caviar-imperial.webp", px=192, style=CUTE,
+                        prompt=TOP + "A small neat mound of olive-green caviar pearls."),
+    "caviar-classic": dict(out="assets/chef/caviar-classic.webp", px=192, style=CUTE,
+                        prompt=TOP + "A small neat mound of glossy black caviar pearls."),
+    "caviar-platinum": dict(out="assets/chef/caviar-platinum.webp", px=192, style=CUTE,
+                        prompt=TOP + "A small neat mound of golden amber caviar pearls."),
     # Caviar Escape — the shark: a cute character, side view, facing right (+x); the game rotates
     # it to its heading and flips it when it swims left, so the fin stays on top.
     "shark": dict(out="assets/escape/shark.webp", px=384,
