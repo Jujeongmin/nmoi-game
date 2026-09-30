@@ -87,8 +87,7 @@ def main():
         srv = target / "server.js"
         text = srv.read_text(encoding="utf-8")
         text = text.replace("[/*ADMINS*/]", json.dumps(ids))
-        srv.write_text(text, encoding="utf-8", newline="
-")
+        srv.write_text(text, encoding="utf-8", newline="\n")
         print(f"admins: {len(ids)} from verse8/admins.local.json")
 
     # Static hub pages (games, content pages) load the built bridge as a module, from the
