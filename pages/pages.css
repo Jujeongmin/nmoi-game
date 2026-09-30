@@ -325,3 +325,4 @@
   .pg-bar__bingo { padding: 0 9px; }
   .pg-recipe__title { font-size: 26px; }
 }
+.cv-host__title { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

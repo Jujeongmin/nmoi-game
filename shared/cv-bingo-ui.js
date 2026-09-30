@@ -392,7 +392,7 @@
     if (need && run.score < need && boosted >= need) text += ' → 미션 달성이었어요';
     else if (need && boosted < need) text += ' · 미션(' + fmt(need) + '점)까지 ' + fmt(need - boosted) + '점';
     wrap.appendChild(el('p', 'cv-nudge__text', text));
-    wrap.appendChild(ctaButton('Spotify 프리세이브 · 다음 판부터 x' + CFG.booster + ' →'));
+    wrap.appendChild(ctaButton('Spotify · 다음 판부터 x' + CFG.booster + ' →'));   // the PRE-SAVE tag says the rest
     return wrap;
   }
 

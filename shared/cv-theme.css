@@ -52,10 +52,15 @@
   scroll-behavior: auto !important;
 }
 
-/* Text never runs out of its box: long words (English) and URLs may break anywhere. Korean keeps
-   whole words (keep-all), but Japanese and Chinese have no spaces — keep-all would stop them from
-   wrapping at all, so they break between characters (with the usual line-start rules). */
-* { overflow-wrap: anywhere; }
+/* Line breaks at spaces: Korean keeps whole words (keep-all) everywhere; a word breaks inside
+   only when it alone is wider than its box (break-word — unlike "anywhere" it does not shrink
+   boxes, so a label that fits on one line stays on one line). Headings balance their lines,
+   paragraphs avoid a lone last word. Japanese and Chinese have no spaces — keep-all would stop
+   them from wrapping at all, so they break between characters (with the usual line-start rules). */
+html { word-break: keep-all; overflow-wrap: break-word; }
+* { overflow-wrap: break-word; }
+h1, h2, h3 { text-wrap: balance; }
+p, dd, li { text-wrap: pretty; }
 html[lang="ja"] *, html[lang="zh-Hant"] *, html[lang="zh-Hans"] * { word-break: normal !important; line-break: strict; }
 
 /* Japanese / Chinese: the system CJK fonts first so Han characters match the kana / hanzi. */
@@ -178,7 +183,7 @@ html[lang="zh-Hans"] { --cv-font-ui: "PingFang SC", "Microsoft YaHei", "Noto San
 }
 .cv-settings__lang.is-on { border-color: var(--cv-onyx); background: var(--cv-onyx); color: var(--cv-gold-bright); }
 .cv-settings__row { display: flex; align-items: center; gap: 10px; min-height: 36px; }
-.cv-settings__label { flex: 1 1 auto; text-align: left; font: 600 13px/1.3 var(--cv-font-ui); color: var(--cv-ink); }
+.cv-settings__label { flex: 1 0 auto; text-align: left; font: 600 13px/1.3 var(--cv-font-ui); color: var(--cv-ink); }
 .cv-settings__value { flex: none; width: 30px; font: 700 12px/1 var(--cv-font-ui); color: var(--cv-ink-soft); text-align: right; }
 .cv-settings__range { flex: 0 1 150px; width: 150px; accent-color: var(--cv-onyx); cursor: pointer; }
 .cv-settings__switch {
@@ -657,3 +662,14 @@ html[data-splash-active="true"] #app { visibility: hidden; }
 .cv-score-grid--row .cv-menu__row,
 .cv-score-grid--row .cv-menu__row.is-main { grid-column: span 2; }   /* all cells in one row */
 .cv-score-grid--row .is-main dd { font-size: 22px; }
+
+/* A short part of an "A · B · C" line stays whole (cv-i18n.js keepParts): lines break at the dots. */
+.cv-part { white-space: nowrap; }
+/* Privacy notices: on a phone the label sits above its sentence, so the sentence gets the width */
+@media (max-width: 440px) {
+  .lp-privacy .cv-menu__row, .cv-settings__privacy .cv-menu__row { flex-direction: column; align-items: flex-start; gap: 3px; }
+  .lp-privacy .cv-menu dd, .cv-settings__privacy dd { text-align: left; }
+}
+/* the part span stays a plain inline run, whatever span rules its host has */
+.cv-part { display: inline !important; flex: none !important; margin: 0 !important; padding: 0 !important; border: 0 !important; background: none !important; transform: none !important; }
+.cv-parts { display: inline !important; flex: 0 1 auto; min-width: 0; margin: 0 !important; padding: 0 !important; border: 0 !important; background: none !important; }

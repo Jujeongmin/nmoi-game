@@ -142,23 +142,63 @@
       if (tr !== null) el.setAttribute(ATTRS[i], tr);
     }
   }
+  /* "A · B · C" lines break at the dots: each short part is kept whole (a nowrap span), so
+     "오늘 캐비어 이스케이프" or "하루 1판 더" never splits. Long parts (sentences) wrap as usual.
+     Member lines are skipped (cv-bingo-ui.js rewrites that text node in place). */
+  var SEP = ' · ', PART_MAX = 18;
+  function keepParts(node) {
+    var v = node.nodeValue, host = node.parentNode;
+    if (!v || v.indexOf(SEP) < 0 || !host || host.nodeType !== 1) return;
+    if (host.classList.contains('cv-part') || host.classList.contains('cv-parts') || host.closest('.cv-talk, .cv-result-member__line, .lp-bubble, [data-no-parts]')) return;
+    var parts = v.split(SEP);
+    if (!parts.some(function (p) { return p.trim() && p.trim().length <= PART_MAX; })) return;
+    var frag = document.createDocumentFragment();
+    parts.forEach(function (p, i) {
+      if (i) frag.appendChild(document.createTextNode(SEP));
+      var core = p.trim();
+      if (!core || core.length > PART_MAX) { if (p) frag.appendChild(document.createTextNode(p)); return; }
+      var lead = p.slice(0, p.indexOf(core)), tail = p.slice(p.indexOf(core) + core.length);
+      if (lead) frag.appendChild(document.createTextNode(lead));
+      var span = document.createElement('span');
+      span.className = 'cv-part';
+      span.textContent = core;
+      frag.appendChild(span);
+      if (tail) frag.appendChild(document.createTextNode(tail));
+    });
+    // In a flex / grid box every text run would become its own item: keep them in one span.
+    var d = getComputedStyle(host).display;
+    if (d.indexOf('flex') >= 0 || d.indexOf('grid') >= 0) {
+      var wrap = document.createElement('span');
+      wrap.className = 'cv-parts';
+      wrap.appendChild(frag);
+      frag = wrap;
+    }
+    host.replaceChild(frag, node);
+  }
+
   var SKIP = { SCRIPT: 1, STYLE: 1, TEXTAREA: 1 };
+  var translating = lang !== 'ko';
   function walk(root) {
     if (!root) return;
-    if (root.nodeType === 3) { if (!(root.parentNode && SKIP[root.parentNode.tagName])) translateNodeText(root); return; }
-    if (root.nodeType !== 1 || SKIP[root.tagName]) return;
-    translateAttrs(root);
-    var w = document.createTreeWalker(root, NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_TEXT, null);
-    var n;
-    while ((n = w.nextNode())) {
-      if (n.nodeType === 3) { if (!(n.parentNode && SKIP[n.parentNode.tagName])) translateNodeText(n); }
-      else translateAttrs(n);
+    if (root.nodeType === 3) {
+      if (!(root.parentNode && SKIP[root.parentNode.tagName])) { if (translating) translateNodeText(root); keepParts(root); }
+      return;
     }
+    if (root.nodeType !== 1 || SKIP[root.tagName]) return;
+    if (translating) translateAttrs(root);
+    var w = document.createTreeWalker(root, NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_TEXT, null);
+    var n, texts = [];
+    while ((n = w.nextNode())) {
+      if (n.nodeType === 3) { if (!(n.parentNode && SKIP[n.parentNode.tagName])) texts.push(n); }
+      else if (translating) translateAttrs(n);
+    }
+    // after the walk: keepParts replaces nodes, which would upset the tree walker
+    texts.forEach(function (t) { if (translating) translateNodeText(t); keepParts(t); });
   }
 
   document.documentElement.lang = lang;
-  if (lang !== 'ko') {
-    if (document.title && HANGUL.test(document.title)) document.title = translate(document.title) || document.title;
+  if (translating && document.title && HANGUL.test(document.title)) document.title = translate(document.title) || document.title;
+  {
     walk(document.body);
     // Our own edits are made while disconnected, so they never feed back into the observer.
     var OPTIONS = { childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: ATTRS };
@@ -167,8 +207,8 @@
       try {
         for (var i = 0; i < list.length; i++) {
           var r = list[i];
-          if (r.type === 'characterData') translateNodeText(r.target);
-          else if (r.type === 'attributes') translateAttrs(r.target);
+          if (r.type === 'characterData') { if (translating) translateNodeText(r.target); if (r.target.parentNode) keepParts(r.target); }
+          else if (r.type === 'attributes') { if (translating) translateAttrs(r.target); }
           else for (var k = 0; k < r.addedNodes.length; k++) walk(r.addedNodes[k]);
         }
       } finally {
