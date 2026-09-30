@@ -29,7 +29,10 @@ def long_path(p):
 
 ROOT = long_path(Path(__file__).parent.parent)
 COPY_DIRS = ["shared", "landing", "games", "pages"]
-ASSET_DIRS = ["assets/chibi", "assets/landing", "assets/caviar", "assets/bingo", "assets/pages", "assets/brand"]   # runtime assets only (no assets/source)
+# Runtime assets only (no assets/source). Every folder under assets/ except source/ — a new art
+# folder is picked up without editing this list.
+ASSET_DIRS = sorted("assets/" + p.name for p in (Path(__file__).resolve().parent.parent / "assets").iterdir()
+                    if p.is_dir() and p.name != "source")
 
 
 def main():
