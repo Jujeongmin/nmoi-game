@@ -363,7 +363,12 @@
     ctx.imageSmoothingQuality = 'high';
     ctx.save();
     ctx.scale(flip, 1);
-    ctx.drawImage(sheet, frame.col * m.cell, frame.row * m.cell, m.cell, m.cell,
+    // Source cell from the image actually loaded (a phone may still hold an older sheet
+    // with smaller cells); bounds and the drawn size stay in members.js cell units.
+    var cols = 0;
+    for (var k in m.anims) cols = Math.max(cols, m.anims[k].frames);
+    var sc = sheet.naturalWidth / cols;
+    ctx.drawImage(sheet, frame.col * sc, frame.row * sc, sc, sc,
       -bcx * s, -bcy * s, m.cell * s, m.cell * s);
     ctx.restore();
     ctx.shadowBlur = 0;

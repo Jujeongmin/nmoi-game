@@ -8,6 +8,7 @@ Default source is assets/source/nmoi (original exports, kept in the repo).
 Each member folder must contain <id>-sheet.png and <id>-manifest.json.
 Requires Pillow (pip install pillow).
 """
+import hashlib
 import json
 import os
 import sys
@@ -50,7 +51,9 @@ for mid in MEMBERS:
     members.append({
         "id": mid,
         "name": NAMES.get(mid, mid.capitalize()),
-        "sheet": "assets/chibi/" + mid + ".webp",
+        # ?v=<content hash>: a rebuilt sheet gets a new URL, so no phone keeps an old one
+        "sheet": "assets/chibi/" + mid + ".webp?v=" + hashlib.md5(
+            open(os.path.join(OUT, mid + ".webp"), "rb").read()).hexdigest()[:8],
         "cell": CELL,
         "bounds": {"x": bbox[0], "y": bbox[1], "w": bbox[2] - bbox[0], "h": bbox[3] - bbox[1]},
         "anims": {k: {"row": v["row"], "frames": v["frames"], "fps": v["fps"], "loop": v["loop"]}

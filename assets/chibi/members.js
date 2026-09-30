@@ -5,7 +5,7 @@
     {
       "id": "nara",
       "name": "나라",
-      "sheet": "assets/chibi/nara.webp",
+      "sheet": "assets/chibi/nara.webp?v=946e9dab",
       "cell": 384,
       "bounds": {
         "x": 137,
@@ -37,7 +37,7 @@
     {
       "id": "natalie",
       "name": "나탈리",
-      "sheet": "assets/chibi/natalie.webp",
+      "sheet": "assets/chibi/natalie.webp?v=01b0c6e4",
       "cell": 384,
       "bounds": {
         "x": 96,
@@ -69,7 +69,7 @@
     {
       "id": "serin",
       "name": "세린",
-      "sheet": "assets/chibi/serin.webp",
+      "sheet": "assets/chibi/serin.webp?v=11186c14",
       "cell": 384,
       "bounds": {
         "x": 120,
@@ -101,7 +101,7 @@
     {
       "id": "tiya",
       "name": "티야",
-      "sheet": "assets/chibi/tiya.webp",
+      "sheet": "assets/chibi/tiya.webp?v=87eb35f8",
       "cell": 384,
       "bounds": {
         "x": 107,
@@ -133,7 +133,7 @@
     {
       "id": "yoon",
       "name": "유온",
-      "sheet": "assets/chibi/yoon.webp",
+      "sheet": "assets/chibi/yoon.webp?v=b6be8a2d",
       "cell": 384,
       "bounds": {
         "x": 94,
