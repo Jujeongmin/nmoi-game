@@ -155,8 +155,25 @@
   margin: 14px auto -6px;
 }
 
-/* Result art slot (star chef / shark-hat member) */
-.ce-result-art { width: 100%; max-width: 280px; aspect-ratio: 16 / 9; max-height: 120px; margin: -6px auto 18px; object-fit: cover; }
+/* Result scene before the score card: 9:16 art (star chef / shark-hat member), tap for the card */
+.ce-scene { flex-direction: column; gap: 12px; cursor: pointer; background: rgba(8, 7, 5, 0.92); }
+.ce-scene__frame {
+  position: relative;
+  flex: none;
+  /* exact 9:16: as tall as the screen allows (overlay padding 60 + 16, title + button 110) */
+  width: min(100%, calc((100vh - 186px) * 9 / 16));
+  width: min(100%, calc((100dvh - 186px) * 9 / 16));
+  aspect-ratio: 9 / 16;
+  background: var(--cv-onyx);
+  border: 1px solid var(--cv-gold);
+  box-shadow: 0 0 0 3px var(--cv-onyx), 0 0 0 4px rgba(201, 174, 120, 0.45);
+  overflow: hidden;
+}
+.ce-scene__art { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.ce-scene__frame .cv-asset { box-sizing: border-box; }
+.ce-scene__title { margin: 0; font: 600 22px/1 var(--cv-font-display); letter-spacing: 0.12em; color: var(--cv-gold-bright); }
+.ce-scene__next { min-width: 180px; }
+.ce-scene .cv-panel { transform: none; }
 
 /* ---------- Small / short screens ---------- */
 @media (max-width: 380px) {
@@ -180,7 +197,6 @@
   .ce-card__lede { display: none; }
   .ce-picker { margin-bottom: 14px; }
   .ce-figure { margin-top: 8px; }
-  .ce-result-art { max-height: 84px; margin-bottom: 12px; }
 }
 
 @media (max-height: 480px) {
