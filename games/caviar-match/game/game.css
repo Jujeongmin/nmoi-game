@@ -217,3 +217,7 @@
   .cm-guide { grid-column: 1; grid-row: 3; display: flex; font-size: 10px; }
   .cm-guide__sep { display: none; }
 }
+
+/* The member stands at the right edge: its bubble opens to the left */
+.cm-chibi .cv-talk--chibi { left: auto; right: 0; max-width: 200px; }
+.cm-chibi .cv-talk--chibi::after { left: auto; right: 22px; }

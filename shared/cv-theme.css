@@ -519,17 +519,18 @@ html, body {
 .cv-pearl--green { --pearl: var(--cv-caviar-green); }
 .cv-pearl--black { --pearl: var(--cv-caviar-black); box-shadow: inset 0 -1px 2px rgba(0,0,0,.3), 0 0 0 1px rgba(239,232,216,.16); }
 .cv-pearl--gold  { --pearl: var(--cv-caviar-gold); }
-/* Real caviar (assets/caviar: small balls of packed roe, generated art). Flat colours above = fallback. */
+/* Caviar pearls (assets/caviar/pearl-*.webp, docs/art-style.md). Flat colours above = fallback. */
 .cv-pearl--white, .cv-pearl--green, .cv-pearl--black, .cv-pearl--gold, .cv-pearl--pearl {
+  background-color: transparent;
   background-position: center;
   background-size: 100%;
   background-repeat: no-repeat;
   box-shadow: none;
 }
-.cv-pearl--white { background-image: url("../assets/caviar/roe-almas.webp"); }
-.cv-pearl--green { background-image: url("../assets/caviar/roe-imperial.webp"); }
-.cv-pearl--black { background-image: url("../assets/caviar/roe-classic.webp"); }
-.cv-pearl--gold  { background-image: url("../assets/caviar/roe-platinum.webp"); }
+.cv-pearl--white { background-image: url("../assets/caviar/pearl-almas.webp"); }
+.cv-pearl--green { background-image: url("../assets/caviar/pearl-imperial.webp"); }
+.cv-pearl--black { background-image: url("../assets/caviar/pearl-classic.webp"); }
+.cv-pearl--gold  { background-image: url("../assets/caviar/pearl-platinum.webp"); }
 .cv-pearl--pearl { --pearl: #f2ede9; background-image: url("../assets/caviar/roe-whitepearl.webp"); }
 .cv-pearl.is-empty {
   background: transparent;
