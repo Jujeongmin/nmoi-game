@@ -16,6 +16,21 @@
     window.addEventListener('caviar-server-ready', function () { fn(NS.server); }, { once: true });
   };
 
+  /** Retargeting event (overview §6: pre-save click · share · play → Kreators pixel).
+      Names: entry · booster_choice {choice} · presave_click {where} · share {game} ·
+      play {game, score} · v8_login. Pushed to window.dataLayer (GTM) and, when Kreators'
+      snippet is on the page, to fbq('trackCustom') / window.kreatorsPixel(name, data). */
+  NS.track = function (name, data) {
+    var prefix = (NS.campaign && NS.campaign.config.tracking && NS.campaign.config.tracking.prefix) || 'caviar_';
+    var ev = { event: prefix + name };
+    for (var k in data || {}) if (Object.prototype.hasOwnProperty.call(data, k)) ev[k] = data[k];
+    try {
+      (window.dataLayer = window.dataLayer || []).push(ev);
+      if (typeof window.fbq === 'function') window.fbq('trackCustom', prefix + name, data || {});
+      if (typeof window.kreatorsPixel === 'function') window.kreatorsPixel(name, data || {});
+    } catch (e) { /* tracking never breaks the page */ }
+  };
+
   /** Absolute URL for a path from the repo/site root, e.g. url('assets/chibi/nara.webp'). */
   NS.url = function (path) {
     if (!path || /^(?:[a-z]+:|\/\/)/i.test(path)) return path;

@@ -34,9 +34,9 @@ Game → hub: `source: 'caviar-game'`, plus `gameId`. Hub → game: `source: 'ca
 | game → hub | `ready` | | Handshake. Hub answers `config`. |
 | hub → game | `config` | `nickname, member, weekOpen, playsLeft, dailyLimit, presaved, booster, muted` | Guest and run budget. `member` = member id picked on the landing (nara, natalie, serin, tiya, yoon). |
 | game → hub | `start` | | Ask for a run. |
-| hub → game | `start-ok` | `runId, playsLeft` | Run granted (one run is used now). |
+| hub → game | `start-ok` | `runId, playsLeft, retries, multiplier, extraLife, missionScore` | Run granted (one run is used now). `multiplier` (x1.0 / x1.2 / x1.5) and `missionScore` (booster score of the open score mission, or null) are for the game's HUD; `extraLife` 1 = add one life if the game has lives. |
 | hub → game | `start-denied` | `reason: 'locked' \| 'limit' \| 'offline'` | Week not open, today's runs are used up (hub shows the pre-save panel), or the Verse8 server is unreachable (hub asks to retry or reload). |
-| game → hub | `end` | `runId, score, stats` | Run finished. `score` integer ≥ 0. |
+| game → hub | `end` | `runId, score, playTimeMs?, eventsHash?, stats?` | Run finished. `score` integer ≥ 0 (before the multiplier — the hub applies it). |
 | hub → game | `result` | `counted, score, missions[]` or `counted: false, reason` | Missions completed by this run. Hub shows its result card + pre-save panel. |
 | game → hub | `event` | `name, data` | Optional (analytics, sounds). Not counted. |
 | game → hub | `exit` | | Hub returns to the caviar selection. |
@@ -54,8 +54,10 @@ Numbers: `bingo` in `shared/cv-campaign.js` and `BINGO` in `verse8/server.js`.
   in `CAVIAR.host.origins`; the game posts only to `hubOrigin` (query param, else the referrer).
 - **Registry**: builds are embedded from `CAVIAR.host.games` only, never from a URL in the query string.
 - **Runs**: `end` counts only with the `runId` of the last `start-ok`, once. Daily limit 3
-  (+1 after pre-save), week lock from `shared/cv-campaign.js`; the Verse8 server re-checks both.
-- **Score**: leaderboard score = score × 1.2 after pre-save (server side). Scores are client
+  (+1 after pre-save, +1 per referral up to +3), week lock from `shared/cv-campaign.js`; the
+  Verse8 server re-checks both.
+- **Score**: leaderboard score = score × multiplier (x1.2 after pre-save, x1.5 for a V8 login's
+  first run of the week), applied on the server. Scores are client
   reported and cannot be verified, so they only earn light rewards (tickets); the top reward
   is a draw.
 

@@ -128,6 +128,13 @@
 
     if (this.cache.lives !== game.lives) {
       this.cache.lives = game.lives;
+      // A +1 life booster adds a pearl for this run.
+      while (el.lives.length < game.lives) {
+        var pearl = document.createElement('span');
+        pearl.className = 'cv-pearl cv-pearl--gold';
+        el.lives[0].parentNode.appendChild(pearl);
+        el.lives.push(pearl);
+      }
       for (var i = 0; i < el.lives.length; i++) el.lives[i].classList.toggle('is-empty', i >= game.lives);
     }
 

@@ -69,6 +69,8 @@
 
   // --- Flow -------------------------------------------------------------
 
+  CAVIAR.live = { gameId: cfg.gameId, score: () => (game.state === 'playing' ? game.score : null) };
+
   function startGame() {
     clearInterval(resultTimer);
     fx.clear();

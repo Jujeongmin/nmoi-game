@@ -56,7 +56,9 @@
     input.enabled = true;
     resultShown = false;
     game.start();
+    game.lives += NS.account.runBonus(cfg.gameId).extraLife;   // +1 life booster (3-day streak)
   }
+  NS.live = { gameId: cfg.gameId, score: function () { return game.phase === 'play' ? game.getScore() : null; } };
 
   function toTitle() {
     input.enabled = false;

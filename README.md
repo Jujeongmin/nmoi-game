@@ -5,8 +5,10 @@ A light restaurant flow (table → order → serving → caviar cans) leads into
 that share one design system, one set of member sprites, a 4x4 mission bingo, a weekly Verse8
 leaderboard and a Spotify pre-save push after every run. Portrait (세로형) only.
 
-**CAVIAR COURSE** (the campaign): 3 weeks, one new game per week — W1 매치 10/26 · W2 훔쳐라 11/2 ·
-W3 셰프 11/9, release 11/16. Every date and number lives in `shared/cv-campaign.js`.
+**CAVIAR COURSE** (the campaign): 3 weeks, one new game per week — overview §2: W1 A 카나페 쌓기
+(셰프) 10/26 · W2 B 상어 (훔쳐라) 11/2 · W3 C 펄 소팅 (매치) 11/9, release 11/16. The game bodies
+come from the Verse8 game team (iframe, `pages/play`); the repo games stand in for them.
+Every date and number lives in `shared/cv-campaign.js`.
 
 | Tier | Needs | Gets |
 |---|---|---|
@@ -156,6 +158,21 @@ becomes "Spotify에서 듣기".
 Tickets (응모권): pre-save +2, bingo line +3, and per game: first run +1 (once), a run +1 and a
 result-screen share +1 (each once per game per day). Attendance is a day with a finished run — a
 visit alone does not count (the server marks it when it records the run).
+
+More boosters (overview §5), all decided by the server:
+- **V8 login**: the first counted run of each week scores x1.5 (instead of x1.2). The login is a
+  placeholder (`?account=` / demo switch → `markLogin`) until the Verse8 login API is wired.
+- **Referrals**: +1 run a day per referral, at most +3.
+- **Attendance streak**: every 3 days in a row with a run → one +1 life booster, used by the next
+  run of a game with lives (`lifeGames`; Caviar Escape shows a gold 4th pearl).
+- The HUD shows the multiplier (x1.0 / x1.2 / x1.5) and the score mission's progress (S3).
+- Home line (S1 / S6): a new guest sees how many joined and this week's game; a returning guest
+  attendance, referrals and bingo toward their next step, and today's multiplier.
+
+Retargeting events (overview §6) go through `CAVIAR.track(name, data)` (`shared/cv-storage.js`) to
+`window.dataLayer`, and to `fbq` / `window.kreatorsPixel` when Kreators' snippet is on the page:
+`entry` · `booster_choice {choice}` · `presave_click` · `presave_panel {where}` · `stream_click` ·
+`share {game}` · `play {game}` · `v8_login`. Event definitions are still to be agreed with Kreators.
 
 ## Account + leaderboard (Verse8 server)
 

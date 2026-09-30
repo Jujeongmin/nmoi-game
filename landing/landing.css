@@ -786,6 +786,17 @@
   transform: translateX(-50%);
 }
 .lp-table__presave .cv-presave-chip { border-radius: 999px; box-shadow: 0 8px 20px -12px rgba(40, 28, 12, 0.45); }
+.lp-table__info {
+  margin: 0 0 8px;
+  padding: 5px 12px;
+  border-radius: 999px;
+  background: rgba(11, 10, 8, 0.62);
+  font: 600 11.5px/1.35 var(--cv-font-ui);
+  color: var(--cv-ivory);
+  text-align: center;
+  word-break: keep-all;
+}
+.lp-table__info:empty { display: none; }
 .lp-scene.is-opening ~ .lp-table__presave { opacity: 0; transition: opacity 0.3s; }
 
 .lp-cans__presave { width: 100%; margin-top: 14px; }

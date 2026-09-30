@@ -346,6 +346,8 @@
 .cv-presave-chip.is-done { border-color: var(--cv-line-faint); background: transparent; color: var(--cv-ivory-dim); cursor: default; }
 .cv-presave-chip--hud { margin: 0; }
 .cv-presave-chip.is-off b { color: var(--cv-ivory-dim); }   /* HUD x1.0: grey until pre-saved */
+.cv-presave-chip__mission { margin-left: auto; font: 700 10px/1 var(--cv-font-ui); font-style: normal; letter-spacing: 0.08em; color: var(--cv-gold-bright); }
+.cv-presave-chip__mission:empty { display: none; }
 
 /* S2 booster choice (cv-presave.js) */
 .cv-booster { z-index: 30; }

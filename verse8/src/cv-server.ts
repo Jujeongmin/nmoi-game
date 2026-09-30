@@ -7,7 +7,7 @@ import { GameServer } from "@agent8/gameserver";
 type Me = {
   nickname: string; hasEmail: boolean; presaved: boolean; tickets: number; referrals: number;
   days: number; lines: string[]; inviteCode: string; playsToday: Record<string, number>;
-  dailyLimit: number; booster: number; season: string;
+  dailyLimit: number; booster: number; multiplier: number; v8: boolean; lifeTokens: number; streak: number; season: string;
 };
 type LeaderRow = { rank: number; nickname: string; score: number; me?: boolean };
 
@@ -41,16 +41,18 @@ const api = {
   connected: () => server.connected,
   setProfile: (p: { nickname: string; email: string; emailHash: string; ref?: string }) => call<Me>("setProfile", [p]),
   getMe: () => call<Me>("getMe"),
+  markLogin: () => call<Me>("markLogin"),
+  getStats: () => call<{ participants: number; season: string }>("getStats"),
   claimShare: (gameId: string) => call<Me & { granted: number }>("claimShare", [gameId]),
   markPresave: () => call<Me>("markPresave"),
   getBingo: () =>
     call<{ done: string[]; lines: string[]; status: Record<string, unknown>; me: Me }>("getBingo"),
   startRun: (gameId: string) =>
-    call<{ ok: boolean; reason?: string; runId?: string; playsLeft: number }>("startRun", [gameId]),
+    call<{ ok: boolean; reason?: string; runId?: string; playsLeft: number; multiplier?: number; extraLife?: number }>("startRun", [gameId]),
   submitScore: (gameId: string, score: number, runId: string) =>
     call<{ counted: boolean; reason?: string; score?: number; boosted?: boolean; best?: number; improved?: boolean; rank?: number; season?: string; playsLeft: number; grants?: { reason: string; n: number }[]; me?: Me }>(
       "submitScore", [gameId, score, runId]),
-  getLeaderboard: (gameId: string, limit = 20, season?: string) =>
+  getLeaderboard: (gameId: string, limit = 10, season?: string) =>
     call<{ season: string; top: LeaderRow[]; mine: LeaderRow | null }>("getLeaderboard", [gameId, limit, season]),
 };
 

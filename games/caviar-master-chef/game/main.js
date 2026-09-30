@@ -14,6 +14,8 @@
   var paused = false;
   var last = performance.now();
 
+  NS.live = { gameId: cfg.gameId, score: function () { return game.phase === 'idle' || game.phase === 'over' ? null : game.score; } };
+
   function startRun() {
     ui.hideScreens();
     resultShown = false;

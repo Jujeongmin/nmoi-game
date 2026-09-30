@@ -38,6 +38,7 @@
   /** Opens Spotify (new tab) and records the click. Returns false when no link yet. */
   function open() {
     var u = url();
+    NS.track(released() ? 'stream_click' : 'presave_click', {});
     if (!u) return false;
     window.open(u, '_blank', 'noopener');
     if (!released()) complete();
@@ -171,8 +172,9 @@
         var row = el('div', 'cv-booster__cans');
         var basic = can('is-basic', 'assets/bingo/tin-empty.webp', '기본 캔', '부스터 없이 바로 시작');
         var almas = can('is-almas', 'assets/bingo/tin-almas.webp', '알마스 캔', 'Spotify 프리세이브 10초 → 점수 x' + CFG.booster + ' · 하루 1판 더 · 내 초대 링크');
-        basic.addEventListener('click', finish);
+        basic.addEventListener('click', function () { NS.track('booster_choice', { choice: 'basic' }); finish(); });
         almas.addEventListener('click', function () {
+          NS.track('booster_choice', { choice: 'almas' });
           if (!open()) complete();   // no smart link yet (demo): record the pre-save directly
           active();
         });
@@ -181,7 +183,7 @@
         panel.appendChild(row);
         var skip = el('button', 'cv-booster__skip', '건너뛰기');
         skip.type = 'button';
-        skip.addEventListener('click', finish);
+        skip.addEventListener('click', function () { NS.track('booster_choice', { choice: 'skip' }); finish(); });
         panel.appendChild(skip);
       }
 
@@ -218,15 +220,32 @@
   function chip(extraClass) {
     var b = el('button', 'cv-presave-chip' + (extraClass ? ' ' + extraClass : ''));
     var hudChip = /cv-presave-chip--hud/.test(extraClass || '');
+    var progress = el('em', 'cv-presave-chip__mission');
     b.type = 'button';
+    if (hudChip) {
+      (function tick() {
+        var live = NS.live, need = live && NS.bingo && NS.bingo.scoreMission(live.gameId);
+        var score = live && live.score();
+        if (need && score !== null && score !== undefined) {
+          var boosted = Math.floor(score * (NS.account ? NS.account.runMultiplier(live.gameId) : 1));
+          progress.textContent = '미션 ' + Math.min(100, Math.floor(boosted / need.need * 100)) + '%';
+        } else progress.textContent = '';
+        requestAnimationFrame(tick);
+      })();
+    }
     function render() {
       b.innerHTML = '';
       b.classList.toggle('is-done', done() && !released());
       b.classList.toggle('is-off', hudChip && !done() && !released());
-      if (hudChip && !released()) {
-        // HUD multiplier (overview §5): x1.0 grey / x1.2 gold
-        b.appendChild(el('b', '', done() ? 'x' + CFG.booster.toFixed(1) : 'x1.0'));
-        b.appendChild(el('span', '', done() ? '알마스 캔 부스터 적용 중' : '프리세이브하면 매 판 x' + CFG.booster));
+      if (hudChip) {
+        // HUD (overview §5, S3): multiplier x1.0 grey / x1.2 gold / x1.5 V8 weekly, and the
+        // score mission's progress while a run is on.
+        var m = NS.account ? NS.account.multiplier() : 1;
+        b.classList.toggle('is-off', m <= 1);
+        b.appendChild(el('b', '', 'x' + m.toFixed(1)));
+        b.appendChild(el('span', '', m === CFG.v8Booster ? 'V8 주간 첫 판 부스터' : m > 1 ? '알마스 캔 부스터 적용 중'
+          : released() ? 'NMOI 신곡 듣기' : '프리세이브하면 매 판 x' + CFG.booster));
+        b.appendChild(progress);
       } else if (released()) {
         b.appendChild(el('b', '', '▶ SPOTIFY'));
         b.appendChild(el('span', '', 'NMOI 신곡 듣기'));
@@ -238,7 +257,9 @@
         b.appendChild(el('span', '', rewardText()));
       }
     }
-    b.addEventListener('click', function () { if (released() || !done()) interstitial(); });
+    b.addEventListener('click', function () {
+      if (released() || !done()) { NS.track('presave_panel', { where: hudChip ? 'hud' : 'chip' }); interstitial(); }
+    });
     render();
     if (NS.account) NS.account.onChange(render);
     return b;

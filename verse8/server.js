@@ -17,7 +17,9 @@
 //     runs: { gameId: { id, at } | null },                 the run startRun opened, per game
 //     ticketLog: { first: { gameId: true }, daily: { gameId: date }, share: { gameId: date } },
 //     refDay: { date, n },                                   referrals credited today (cap)
-//     bingo: [cellId] }                                      cells done (kept once done)
+//     bingo: [cellId],                                       cells done (kept once done)
+//     v8: bool, v8Week: season,                              V8 login; season of its x1.5 run
+//     lifeTokens: n }                                        +1 life boosters (3-day streaks)
 // Collections:
 //   emails            { hash, account, at }                  e-mail de-dup (hash only)
 //   invites           { code, account }                      invite code -> account
@@ -29,9 +31,9 @@
 // winner notice; encrypt-at-rest / 30-day deletion needs a Verse8 platform key or job.
 
 const WEEKS = [
-  { id: 'w1', start: '2026-10-26', end: '2026-11-01', game: 'caviar-match' },
-  { id: 'w2', start: '2026-11-02', end: '2026-11-08', game: 'caviar-escape' },
-  { id: 'w3', start: '2026-11-09', end: '2026-11-15', game: 'caviar-master-chef' },
+  { id: 'w1', start: '2026-10-26', end: '2026-11-01', game: 'caviar-master-chef' },  // A: canapé stacking
+  { id: 'w2', start: '2026-11-02', end: '2026-11-08', game: 'caviar-escape' },       // B: shark
+  { id: 'w3', start: '2026-11-09', end: '2026-11-15', game: 'caviar-match' },        // C: pearl sorting
 ];
 
 // Bingo (overview §4): 16 = per week 5 cells (game score · game rank · referral rank ·
@@ -60,7 +62,7 @@ const REF_DAILY_CAP = 5;
 //   caviar-escape: 30 s, 3,000 survival + 1,500 lives + close calls.
 //   caviar-match: a greedy bot aiming instantly, 1,200 runs: median ~20,000, best 49,950.
 const GAMES = {
-  'caviar-escape': { maxScore: 20000, duration: 30 },
+  'caviar-escape': { maxScore: 20000, duration: 30, lives: true },   // lives: takes +1 life boosters
   'caviar-match': { maxScore: 80000, duration: 60 },
   'caviar-master-chef': { maxScore: 20000, duration: 60 },
 };
@@ -68,6 +70,11 @@ const MIN_RUN_MS = 3000;
 const DAILY_PLAYS = 3;
 const PRESAVE_BONUS_PLAYS = 1;
 const BOOSTER = 1.2;
+// Booster benefits beyond pre-save (overview §5):
+const V8_WEEKLY_BOOSTER = 1.5;   // V8 login: the first counted run of each week scores x1.5
+const REF_RUN_CAP = 3;           // +1 run a day per referral, at most +3
+const STREAK_LIFE_EVERY = 3;     // every 3 days in a row with a finished run: one +1 life booster
+const LEADERBOARD_TOP = 10;
 const TICKETS = { presave: 2, line: 3, firstRun: 1, dailyRun: 1, share: 1 };
 const NICK_MAX = 12;
 const TOTAL = 'total';
@@ -135,11 +142,32 @@ function runRewards(me, gameId) {
   if (!log.first[gameId]) { log.first[gameId] = true; grants.push({ reason: 'first', n: TICKETS.firstRun }); }
   if (log.daily[gameId] !== today) { log.daily[gameId] = today; grants.push({ reason: 'daily', n: TICKETS.dailyRun }); }
   const tickets = (me.tickets || 0) + grants.reduce((t, g) => t + g.n, 0);
-  return { patch: { days, ticketLog: log, tickets }, grants };
+  const patch = { days, ticketLog: log, tickets };
+  // A new attendance day that completes 3, 6, 9 ... days in a row: one +1 life booster.
+  if (!(me.days || []).includes(today) && streakTo(days, today) % STREAK_LIFE_EVERY === 0) {
+    patch.lifeTokens = (me.lifeTokens || 0) + 1;
+    grants.push({ reason: 'streak', n: 0 });
+  }
+  return { patch, grants };
 }
 
 function dailyLimit(me) {
-  return DAILY_PLAYS + (me.presaved ? PRESAVE_BONUS_PLAYS : 0);
+  return DAILY_PLAYS + (me.presaved ? PRESAVE_BONUS_PLAYS : 0) + Math.min(REF_RUN_CAP, me.referrals || 0);
+}
+
+// Days in a row, ending with `day`, among the attendance days.
+function streakTo(days, day) {
+  let n = 0, t = Date.parse(day + 'T00:00:00Z');
+  while (days.includes(new Date(t).toISOString().slice(0, 10))) { n++; t -= 24 * 3600 * 1000; }
+  return n;
+}
+
+// The multiplier the next counted run gets: x1.5 for a V8 login's first run of the week,
+// else x1.2 after pre-save.
+function multiplierOf(me) {
+  const season = seasonOf();
+  if (me.v8 && me.v8Week !== season && season !== 'pre' && season !== 'post') return V8_WEEKLY_BOOSTER;
+  return me.presaved ? BOOSTER : 1;
 }
 
 function summary(me) {
@@ -156,6 +184,10 @@ function summary(me) {
     playsToday: plays.counts,
     dailyLimit: dailyLimit(me),
     booster: me.presaved ? BOOSTER : 1,
+    multiplier: multiplierOf(me),
+    v8: !!me.v8,
+    lifeTokens: me.lifeTokens || 0,
+    streak: streakTo(me.days || [], kstDate()),
     season: seasonOf(),
   };
 }
@@ -305,6 +337,20 @@ class Server {
     return summary(await myState());
   }
 
+  // Entry screen (overview S1): how many guests have joined (entry emails, de-duplicated).
+  async getStats() {
+    return { participants: await $global.countCollectionItems('emails', {}), season: seasonOf() };
+  }
+
+  // TIER 1 · V8 login. PLACEHOLDER: the page reports it (like the click-based pre-save) until
+  // the Verse8 login API is wired; then check the login here instead of trusting the page.
+  async markLogin() {
+    const me = await myState();
+    if (me.v8) return summary(me);
+    await $global.updateMyState({ v8: true });
+    return summary(Object.assign({}, me, { v8: true }));
+  }
+
   // Pre-save is click-based (no Spotify check): +2 tickets once, booster, +1 run/day,
   // and — for a NEW email that came from an invite link — one referral for the inviter.
   async markPresave() {
@@ -381,8 +427,12 @@ class Server {
 
     const runId = randomCode() + randomCode();
     const runs = Object.assign({}, me.runs, { [gameId]: { id: runId, at: Date.now() } });
-    await $global.updateMyState({ plays, runs });
-    return { ok: true, runId, playsLeft: limit - plays.counts[gameId] };
+    const patch = { plays, runs };
+    // A game with lives uses one +1 life booster, if the guest has one.
+    const extraLife = GAMES[gameId].lives && (me.lifeTokens || 0) > 0 ? 1 : 0;
+    if (extraLife) patch.lifeTokens = me.lifeTokens - 1;
+    await $global.updateMyState(patch);
+    return { ok: true, runId, playsLeft: limit - plays.counts[gameId], multiplier: multiplierOf(me), extraLife };
   }
 
   // The run opened by startRun finished. Accepted once per run, and only a score the run
@@ -409,11 +459,13 @@ class Server {
       await $global.updateMyState({ runs });
       return { counted: false, reason: 'rejected', playsLeft };
     }
+    const multiplier = multiplierOf(me);
     const reward = runRewards(me, gameId);
+    if (multiplier === V8_WEEKLY_BOOSTER) reward.patch.v8Week = seasonOf();   // the week's x1.5 is used
     await $global.updateMyState(Object.assign({ runs }, reward.patch));
     Object.assign(me, reward.patch);
 
-    const boosted = me.presaved ? Math.floor(raw * BOOSTER) : raw;
+    const boosted = Math.floor(raw * multiplier);
     const season = seasonOf();
     const nickname = cleanNickname(me.nickname) || 'Guest';
     const lb = me.lb || {};
@@ -443,6 +495,7 @@ class Server {
       counted: true,
       score: boosted,
       boosted: boosted !== raw,
+      multiplier,
       best: res.best,
       improved: res.improved,
       rank: await rankOf(col, res.best),
@@ -457,7 +510,7 @@ class Server {
   async getLeaderboard(gameId, limit, season) {
     const s = cleanSeason(season);
     const col = collectionOf(gameId, s, true);
-    const n = Math.max(1, Math.min(50, Math.floor(Number(limit) || 20)));
+    const n = Math.max(1, Math.min(50, Math.floor(Number(limit) || LEADERBOARD_TOP)));
     const rows = await $global.getCollectionItems(col, { orderBy: [{ field: 'score', direction: 'desc' }], limit: n });
     const account = $sender.account;
     const top = rows.map((r, i) => ({ rank: i + 1, nickname: r.nickname || 'Guest', score: r.score || 0, me: r.account === account }));

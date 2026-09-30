@@ -50,6 +50,8 @@
     state.referrals = me.referrals;
     state.inviteCode = me.inviteCode || state.inviteCode;
     state.lines = me.lines || state.lines;
+    if (typeof me.lifeTokens === 'number') state.lifeTokens = me.lifeTokens;
+    if (typeof me.multiplier === 'number') state.serverMultiplier = me.multiplier;
     if (me.days > state.days.length) state.serverDays = me.days;
     Object.keys(me.playsToday || {}).forEach(function (g) {
       state.plays.counts[g] = Math.max(state.plays.counts[g] || 0, me.playsToday[g]);
@@ -74,7 +76,24 @@
     });
   }
 
-  function limit() { return CFG.dailyPlays + (state.presaved ? CFG.presaveBonusPlays : 0); }
+  function limit() {
+    return CFG.dailyPlays + (state.presaved ? CFG.presaveBonusPlays : 0) + Math.min(CFG.referralRunCap, state.referrals || 0);
+  }
+
+  // Multiplier of the next counted run (overview §5): x1.5 for a V8 login's first run of the
+  // week, else x1.2 after pre-save. The server decides; this mirrors it.
+  function multiplier() {
+    var season = NS.campaign.season();
+    var weekly = NS.account && NS.account.loggedIn() && state.v8Week !== season && season !== 'pre' && season !== 'post';
+    return weekly ? CFG.v8Booster : state.presaved ? CFG.booster : 1;
+  }
+
+  // Days in a row ending today among the attendance days.
+  function streak(days) {
+    var n = 0, t = Date.parse(NS.campaign.today() + 'T00:00:00Z');
+    while (days.indexOf(new Date(t).toISOString().slice(0, 10)) >= 0) { n++; t -= 864e5; }
+    return n;
+  }
 
   /* Attendance = a visit with a finished run (a visit alone does not count; the server
      marks the day when it records the run). On load only the server's numbers are read. */
@@ -88,6 +107,14 @@
 
   var last = {};   // gameId -> promise of the latest submit
   var grants = {}; // gameId -> tickets the latest finished run earned [{ reason, n }]
+  var runBonus = {}; // gameId -> { multiplier, extraLife } of the run just opened
+
+  // V8 login (placeholder, see loggedIn) → the server's x1.5 weekly run; reported once.
+  function reportLogin() {
+    if (store.get('loginSent', '')) return;
+    NS.track('v8_login', {});
+    quiet(server().then(function (s) { return s.markLogin(); }).then(function (me) { store.set('loginSent', '1'); merge(me); }));
+  }
   var runs = {};   // gameId -> the server run opened at start ({ ok, runId }), until its score is sent
   var RUN_WAIT_MS = 8000;
 
@@ -179,12 +206,17 @@
         a run +1 (once per game per day). Mirrors the server, which decides when online. */
     recordRun: function (gameId) {
       var today = NS.campaign.today(), log = state.ticketLog, got = [];
-      if (state.days.indexOf(today) < 0) state.days.push(today);
+      if (multiplier() === CFG.v8Booster) state.v8Week = NS.campaign.season();   // the week's x1.5 is used
+      if (state.days.indexOf(today) < 0) {
+        state.days.push(today);
+        if (streak(state.days) % CFG.streakLifeEvery === 0) { state.lifeTokens = (state.lifeTokens || 0) + 1; got.push({ reason: 'streak', n: 0 }); }
+      }
       if (!log.first[gameId]) { log.first[gameId] = true; got.push({ reason: 'first', n: CFG.tickets.firstRun }); }
       if (log.daily[gameId] !== today) { log.daily[gameId] = today; got.push({ reason: 'daily', n: CFG.tickets.dailyRun }); }
       got.forEach(function (g) { state.tickets += g.n; });
       save();
       grants[gameId] = got;
+      NS.track('play', { game: gameId });
       return got;
     },
     runGrants: function (gameId) { return grants[gameId] || []; },
@@ -194,6 +226,7 @@
     /** Result-screen share: +1 ticket once per game per day (the page cannot verify a share). */
     share: function (gameId) {
       if (NS.account.shared(gameId)) return 0;
+      NS.track('share', { game: gameId });
       state.ticketLog.share[gameId] = NS.campaign.today();
       state.tickets += CFG.tickets.share;
       save();
@@ -211,20 +244,34 @@
         state.plays.counts[gameId] = (state.plays.counts[gameId] || 0) + 1;
         save();
       }
-      if (!serverExpected()) { count(); return Promise.resolve({ ok: true, local: true }); }
+      if (!serverExpected()) {
+        count();
+        var local = { ok: true, local: true, multiplier: multiplier(), extraLife: 0 };
+        if (CFG.lifeGames.indexOf(gameId) >= 0 && state.lifeTokens > 0) { state.lifeTokens -= 1; local.extraLife = 1; save(); }
+        runBonus[gameId] = local;
+        return Promise.resolve(local);
+      }
       runs[gameId] = null;
       var timeout = new Promise(function (resolve) { setTimeout(function () { resolve({ ok: false, reason: 'offline' }); }, RUN_WAIT_MS); });
       var call = server().then(function (s) { return s.startRun(gameId); }).then(function (r) {
         return r && typeof r.ok === 'boolean' ? r : { ok: false, reason: 'offline' };
       }, function () { return { ok: false, reason: 'offline' }; });
       return Promise.race([call, timeout]).then(function (r) {
-        if (r.ok) { runs[gameId] = r; count(); }
+        if (r.ok) { runs[gameId] = r; runBonus[gameId] = r; count(); }
         else if (r.reason === 'limit') { state.plays.counts[gameId] = limit(); save(); }
         return r;
       });
     },
 
     offlineNotice: offlineNotice,
+
+    /** The run just opened: { multiplier, extraLife } (a game with lives adds extraLife). */
+    runBonus: function (gameId) { return runBonus[gameId] || { multiplier: multiplier(), extraLife: 0 }; },
+    /** Multiplier of the next counted run (HUD, result nudge, score missions). */
+    multiplier: function () { return typeof state.serverMultiplier === 'number' && state.online ? state.serverMultiplier : multiplier(); },
+    runMultiplier: function (gameId) { return (runBonus[gameId] && runBonus[gameId].multiplier) || multiplier(); },
+    lifeTokens: function () { return state.lifeTokens || 0; },
+    streak: function () { return streak(state.days); },
 
     inviteLink: function () {
       return state.inviteCode ? NS.url('index.html') + '?ref=' + state.inviteCode : '';
@@ -235,7 +282,7 @@
     loggedIn: function () {
       return /[?&]account=/.test(window.location.search) || store.get('demoLogin', '') === '1';
     },
-    setDemoLogin: function (on) { store.set('demoLogin', on ? '1' : ''); emit(); },
+    setDemoLogin: function (on) { store.set('demoLogin', on ? '1' : ''); if (on) reportLogin(); emit(); },
 
     /** Demo reset (menu): local tickets, runs, lines and login flag. The server keeps its own. */
     reset: function () {
@@ -317,6 +364,8 @@
     }
   };
 
+  if (NS.account.loggedIn()) reportLogin();
+
   function el(tag, cls, text) {
     var n = document.createElement(tag);
     if (cls) n.className = cls;
@@ -361,8 +410,9 @@
           return;
         }
         line.appendChild(el('span', 'cv-rank-line__tag', 'RANK'));
+        var mult = r.multiplier || (r.boosted ? CFG.booster : 1);
         line.appendChild(document.createTextNode(' ' + NS.campaign.seasonLabel(r.season).split(' · ')[0] + ' ' + r.rank + '위 · 최고 ' + r.best.toLocaleString('en-US') + '점' +
-          (r.boosted ? ' · x' + CFG.booster + ' 부스터' : '') + (r.improved ? ' · 기록 갱신!' : '')));
+          (mult > 1 ? ' · x' + mult + (mult === CFG.v8Booster ? ' V8 주간 부스터' : ' 부스터') : '') + (r.improved ? ' · 기록 갱신!' : '')));
       }, function (err) {
         line.classList.add('is-off');
         line.textContent = err && err.message === 'no-profile'

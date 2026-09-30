@@ -71,7 +71,7 @@
       seasonNote.textContent = NS.campaign.seasonLabel(season) + (season === cur && cur !== 'pre' ? ' · 진행 중' : '');
       board.innerHTML = '';
       board.appendChild(el('p', 'lp-rank__note', '불러오는 중…'));
-      NS.leaderboard.load(ids[i], 20, season).then(function (res) {
+      NS.leaderboard.load(ids[i], NS.campaign.config.leaderboardTop, season).then(function (res) {
         board.innerHTML = '';
         if (!res.top.length) { board.appendChild(el('p', 'lp-rank__note', '아직 기록이 없어요. 첫 번째 주인공이 되어보세요!')); return; }
         var ol = el('ol', 'lp-rank__list');

@@ -13,10 +13,10 @@
   /* ---------------- Data (edit freely) ---------------- */
 
   var GAMES = {
-    // week order (cv-campaign.js weeks): W1 매치 · W2 훔쳐라 · W3 셰프
-    'caviar-match':       { name: '캐비어 매치',     caviar: 'IMPERIAL', tone: 'green', path: 'games/caviar-match/' },
+    // week order (cv-campaign.js weeks): W1 셰프 · W2 훔쳐라 · W3 매치
+    'caviar-master-chef': { name: '마스터 셰프',     caviar: 'IMPERIAL', tone: 'green', path: 'games/caviar-master-chef/' },
     'caviar-escape':      { name: '캐비어를 훔쳐라', caviar: 'ALMAS',    tone: 'white', path: 'games/caviar-escape/' },
-    'caviar-master-chef': { name: '마스터 셰프',     caviar: 'CLASSIC',  tone: 'black', path: 'games/caviar-master-chef/' }
+    'caviar-match':       { name: '캐비어 매치',     caviar: 'CLASSIC',  tone: 'black', path: 'games/caviar-match/' }
   };
 
   /* Mission cards in B-cut order: mission n unlocks B-cut n (pages/content.js).
@@ -237,7 +237,7 @@
     /** A run ended. Returns the missions completed by it (may be empty). */
     report: function (gameId, stats) {
       stats = stats || {};
-      var booster = NS.account && NS.account.presaved() ? NS.campaign.config.booster : 1;
+      var booster = NS.account ? NS.account.runMultiplier(gameId) : 1;
       stats.boostedScore = Math.floor((stats.score || 0) * booster);
       lastRun[gameId] = { score: stats.score || 0, boosted: booster > 1, need: this.scoreMission(gameId) };
       if (NS.account) { NS.account.recordRun(gameId); sync(); }   // attendance day + run tickets

@@ -14,15 +14,26 @@
   var C = {
     // Weeks: game + mission release, all dates KST (inclusive)
     weeks: [
-      { id: 'w1', label: 'W1', start: '2026-10-26', end: '2026-11-01', game: 'caviar-match',       tone: 'gold'  },
+      // overview §2: A canapé stacking · B shark · C pearl sorting (Verse8 game team builds;
+      // the repo games stand in for them)
+      { id: 'w1', label: 'W1', start: '2026-10-26', end: '2026-11-01', game: 'caviar-master-chef', tone: 'gold'  },
       { id: 'w2', label: 'W2', start: '2026-11-02', end: '2026-11-08', game: 'caviar-escape',      tone: 'green' },
-      { id: 'w3', label: 'W3', start: '2026-11-09', end: '2026-11-15', game: 'caviar-master-chef', tone: 'white' }
+      { id: 'w3', label: 'W3', start: '2026-11-09', end: '2026-11-15', game: 'caviar-match',       tone: 'white' }
     ],
     releaseDate: '2026-11-16',      // D-day: pre-save button turns into "listen on Spotify"
 
     dailyPlays: 3,                  // runs per game per day
     presaveBonusPlays: 1,           // +1 run per day after pre-saving
     booster: 1.2,                   // leaderboard score multiplier after pre-saving
+    v8Booster: 1.5,                 // V8 login: first counted run of each week (overview §5)
+    referralRunCap: 3,              // +1 run a day per referral, at most +3
+    streakLifeEvery: 3,             // 3 days in a row with a run → one +1 life booster
+    lifeGames: ['caviar-escape'],   // games with lives: a +1 life booster is used there
+    leaderboardTop: 10,
+
+    // Retargeting (overview §6): events go to window.dataLayer, and to fbq / kreatorsPixel when
+    // Kreators' pixel snippet is on the page. Event names: see CAVIAR.track in cv-storage.js.
+    tracking: { prefix: 'caviar_' },
     tickets: { presave: 2, line: 3, firstRun: 1, dailyRun: 1, share: 1 },   // run / share: once per game per day
     referralDailyCap: 5,            // referrals credited per inviter per day (abuse cap)
 

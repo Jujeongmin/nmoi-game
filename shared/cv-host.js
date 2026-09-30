@@ -41,6 +41,7 @@
       dailyLimit: NS.account.limit(),
       presaved: NS.account.presaved(),
       booster: NS.account.presaved() ? NS.campaign.config.booster : 1,
+      multiplier: NS.account.multiplier(),
       muted: NS.sound ? NS.sound.muted() : false
     };
   }
@@ -70,7 +71,15 @@
         choice.then(function () { return NS.account.startRun(gameId); }).then(function (r) {
           if (r.ok) {
             runId = newRunId();
-            send('start-ok', { runId: runId, playsLeft: NS.account.playsLeft(gameId) });
+            var need = NS.bingo.scoreMission(gameId);
+            send('start-ok', {
+              runId: runId,
+              playsLeft: NS.account.playsLeft(gameId),
+              retries: NS.account.playsLeft(gameId),      // overview §2 name for the runs left
+              multiplier: r.multiplier || 1,              // shown in the game HUD (x1.0 / x1.2 / x1.5)
+              extraLife: r.extraLife || 0,                // +1 life booster (games with lives)
+              missionScore: need ? need.need : null       // booster score of the open score mission
+            });
           } else if (r.reason === 'limit') {
             denyLimit();
           } else {
@@ -88,6 +97,8 @@
         var score = Math.max(0, Math.floor(Number(m.score) || 0));
         var stats = (m.stats && typeof m.stats === 'object') ? m.stats : {};
         stats.score = score;
+        if (typeof m.playTimeMs === 'number') stats.playTimeMs = m.playTimeMs;   // overview §2 (optional)
+        if (typeof m.eventsHash === 'string') stats.eventsHash = m.eventsHash;
         var fresh = NS.bingo.report(gameId, stats);   // missions + leaderboard submit
         send('result', { counted: true, score: score, missions: fresh });
         if (handlers.end) handlers.end({ gameId: gameId, score: score, stats: stats, missions: fresh });

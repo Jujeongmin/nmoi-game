@@ -50,6 +50,7 @@
     if (!flow.isComplete()) return;
     var order = flow.toOrder();
     NS.hub.setOrder(order);
+    NS.track('entry', {});
     NS.account.profile(order);   // TIER 0 entry: nickname + email on the Verse8 server
     go('serve');
   });
@@ -78,6 +79,36 @@
     syncBingo();
   });
 
+  // Home line (overview S1 / S6): a new guest sees how many joined and this week's game; a
+  // returning guest the three things closest to done, and today's multiplier.
+  var tableInfo = document.createElement('p');
+  tableInfo.className = 'lp-table__info';
+  document.getElementById('table-presave').appendChild(tableInfo);
+  var participants = null;
+  function syncTableInfo() {
+    var parts = [];
+    var wi = Math.min(Math.max(NS.campaign.weekIndex(), 0), 2), w = NS.campaign.weeks[wi];
+    var game = NS.bingo.games[w.game].name;
+    if (NS.hub.getOrder()) {
+      var C = NS.campaign.config.bingo, st = NS.account.state();
+      var nextOf = function (list, have) { for (var i = 0; i < list.length; i++) if (have < list[i]) return list[i]; return list[list.length - 1]; };
+      parts.push('출석 ' + NS.account.days() + '/' + nextOf(C.attNeed, NS.account.days()));
+      parts.push('초대 ' + st.referrals + '/' + nextOf(C.refNeed, st.referrals));
+      parts.push('빙고 ' + NS.bingo.doneCount() + '/16');
+      parts.push('오늘 ' + game + ' x' + NS.account.multiplier().toFixed(1));
+    } else {
+      if (participants) parts.push(participants.toLocaleString('en-US') + '명 참여 중');
+      parts.push(w.label + ' 이번 주 게임 · ' + game);
+    }
+    tableInfo.textContent = parts.join(' · ');
+  }
+  NS.account.onChange(syncTableInfo);
+  NS.bingo.onChange(syncTableInfo);
+  syncTableInfo();
+  NS.whenServer(function (s) {
+    if (s && s.getStats) s.getStats().then(function (r) { participants = r.participants; syncTableInfo(); }, function () {});
+  });
+
   // Pre-save on the home and selection screens (overview: 선택 · HUD · 결과 · 홈)
   document.getElementById('table-presave').appendChild(NS.presave.chip());
   document.getElementById('cans-presave').appendChild(NS.presave.chip());
@@ -91,7 +122,7 @@
   NS.account.onChange(syncProgress);
   syncProgress();
 
-  // Week lock on the cans: W1 매치 10/26 · W2 훔쳐라 11/2 · W3 셰프 11/9
+  // Week lock on the cans: W1 셰프 10/26 · W2 훔쳐라 11/2 · W3 매치 11/9
   function gameIdOf(can) { return can.game.replace(/^games\/|\/$/g, ''); }
   function syncCans() {
     var now = NS.campaign.weekIndex();
