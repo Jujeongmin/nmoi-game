@@ -81,6 +81,40 @@ html[lang="zh-Hans"] { --cv-font-ui: "PingFang SC", "Microsoft YaHei", "Noto San
   transform-origin: 0 0;
 }
 
+/* Member speech bubble (cv-talk.js) — above a chibi, or at the top of a play area */
+.cv-talk {
+  position: absolute;
+  z-index: 5;
+  max-width: 190px;
+  padding: 7px 10px;
+  border: 1px solid var(--cv-gold);
+  background: var(--cv-ivory);
+  font: 600 12px/1.4 var(--cv-font-ui);
+  color: var(--cv-ink);
+  word-break: keep-all;
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(6px);
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+.cv-talk.is-on { opacity: 1; transform: none; }
+.cv-talk b { display: block; margin-bottom: 1px; font-size: 10px; letter-spacing: 0.08em; color: #7c6230; }
+.cv-talk--chibi { left: 0; bottom: calc(100% + 6px); width: max-content; }
+.cv-talk--chibi::after {
+  content: "";
+  position: absolute;
+  left: 22px;
+  bottom: -6px;
+  width: 9px;
+  height: 9px;
+  border-right: 1px solid var(--cv-gold);
+  border-bottom: 1px solid var(--cv-gold);
+  background: var(--cv-ivory);
+  transform: rotate(45deg);
+}
+.cv-talk--top { left: 50%; top: 10px; max-width: min(260px, 80%); text-align: center; transform: translate(-50%, 6px); }
+.cv-talk--top.is-on { transform: translate(-50%, 0); }
+
 /* Result card: the guest's member and one line (overview S4 멤버 멘트) */
 .cv-result-member { display: flex; align-items: flex-end; gap: 10px; margin: 0 0 10px; }
 .cv-result-member .cv-chibi { flex: none; width: 64px; height: 84px; }
