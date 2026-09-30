@@ -52,6 +52,12 @@
   scroll-behavior: auto !important;
 }
 
+/* Text never runs out of its box: long words (English) and URLs may break anywhere. Korean keeps
+   whole words (keep-all), but Japanese and Chinese have no spaces — keep-all would stop them from
+   wrapping at all, so they break between characters (with the usual line-start rules). */
+* { overflow-wrap: anywhere; }
+html[lang="ja"] *, html[lang="zh-Hant"] *, html[lang="zh-Hans"] * { word-break: normal !important; line-break: strict; }
+
 /* Japanese / Chinese: the system CJK fonts first so Han characters match the kana / hanzi. */
 html[lang="ja"] { --cv-font-ui: "Hiragino Sans", "Yu Gothic", "Noto Sans JP", "Noto Sans KR", system-ui, sans-serif; }
 html[lang="zh-Hant"] { --cv-font-ui: "PingFang TC", "Microsoft JhengHei", "Noto Sans TC", "Noto Sans KR", system-ui, sans-serif; }
@@ -78,6 +84,40 @@ html[lang="zh-Hans"] { --cv-font-ui: "PingFang SC", "Microsoft YaHei", "Noto San
   from { background-position-x: var(--ox); }
   to { background-position-x: calc(var(--ox) - (var(--frames) - 1) * var(--cell)); }
 }
+
+/* Member speech bubble (cv-talk.js) — above a chibi, or at the top of a play area */
+.cv-talk {
+  position: absolute;
+  z-index: 5;
+  max-width: 190px;
+  padding: 7px 10px;
+  border: 1px solid var(--cv-gold);
+  background: var(--cv-ivory);
+  font: 600 12px/1.4 var(--cv-font-ui);
+  color: var(--cv-ink);
+  word-break: keep-all;
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(6px);
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+.cv-talk.is-on { opacity: 1; transform: none; }
+.cv-talk b { display: block; margin-bottom: 1px; font-size: 10px; letter-spacing: 0.08em; color: #7c6230; }
+.cv-talk--chibi { left: 0; bottom: calc(100% + 6px); width: max-content; }
+.cv-talk--chibi::after {
+  content: "";
+  position: absolute;
+  left: 22px;
+  bottom: -6px;
+  width: 9px;
+  height: 9px;
+  border-right: 1px solid var(--cv-gold);
+  border-bottom: 1px solid var(--cv-gold);
+  background: var(--cv-ivory);
+  transform: rotate(45deg);
+}
+.cv-talk--top { left: 50%; top: 10px; max-width: min(260px, 80%); text-align: center; transform: translate(-50%, 6px); }
+.cv-talk--top.is-on { transform: translate(-50%, 0); }
 
 /* Result card: the guest's member and one line (overview S4 멤버 멘트) */
 .cv-result-member { display: flex; align-items: flex-end; gap: 10px; margin: 0 0 10px; }
@@ -108,6 +148,20 @@ html[lang="zh-Hans"] { --cv-font-ui: "PingFang SC", "Microsoft YaHei", "Noto San
 }
 .cv-result-member__line b { display: block; margin-bottom: 2px; font-size: 11px; letter-spacing: 0.06em; color: var(--cv-gold); }
 .cv-quest-result.is-new .cv-result-member__line { background: rgba(26, 22, 18, 0.6); color: var(--cv-ivory); }
+.cv-result-member__talk { flex: 1 1 auto; min-width: 0; }
+.cv-result-member__talk .cv-result-member__line { margin-bottom: 6px; }
+.cv-result-member__replies { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 6px; margin-bottom: 8px; }
+.cv-result-member__reply {
+  appearance: none;
+  padding: 6px 10px;
+  border: 1px solid var(--cv-onyx);
+  border-radius: 999px;
+  background: var(--cv-onyx);
+  font: 600 12px/1.2 var(--cv-font-ui);
+  color: var(--cv-gold-bright);
+  cursor: pointer;
+}
+.cv-quest-result.is-new .cv-result-member__reply { border-color: var(--cv-gold); }
 
 /* ---------- Settings (cv-settings.js) ---------- */
 .cv-settings { z-index: 70; }   /* above the bingo board and the pre-save panel */

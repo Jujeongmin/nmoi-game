@@ -252,6 +252,35 @@
     if (!n.value && window.matchMedia('(hover: hover) and (pointer: fine)').matches) n.focus({ preventScroll: true });
   };
 
+  /** 03: the member talks — the greeting, then a line about the caviar and one about the
+      drink (cv-talk.js). Tap the bubble or "다음 ›" to go on. */
+  P._serveTalk = function (d, greetingHtml) {
+    var e = this.el;
+    if (!NS.talk || !d.member) return;
+    var tr = function (s) { return NS.i18n ? NS.i18n.translate(s) : s; };
+    var vars = { caviar: tr(d.caviar.label), drink: tr(d.drink.label) };
+    var steps = [null, 'caviar', 'drink'], i = 0;
+    var next = el('button', 'lp-bubble__next', NS.talk.reply('next'));
+    next.type = 'button';
+    function show() {
+      if (i === 0) e.serveLine.innerHTML = greetingHtml;
+      else e.serveLine.textContent = NS.talk.line(steps[i], vars, d.member.id);
+      if (i < steps.length - 1) e.serveLine.appendChild(next);
+      e.serveLine.classList.remove('is-new');
+      void e.serveLine.offsetWidth;
+      e.serveLine.classList.add('is-new');
+    }
+    function advance(ev) {
+      if (ev) ev.stopPropagation();
+      if (i >= steps.length - 1) return;
+      i++;
+      show();
+    }
+    next.addEventListener('click', advance);
+    e.serveLine.onclick = advance;
+    show();
+  };
+
   /** 03: member, line, dish and drink from the order. */
   P.fillServe = function (d) {
     var e = this.el;
@@ -272,6 +301,8 @@
     } else {
       e.serveName.textContent = '';
     }
+
+    this._serveTalk(d, e.serveLine.innerHTML);
 
     fillTin(e.serveTin, d.caviar.color, d.caviar.latin, d.caviar.image);
     e.serveCaviar.textContent = d.caviar.label;

@@ -425,6 +425,13 @@
     "좋아요! 한 판 더 해볼까요?": ["Nice! One more run?", "いいね! もう1回やってみる?", "很棒! 再來一局吧?", "很棒! 再来一局吧?"],
     "괜찮아요, 다음 판엔 더 잘할 수 있어요": ["It's okay, you'll do better next time", "大丈夫、次はもっとうまくいくよ", "沒關係，下一局會更好", "没关系，下一局会更好"],
 
+    "나라": ["NARA", "NARA", "NARA", "NARA"],
+    "나탈리": ["NATALIE", "NATALIE", "NATALIE", "NATALIE"],
+    "세린": ["SERIN", "SERIN", "SERIN", "SERIN"],
+    "티야": ["TIYA", "TIYA", "TIYA", "TIYA"],
+    "유온": ["YUON", "YUON", "YUON", "YUON"],
+    "게스트": ["Guest", "ゲスト", "訪客", "访客"],
+
     /* ---------- settings ---------- */
     "설정": ["Settings", "設定", "設定", "设置"],
     "⚙ 설정": ["⚙ Settings", "⚙ 設定", "⚙ 設定", "⚙ 设置"],

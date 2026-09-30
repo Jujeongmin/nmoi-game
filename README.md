@@ -226,6 +226,22 @@ or date) and `A · B` lines are translated part by part. Canvas text, dialogs an
 `CAVIAR.t(ko, vars)`. **New Korean UI text needs a dictionary entry**, or it shows in Korean.
 Member names stay in Hangul until the official romanization / kana / hanzi is given.
 
+## Member talk (shared/cv-talk.js, shared/cv-talk-lines.js)
+
+The guest's member (from the order sheet) talks: bubbles in the games (start, a mistake, a good
+move, 10 s left), a short conversation on every result card (the member's line → the guest
+answers 한 판 더 / 빙고 / 부스터 → the member replies and it happens), and the serving scene on
+the landing (greeting → the caviar → the drink). Voices follow the Jellyfish artist profile;
+lines are drafts in five languages, to be reviewed by the agency. Korean particles follow the
+word: `{caviar|을/를}`.
+
+## Game art (tools/gen-art.py)
+
+`python tools/gen-art.py` generates the Master Chef plate, signature dish and ingredients and
+the Escape shark with the OpenAI Images API (needs `OPENAI_API_KEY` in the environment; each
+image is billed). Raw PNGs go to `assets/source/gen/`, trimmed WebPs to `assets/chef/` and
+`assets/escape/`. Then point the game configs at them.
+
 ## Verse8 deploy
 
 The Verse8 repo (GitLab, branch `develop`) is a Vite template; pushing it deploys.

@@ -81,12 +81,12 @@
   overflow: hidden;
   container-type: size;
 }
-/* The guest's member, peeking from behind the plate (cv-chibi.js) */
+/* The guest's member beside the plate (cv-chibi.js); in front so its bubble stays readable */
 .cm-chibi {
   position: absolute;
   left: 3%;
   bottom: 0;
-  z-index: 0;
+  z-index: 2;
   width: min(34cqh, 130px);
   height: min(44cqh, 168px);
 }

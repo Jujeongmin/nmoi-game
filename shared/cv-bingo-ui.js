@@ -286,17 +286,49 @@
     var run = B.lastRun(gameId);
     var score = run ? run.score : 0;
     var best = NS.storage.scope(gameId).getNumber('best', 0);
-    var anim, text;
-    if (fresh && fresh.length) { anim = 'dance'; text = '미션 달성! 빙고판에서 B컷 카드를 확인해봐요'; }
-    else if (score > 0 && score >= best) { anim = 'dance'; text = '최고 기록이에요! 이번 주 순위도 확인해봐요'; }
-    else if (score > 0) { anim = 'idle'; text = '좋아요! 한 판 더 해볼까요?'; }
-    else { anim = 'frown'; text = '괜찮아요, 다음 판엔 더 잘할 수 있어요'; }
+    var anim, key;
+    if (fresh && fresh.length) { anim = 'dance'; key = 'mission'; }
+    else if (score > 0 && score >= best) { anim = 'dance'; key = 'best'; }
+    else if (score > 0) { anim = 'idle'; key = 'ok'; }
+    else { anim = 'frown'; key = 'low'; }
     var wrap = el('div', 'cv-result-member');
     var chibi = NS.chibi.create(wrap);
+    var talkBox = el('div', 'cv-result-member__talk');
     var line = el('p', 'cv-result-member__line');
-    line.appendChild(el('b', '', chibi.member.name));
-    line.appendChild(document.createTextNode(text));
-    wrap.appendChild(line);
+    var name = el('b', '', chibi.member.name);
+    var said = document.createTextNode('');
+    line.appendChild(name);
+    line.appendChild(said);
+    talkBox.appendChild(line);
+    wrap.appendChild(talkBox);
+    function say(k) { said.nodeValue = NS.talk ? NS.talk.line(k) : ''; }
+    say(key);
+
+    // The guest answers; the member replies, then the answer happens (overview S4: 다시 하기 ·
+    // 빙고 · 프리세이브).
+    if (NS.talk) {
+      var retry = document.getElementById('btn-retry');
+      var acts = {
+        again: retry ? function () { retry.click(); } : null,
+        bingo: function () { api.open(); },
+        presave: !A.presaved() && !NS.campaign.isReleased() && NS.presave ? function () { if (!NS.presave.open()) NS.presave.interstitial(); } : null
+      };
+      var replies = el('div', 'cv-result-member__replies');
+      Object.keys(acts).forEach(function (k) {
+        if (!acts[k]) return;
+        var r = el('button', 'cv-result-member__reply', NS.talk.reply(k));
+        r.type = 'button';
+        r.addEventListener('click', function () {
+          say(k);
+          chibi.play(k === 'bingo' ? 'idle' : 'dance', 1400);
+          replies.remove();
+          NS.track('talk_reply', { game: gameId, reply: k });
+          setTimeout(acts[k], 900);
+        });
+        replies.appendChild(r);
+      });
+      talkBox.appendChild(replies);
+    }
     setTimeout(function () { chibi.play(anim); }, 0);   // once it is in the card and has a size
     return wrap;
   }

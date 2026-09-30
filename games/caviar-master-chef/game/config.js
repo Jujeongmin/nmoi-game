@@ -32,10 +32,10 @@
 
     // tone: white | green | black | gold  (maps to .cv-pearl--{tone})
     caviars: [
-      { id: 'almas',    label: '알마스',   tone: 'white', image: null },
-      { id: 'imperial', label: '임페리얼', tone: 'green', image: null },
-      { id: 'classic',  label: '클래식',   tone: 'black', image: null },
-      { id: 'platinum', label: '플래티넘', tone: 'gold',  image: null }
+      { id: 'almas',    label: '알마스',   tone: 'white', image: '../../assets/caviar/roe-almas.webp' },
+      { id: 'imperial', label: '임페리얼', tone: 'green', image: '../../assets/caviar/roe-imperial.webp' },
+      { id: 'classic',  label: '클래식',   tone: 'black', image: '../../assets/caviar/roe-classic.webp' },
+      { id: 'platinum', label: '플래티넘', tone: 'gold',  image: '../../assets/caviar/roe-platinum.webp' }
     ]
   };
 })(window.CAVIAR = window.CAVIAR || {});

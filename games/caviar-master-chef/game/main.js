@@ -11,12 +11,14 @@
   var best = store.getNumber('best', 0);
   // The guest's member beside the plate: frowns at a wrong pick, dances at a perfect order.
   var chibi = NS.chibi ? NS.chibi.create(document.getElementById('stage'), { className: 'cm-chibi' }) : null;
+  var talk = chibi && NS.talk ? NS.talk.bubble(chibi.el) : null;
+  var warned = false;
   function react(ev) {
     if (!chibi) return;
-    if (ev.type === 'wrong') chibi.play('frown', 1100);
-    else if (ev.type === 'complete') chibi.play(ev.perfect ? 'dance' : 'idle', 1500);
-    else if (ev.type === 'start') chibi.play('idle');
-    else if (ev.type === 'end') chibi.play(game.ordersCompleted > 0 ? 'dance' : 'frown');
+    if (ev.type === 'wrong') { chibi.play('frown', 1100); if (talk) talk.say('oops'); }
+    else if (ev.type === 'complete') { chibi.play(ev.perfect ? 'dance' : 'idle', 1500); if (talk && ev.perfect) talk.say('good'); }
+    else if (ev.type === 'start') { chibi.play('idle'); warned = false; if (talk) talk.say('start'); }
+    else if (ev.type === 'end') { chibi.play(game.ordersCompleted > 0 ? 'dance' : 'frown'); if (talk) talk.hide(); }
   }
   NS.bingoUI.attachGame(cfg.gameId, { root: cfg.assetRoot });
   var resultShown = true;
@@ -79,6 +81,7 @@
 
   function tick(dt) {
     game.update(dt);
+    if (talk && !warned && game.phase !== 'idle' && game.phase !== 'over' && game.time <= 10) { warned = true; talk.say('last10'); }
     flush();
     if (!resultShown && game.isOver() && game.overTime >= cfg.resultDelay) showResult();
     ui.update(game, best);

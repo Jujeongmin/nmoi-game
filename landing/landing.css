@@ -420,6 +420,21 @@
   transform: translateY(-50%) rotate(45deg);
 }
 .lp-bubble b { font-weight: 700; color: #7c6230; }
+.lp-bubble { cursor: pointer; }
+.lp-bubble.is-new { animation: lp-bubble-in 0.3s ease-out; }
+@keyframes lp-bubble-in { from { opacity: 0.2; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+.lp-bubble__next {
+  appearance: none;
+  display: block;
+  margin: 8px 0 0 auto;
+  padding: 2px 0;
+  border: 0;
+  border-bottom: 1px solid var(--lp-line);
+  background: none;
+  font: 600 12px/1.2 var(--cv-font-ui);
+  color: #7c6230;
+  cursor: pointer;
+}
 
 .lp-host {
   position: relative;

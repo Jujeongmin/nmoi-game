@@ -91,8 +91,16 @@
     }));
   }
 
+  var talk = NS.talk ? NS.talk.bubble(stageEl, { anchor: 'top' }) : null;
+  var warned = false;
   function handle(ev) {
     NS.sound.event(cfg.gameId, ev.type, ev);
+    if (talk) {
+      if (ev.type === 'go') { warned = false; talk.say('start'); }
+      else if (ev.type === 'hit') talk.say('oops');
+      else if (ev.type === 'nearMiss') talk.say('good');
+      else if (ev.type === 'end') talk.hide();
+    }
     switch (ev.type) {
       case 'hit':
         ui.hitFeedback();
@@ -127,6 +135,7 @@
 
   function tick(dt) {
     game.update(dt, input.enabled ? input.vector() : null);
+    if (talk && !warned && game.phase === 'play' && game.timeLeft <= 10) { warned = true; talk.say('last10'); }
     var events = game.drainEvents();
     for (var i = 0; i < events.length; i++) handle(events[i]);
 

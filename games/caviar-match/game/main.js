@@ -26,13 +26,16 @@
   // The guest's member at the bottom right: dances at combos and cleared tables, frowns when
   // the board steps down or the run is lost.
   const chibi = CAVIAR.chibi ? CAVIAR.chibi.create(stage, { className: 'cm-chibi' }) : null;
+  const talk = chibi && CAVIAR.talk ? CAVIAR.talk.bubble(chibi.el) : null;
+  let warned = false;
   function react(type, d) {
     if (!chibi) return;
-    if (type === 'collect' && d.combo >= 2) chibi.play('dance', 1200);
-    else if (type === 'stageClear') chibi.play('dance', 1800);
-    else if (type === 'drop') chibi.play('frown', 900);
-    else if (type === 'start') chibi.play('idle');
-    else if (type === 'end') chibi.play(d.reason === 'overflow' ? 'frown' : 'dance');
+    const say = (k) => { if (talk) talk.say(k); };
+    if (type === 'collect' && d.combo >= 2) { chibi.play('dance', 1200); say('good'); }
+    else if (type === 'stageClear') { chibi.play('dance', 1800); say('good'); }
+    else if (type === 'drop') { chibi.play('frown', 900); say('oops'); }
+    else if (type === 'start') { chibi.play('idle'); warned = false; say('start'); }
+    else if (type === 'end') { chibi.play(d.reason === 'overflow' ? 'frown' : 'dance'); if (talk) talk.hide(); }
   }
 
   function onGameEvent(type, d) {
@@ -151,6 +154,7 @@
 
     game.update(dt);
     fx.update(dt);
+    if (talk && !warned && game.state === 'playing' && game.time <= 10) { warned = true; talk.say('last10'); }
 
     aim.visible = game.state === 'playing' && aim.valid && (aim.down || aim.hover);
     view.render(game, aim, dt);
