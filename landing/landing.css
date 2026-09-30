@@ -847,3 +847,6 @@
 .lp-invite .cv-invite__rule, .lp-invite .cv-bingo__desc { color: var(--cv-ink-soft); }
 .lp-invite .cv-bingo__link { color: var(--cv-ink); border-color: var(--lp-line); }
 .lp-nav__item--demo b { color: var(--cv-ink-soft); }
+
+/* Touch: "다음 ›" in the serving bubble gets a finger-sized hit area */
+.lp-bubble__next { min-width: 44px; min-height: 34px; padding: 8px 2px 4px; }

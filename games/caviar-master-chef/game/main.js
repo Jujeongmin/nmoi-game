@@ -99,7 +99,17 @@
 
   // Block pinch / page scroll on mobile; all play happens inside the app column.
   document.addEventListener('gesturestart', function (e) { e.preventDefault(); });
-  document.addEventListener('touchmove', function (e) { e.preventDefault(); }, { passive: false });
+  // Panels that are taller than the screen (result card, bingo, settings) still scroll.
+  function scrollableFrom(node) {
+    for (var n = node; n && n !== document.body; n = n.parentElement) {
+      var oy = getComputedStyle(n).overflowY;
+      if ((oy === 'auto' || oy === 'scroll') && n.scrollHeight > n.clientHeight + 1) return true;
+    }
+    return false;
+  }
+  document.addEventListener('touchmove', function (e) {
+    if (e.touches.length > 1 || !scrollableFrom(e.target)) e.preventDefault();
+  }, { passive: false });
 
   // Debug handle for testing in the console. step(seconds) advances the game manually.
   NS.debug = {

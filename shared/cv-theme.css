@@ -604,3 +604,8 @@ html[data-splash-active="true"] #app { visibility: hidden; }
   cursor: pointer;
 }
 .cv-sound-toggle.is-off { opacity: 0.6; text-decoration: line-through; }
+
+/* Touch: small controls get a finger-sized hit area (about 36-44 px) without looking bigger. */
+.cv-sound-toggle { min-height: 34px; padding-top: 6px; padding-bottom: 6px; }
+.cv-settings__range { height: 32px; }
+.cv-settings__link { padding-top: 10px; padding-bottom: 8px; }

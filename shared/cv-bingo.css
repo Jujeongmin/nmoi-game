@@ -418,3 +418,6 @@
 .cv-invite__count { margin: 0; font: 700 13px/1 var(--cv-font-ui); color: var(--cv-gold-bright); }
 .cv-invite__field { width: 100%; padding: 8px 10px; border: 1px solid var(--cv-line); background: #080706; color: var(--cv-ivory); font: 500 12px/1 var(--cv-font-ui); box-sizing: border-box; }
 .cv-invite__rule { margin: 0; font: 400 11px/1.45 var(--cv-font-ui); color: var(--cv-ivory-dim); word-break: keep-all; }
+
+/* Touch: the "빙고판 보기" links get a finger-sized hit area */
+.cv-quest-link, .cv-quest-result__more { min-height: 36px; padding-top: 9px; padding-bottom: 7px; }
