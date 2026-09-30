@@ -32,9 +32,9 @@
       { id: k + '-rank', week: i, type: 'rank', game: w.game,
         title: w.label + ' 상위 ' + BC.rankTopPct + '%', desc: g.name + ' 주간 리더보드 상위 ' + BC.rankTopPct + '% (' + end + ' 마감 순위로 판정)' },
       { id: k + '-refrank', week: i, type: 'refrank',
-        title: w.label + ' 초대 TOP ' + BC.refRankTop, desc: w.label + ' 동안 내 초대 링크로 프리세이브한 친구 수 주간 상위 ' + BC.refRankTop + '명 (' + end + ' 마감 순위로 판정)' },
+        title: w.label + ' 초대 TOP ' + BC.refRankTop, desc: w.label + ' 동안 내 초대 링크로 들어와 게임한 친구 수 주간 상위 ' + BC.refRankTop + '명 (' + end + ' 마감 순위로 판정)' },
       { id: k + '-ref', week: i, type: 'ref', need: BC.refNeed[i], fromStart: true,
-        title: '친구 초대 ' + BC.refNeed[i], desc: '초대 링크로 들어온 새 친구 ' + BC.refNeed[i] + '명이 프리세이브 (누적)' },
+        title: '친구 초대 ' + BC.refNeed[i], desc: '초대 링크로 들어온 새 친구 ' + BC.refNeed[i] + '명이 첫 판 플레이 (누적)' },
       { id: k + '-att', week: i, type: 'att', need: BC.attNeed[i], fromStart: true,
         title: '출석 ' + BC.attNeed[i] + '일', desc: '서로 다른 ' + BC.attNeed[i] + '일, 방문해서 게임 1판 (캠페인 21일 중)' }
     );

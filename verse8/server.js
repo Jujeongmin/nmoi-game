@@ -134,6 +134,38 @@ function ticketLog(me) {
 
 // A finished run: that day counts as attendance, and the run's tickets
 // (first run of a game +1 once, a run +1 once per game per day). Returns the state patch.
+// Referral (invite link): a friend counts for the inviter once they came through the link,
+// registered a NEW e-mail on the order sheet and finished a run the server counted. Spotify
+// does not tell anyone who pre-saved, so a pre-save cannot be the condition. Returns the patch
+// for the friend's own state ({ refCredited: true } or {}).
+async function creditReferral(me) {
+  const patch = {};
+  if (me.ref && me.emailNew === true && !me.refCredited) {
+    const inv = await $global.getCollectionItems('invites', { filters: [{ field: 'code', operator: '==', value: me.ref }], limit: 1 });
+    const inviter = inv[0] && inv[0].account;
+    const other = inviter && inviter !== $sender.account ? ((await $global.getUserState(inviter)) || {}) : null;
+    const today = kstDate();
+    const refDay = other && other.refDay && other.refDay.date === today ? other.refDay : { date: today, n: 0 };
+    if (other && refDay.n < REF_DAILY_CAP) {
+      const upd = { referrals: (other.referrals || 0) + 1, refDay: { date: today, n: refDay.n + 1 } };
+      // Weekly referral board (bingo referral-rank cells).
+      const season = seasonOf();
+      if (season !== 'pre' && season !== 'post') {
+        const refLb = Object.assign({}, other.refLb);
+        const col = 'ref-' + season;
+        let row = null;
+        if (refLb[season]) { try { row = await $global.getCollectionItem(col, refLb[season]); } catch (e) { row = null; } }
+        if (row) await $global.updateCollectionItem(col, { __id: row.__id, score: (row.score || 0) + 1, updatedAt: Date.now() });
+        else refLb[season] = (await $global.addCollectionItem(col, { account: inviter, nickname: cleanNickname(other.nickname) || 'Guest', score: 1, updatedAt: Date.now() })).__id;
+        upd.refLb = refLb;
+      }
+      await $global.updateUserState(inviter, upd);
+      patch.refCredited = true;
+    }
+  }
+  return patch;
+}
+
 function runRewards(me, gameId) {
   const today = kstDate();
   const days = (me.days || []).slice();
@@ -362,36 +394,12 @@ class Server {
     return summary(Object.assign({}, me, { v8: true }));
   }
 
-  // Pre-save is click-based (no Spotify check): +2 tickets once, booster, +1 run/day,
-  // and — for a NEW email that came from an invite link — one referral for the inviter.
+  // Pre-save is click-based (no Spotify check): +2 tickets once, booster, +1 run/day.
   async markPresave() {
     const me = await myState();
     if (me.presaved) return summary(me);
     const patch = { presaved: true, presavedAt: Date.now(), tickets: (me.tickets || 0) + TICKETS.presave };
 
-    if (me.ref && me.emailNew === true && !me.refCredited) {
-      const inv = await $global.getCollectionItems('invites', { filters: [{ field: 'code', operator: '==', value: me.ref }], limit: 1 });
-      const inviter = inv[0] && inv[0].account;
-      const other = inviter && inviter !== $sender.account ? ((await $global.getUserState(inviter)) || {}) : null;
-      const today = kstDate();
-      const refDay = other && other.refDay && other.refDay.date === today ? other.refDay : { date: today, n: 0 };
-      if (other && refDay.n < REF_DAILY_CAP) {
-        const upd = { referrals: (other.referrals || 0) + 1, refDay: { date: today, n: refDay.n + 1 } };
-        // Weekly referral board (bingo referral-rank cells).
-        const season = seasonOf();
-        if (season !== 'pre' && season !== 'post') {
-          const refLb = Object.assign({}, other.refLb);
-          const col = 'ref-' + season;
-          let row = null;
-          if (refLb[season]) { try { row = await $global.getCollectionItem(col, refLb[season]); } catch (e) { row = null; } }
-          if (row) await $global.updateCollectionItem(col, { __id: row.__id, score: (row.score || 0) + 1, updatedAt: Date.now() });
-          else refLb[season] = (await $global.addCollectionItem(col, { account: inviter, nickname: cleanNickname(other.nickname) || 'Guest', score: 1, updatedAt: Date.now() })).__id;
-          upd.refLb = refLb;
-        }
-        await $global.updateUserState(inviter, upd);
-        patch.refCredited = true;
-      }
-    }
     await $global.updateMyState(patch);
     return summary(Object.assign({}, me, patch));
   }
@@ -413,8 +421,11 @@ class Server {
   }
 
   // Result-screen share (the page cannot verify it): +1 ticket once per game per day.
+  // Share (result card, per game) and 'invite' (sending the invite link from the invite
+  // sheet, bingo or the booster panel): +1 ticket once a day each. A click cannot be verified,
+  // so the reward is small and daily.
   async claimShare(gameId) {
-    if (!GAMES[gameId]) throw new Error('unknown game');
+    if (!GAMES[gameId] && gameId !== 'invite') throw new Error('unknown game');
     const me = await myState();
     const log = ticketLog(me);
     const today = kstDate();
@@ -473,6 +484,7 @@ class Server {
     const multiplier = multiplierOf(me);
     const reward = runRewards(me, gameId);
     if (multiplier === V8_WEEKLY_BOOSTER) reward.patch.v8Week = seasonOf();   // the week's x1.5 is used
+    Object.assign(reward.patch, await creditReferral(me));   // invited friend's first run
     await $global.updateMyState(Object.assign({ runs }, reward.patch));
     Object.assign(me, reward.patch);
 

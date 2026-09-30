@@ -117,7 +117,7 @@
       handlers.invite = function () {
         var box = $('invite-body');
         box.innerHTML = '';
-        box.appendChild(el('p', 'lp-invite__lead', '친구가 내 링크로 들어와 새 이메일로 프리세이브하면 1명 인정 (하루 최대 ' + NS.campaign.config.referralDailyCap + '명). 누적 인원과 주간 순위로 빙고 초대 미션이 채워져요.'));
+        box.appendChild(el('p', 'lp-invite__lead', '친구가 내 링크로 들어와 새 이메일로 주문서를 쓰고 첫 판을 플레이하면 1명 인정 (하루 최대 ' + NS.campaign.config.referralDailyCap + '명). 누적 인원과 주간 순위로 빙고 초대 미션이 채워져요.'));
         box.appendChild(NS.bingoUI.inviteBlock());
         open(invite);
       };

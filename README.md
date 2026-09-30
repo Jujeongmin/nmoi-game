@@ -131,7 +131,7 @@ that day (KST) and shows the real week locks — carried across pages.
 
 4x4 = 15 missions + the n Moi pre-save cell (on a diagonal, so it counts for 3 lines). Overview §4:
 per week 5 — game score (booster score ≥ N) · game rank (weekly top 10 %) · referral rank (weekly
-top 10 of pre-saves through my invite link) · referral count (3 / 5 / 10, cumulative) · attendance
+top 10 of friends who came through my invite link and played) · referral count (3 / 5 / 10, cumulative) · attendance
 (7 / 10 / 14 days with a finished run, of 21). Game and referral-rank cells open with their week
 ("11/2 공개"); referral count and attendance count from D1. Rank cells are judged on the final
 weekly board after the week ends. Numbers are provisional (alpha data 10/13): `bingo` in
@@ -161,7 +161,8 @@ Click-based (no Spotify check): +2 tickets, score x1.2, +1 run per day. From 11/
 becomes "Spotify에서 듣기".
 
 Tickets (응모권): pre-save +2, bingo line +3, and per game: first run +1 (once), a run +1 and a
-result-screen share +1 (each once per game per day). Attendance is a day with a finished run — a
+result-screen share +1 (each once per game per day), and sending the invite link (copy / share on
+the invite sheet, the bingo or the booster panel) +1 once a day. Attendance is a day with a finished run — a
 visit alone does not count (the server marks it when it records the run).
 
 More boosters (overview §5), all decided by the server:
@@ -182,9 +183,11 @@ Retargeting events (overview §6) go through `CAVIAR.track(name, data)` (`shared
 ## Account + leaderboard (Verse8 server)
 
 `verse8/server.js`: profile (nickname + email; email kept as a hash for de-dup), tickets,
-pre-save, referrals (share link `?ref=CODE`; counted only when a **new** email pre-saves, max 6),
+pre-save, referrals (share link `?ref=CODE`; counted only when a **new** email finishes a first counted run — Spotify does not say who pre-saved, max 6),
 attendance, runs per day (3, +1 after pre-save), weekly leaderboards `lb-<game>-<w1|w2|w3>` +
-a combined board, score x1.2 after pre-save. The page keeps a local mirror so everything works
+a combined board, score x1.2 after pre-save. A result card's rank line has "순위표 ›", which opens
+the week's TOP 10 of that game over the card (`CAVIAR.leaderboard.open(gameId)`); the landing
+menu → Ranking has every week and the combined board. The page keeps a local mirror so everything works
 in a preview; the server is the authority on Verse8. The server logic is plain JS: it can be
 tested without Verse8 by passing an in-memory `$global` / `$sender` into the `Server` class.
 

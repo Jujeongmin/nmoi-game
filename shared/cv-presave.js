@@ -199,7 +199,8 @@
           var copy = el('button', 'cv-booster__skip', '내 초대 링크 복사');
           copy.type = 'button';
           copy.addEventListener('click', function () {
-            navigator.clipboard.writeText(link).then(function () { copy.textContent = '복사했어요'; }, function () {});
+            var got = NS.account.sendInvite();
+            navigator.clipboard.writeText(link).then(function () { copy.textContent = got ? '복사했어요 · 응모권 +' + got : '복사했어요'; }, function () {});
           });
           panel.appendChild(copy);
         }

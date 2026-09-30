@@ -186,9 +186,11 @@
     var copy = el('button', 'cv-bingo__link', '링크 복사');
     copy.type = 'button';
     copy.addEventListener('click', function () {
-      var done = function () { copy.textContent = '복사됨'; };
-      if (navigator.clipboard) navigator.clipboard.writeText(link).then(done, function () { field.select(); });
-      else field.select();
+      var got = A.sendInvite();
+      var done = function () { copy.textContent = got ? '복사됨 · 응모권 +' + got : '복사됨'; };
+      if (navigator.clipboard) navigator.clipboard.writeText(link).then(done, function () { field.select(); done(); });
+      else { field.select(); done(); }
+      renderReward();
     });
     box.appendChild(field);
     var row = el('div', 'cv-bingo__actions');
@@ -196,11 +198,21 @@
     if (navigator.share) {
       var share = el('button', 'cv-bingo__link', '공유하기');
       share.type = 'button';
-      share.addEventListener('click', function () { navigator.share({ title: 'n Moi Caviar', url: link }).catch(function () {}); });
+      share.addEventListener('click', function () {
+        A.sendInvite();
+        renderReward();
+        navigator.share({ title: 'n Moi Caviar', url: link }).catch(function () {});
+      });
       row.appendChild(share);
     }
     box.appendChild(row);
-    box.appendChild(el('p', 'cv-invite__rule', '새 이메일로 들어온 친구가 프리세이브를 눌러야 1명으로 인정돼요.'));
+    var reward = el('p', 'cv-invite__reward');
+    function renderReward() {
+      reward.textContent = A.invited() ? '오늘 초대 보상 받음 · 응모권 +' + CFG.tickets.share : '링크를 보내면 응모권 +' + CFG.tickets.share + ' (하루 1번)';
+    }
+    renderReward();
+    box.appendChild(reward);
+    box.appendChild(el('p', 'cv-invite__rule', '새 이메일로 들어온 친구가 첫 판을 플레이해야 1명으로 인정돼요.'));
     return box;
   }
 
@@ -397,10 +409,13 @@
     var b = el('button', 'cv-presave-cta', '');
     b.type = 'button';
     b.appendChild(el('span', 'cv-presave-cta__tag', 'INVITE'));
-    var label = el('span', '', '내 초대 링크 복사 · 친구가 프리세이브하면 미션 +1');
+    var label = el('span', '', '내 초대 링크 복사 · 친구가 첫 판을 하면 미션 +1');
     b.appendChild(label);
     b.addEventListener('click', function () {
-      if (navigator.clipboard) navigator.clipboard.writeText(link).then(function () { label.textContent = '초대 링크를 복사했어요'; }, function () {});
+      var got = A.sendInvite();
+      var msg = '초대 링크를 복사했어요' + (got ? ' · 응모권 +' + got : '');
+      if (navigator.clipboard) navigator.clipboard.writeText(link).then(function () { label.textContent = msg; }, function () { label.textContent = msg; });
+      else label.textContent = msg;
     });
     return b;
   }

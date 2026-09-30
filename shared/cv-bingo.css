@@ -457,3 +457,32 @@
 .cv-quest-result .cv-presave-cta { gap: 6px; font-size: 12px; }
 .cv-progress__gain { margin-left: 2px; font-weight: 700; color: var(--cv-gold); }
 .cv-progress.is-dark .cv-progress__gain { color: var(--cv-gold-bright); }
+.cv-invite__reward { margin: 8px 0 0; font: 700 12px/1.4 var(--cv-font-ui); color: var(--cv-gold-bright); }
+.lp-invite .cv-invite__reward { color: var(--lp-gold-ink, #7c6230); }
+
+/* Result card: "순위표 ›" and the week's TOP 10 over the game */
+.cv-rank-line__open {
+  appearance: none;
+  margin-left: 6px;
+  padding: 6px 0 4px;
+  border: 0;
+  border-bottom: 1px solid var(--cv-gold);
+  background: none;
+  font: 700 12px/1 var(--cv-font-ui);
+  color: #7c6230;
+  cursor: pointer;
+}
+.cv-lb { z-index: 50; }
+.cv-lb__panel { text-align: left; }
+.cv-lb__panel .cv-eyebrow { text-align: center; }
+.cv-lb__title { margin: 4px 0 2px; font: 600 24px/1.1 var(--cv-font-display); text-align: center; color: var(--cv-ink); }
+.cv-lb__season { margin: 0 0 12px; font: 500 11px/1.3 var(--cv-font-ui); text-align: center; color: var(--cv-ink-soft); }
+.cv-lb__list { margin: 0 0 14px; padding: 0; list-style: none; border-top: 1px solid var(--cv-line-faint); }
+.cv-lb__list li { display: flex; align-items: baseline; gap: 10px; padding: 7px 2px; border-bottom: 1px solid var(--cv-line-faint); }
+.cv-lb__list b { width: 24px; font: 600 14px/1 var(--cv-font-display); color: #7c6230; }
+.cv-lb__list span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font: 600 13px/1.2 var(--cv-font-ui); color: var(--cv-ink); }
+.cv-lb__list em { font: 500 15px/1 var(--cv-font-num); font-style: normal; font-variant-numeric: tabular-nums; color: var(--cv-ink); }
+.cv-lb__list li.is-me { background: rgba(201, 174, 120, 0.16); }
+.cv-lb__list .cv-lb__mine { border-top: 1px dashed var(--cv-gold); }
+.cv-lb__list .cv-lb__note { display: block; padding: 16px 2px; font: 500 13px/1.5 var(--cv-font-ui); text-align: center; color: var(--cv-ink-soft); }
+.cv-lb__close { width: 100%; }

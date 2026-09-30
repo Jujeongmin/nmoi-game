@@ -11,6 +11,7 @@
    CAVIAR.account.lineTicket(id)           bingo line → +3 tickets (local mirror; the server pays in getBingo)
    CAVIAR.account.recordRun(gameId)        finished run → attendance day + run tickets (returns grants)
    CAVIAR.account.share(gameId)            result-screen share → +1 ticket (once per game per day)
+   CAVIAR.account.sendInvite()             invite link copied / shared → +1 ticket (once a day)
    CAVIAR.account.playsLeft(gameId)        runs left today
    CAVIAR.account.attachGame(gameId)       title card: runs left, week lock, start gating
    CAVIAR.account.inviteLink()             landing URL with this guest's invite code
@@ -249,6 +250,10 @@
       return CFG.tickets.share;
     },
 
+    /** Sending the invite link (copy / share button): +1 ticket once a day. */
+    invited: function () { return NS.account.shared('invite'); },
+    sendInvite: function () { return NS.account.share('invite'); },
+
     playsLeft: function (gameId) { return Math.max(0, limit() - (state.plays.counts[gameId] || 0)); },
 
     /** A run starts. Opens it on the server first (the only run a score is accepted for),
@@ -428,6 +433,10 @@
         var mult = r.multiplier || (r.boosted ? CFG.booster : 1);
         line.appendChild(document.createTextNode(' ' + NS.campaign.seasonLabel(r.season).split(' · ')[0] + ' ' + r.rank + '위 · 최고 ' + r.best.toLocaleString('en-US') + '점' +
           (mult > 1 ? ' · x' + mult + (mult === CFG.v8Booster ? ' V8 주간 부스터' : ' 부스터') : '') + (r.improved ? ' · 기록 갱신!' : '')));
+        var open = el('button', 'cv-rank-line__open', '순위표 ›');
+        open.type = 'button';
+        open.addEventListener('click', function () { NS.leaderboard.open(gameId); });
+        line.appendChild(open);
       }, function (err) {
         line.classList.add('is-off');
         line.textContent = err && err.message === 'no-profile'
@@ -438,6 +447,54 @@
 
     load: function (gameId, limitN, season) {
       return server().then(function (s) { return s.getLeaderboard(gameId, limitN || 20, season); });
+    },
+
+    /** This week's TOP N of one game, over the game (result card "순위표 ›"). */
+    open: function (gameId) {
+      var box = document.querySelector('.cv-lb');
+      if (!box) {
+        box = el('div', 'cv-overlay cv-lb');
+        box.setAttribute('role', 'dialog');
+        box.addEventListener('click', function (e) { if (e.target === box || e.target.closest('.cv-lb__close')) box.classList.remove('is-open'); });
+        (document.getElementById('app') || document.body).appendChild(box);
+      }
+      var top = CFG.leaderboardTop || 10;
+      var panel = el('div', 'cv-panel cv-lb__panel');
+      panel.appendChild(el('p', 'cv-eyebrow', 'RANKING'));
+      panel.appendChild(el('h2', 'cv-lb__title', '이번 주 TOP ' + top));
+      var season = el('p', 'cv-lb__season', '');
+      panel.appendChild(season);
+      var list = el('ol', 'cv-lb__list');
+      list.appendChild(el('li', 'cv-lb__note', '불러오는 중…'));
+      panel.appendChild(list);
+      var closeBtn = el('button', 'cv-btn cv-lb__close', '닫기');
+      closeBtn.type = 'button';
+      panel.appendChild(closeBtn);
+      box.innerHTML = '';
+      box.appendChild(panel);
+      box.classList.add('is-open');
+      NS.leaderboard.load(gameId, top).then(function (res) {
+        season.textContent = NS.campaign.seasonLabel(res.season);
+        list.innerHTML = '';
+        if (!res.top.length) { list.appendChild(el('li', 'cv-lb__note', '아직 기록이 없어요. 첫 번째 주인공이 되어보세요!')); return; }
+        res.top.forEach(function (r) {
+          var li = el('li', r.me ? 'is-me' : '');
+          li.appendChild(el('b', '', String(r.rank)));
+          li.appendChild(el('span', '', r.nickname));
+          li.appendChild(el('em', '', r.score.toLocaleString('en-US')));
+          list.appendChild(li);
+        });
+        if (res.mine && !res.top.some(function (r) { return r.me; })) {
+          var li = el('li', 'is-me cv-lb__mine');
+          li.appendChild(el('b', '', String(res.mine.rank)));
+          li.appendChild(el('span', '', res.mine.nickname || '나'));
+          li.appendChild(el('em', '', res.mine.score.toLocaleString('en-US')));
+          list.appendChild(li);
+        }
+      }, function () {
+        list.innerHTML = '';
+        list.appendChild(el('li', 'cv-lb__note', '리더보드는 Verse8 서버에서 집계돼요 (지금은 연결 안 됨)'));
+      });
     }
   };
 })(window.CAVIAR = window.CAVIAR || {});
