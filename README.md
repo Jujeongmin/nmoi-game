@@ -179,6 +179,18 @@ Retargeting events (overview §6) go through `CAVIAR.track(name, data)` (`shared
 `entry` · `booster_choice {choice}` · `presave_click` · `presave_panel {where}` · `stream_click` ·
 `share {game}` · `play {game}` · `v8_login`. Event definitions are still to be agreed with Kreators.
 
+## Admin: participant list (shared/cv-admin.js)
+
+Landing → settings: admins see **관리자** (participant list, admin roster); everyone else sees
+**내 계정 ID 보기** (their Verse8 account id, to be added by an admin). The list is read page by
+page from the server (`adminParticipants`, admins only) and shows nickname, e-mail, tickets,
+pre-save, referrals, attendance, bingo lines and join date, with search, sorting, "CSV 저장" and
+"이메일만 모아 보기". Inside the Verse8 frame downloads are blocked, so the CSV opens in a new tab
+(or is shown as text to copy). The first admins are account ids in `verse8/admins.local.json`
+(not in the public repo; `tools/sync-verse8.py` writes them into the Verse8 copy of
+`server.js`); admins add or remove others in the app. E-mails are stored as entered (no
+encryption) — the production plan is an external server + DB.
+
 ## Account + leaderboard (Verse8 server)
 
 `verse8/server.js`: profile (nickname + email; email kept as a hash for de-dup), tickets,

@@ -80,6 +80,13 @@ const TICKETS = { presave: 2, line: 3, firstRun: 1, dailyRun: 1, share: 1 };
 const NICK_MAX = 12;
 const TOTAL = 'total';
 
+// Admins see the participant list (nickname, e-mail, tickets ...) in the app. The first admins
+// are written in by tools/sync-verse8.py from verse8/admins.local.json (kept out of the public
+// repo); admins add the others in the app ('admins' collection).
+const ADMINS = [/*ADMINS*/];
+const ADMIN_PAGE = 200;
+const ACCOUNT_RE = /^[A-Za-z0-9:_.@-]{4,128}$/;
+
 function kstDate(ts) {
   return new Date((ts || Date.now()) + 9 * 3600 * 1000).toISOString().slice(0, 10);
 }
@@ -308,6 +315,23 @@ async function judgeBingo(me) {
   return { done, status };
 }
 
+async function isAdmin(account) {
+  if (!account) return false;
+  if (ADMINS.includes(account)) return true;
+  const rows = await $global.getCollectionItems('admins', { filters: [{ field: 'account', operator: '==', value: account }], limit: 1 });
+  return rows.length > 0;
+}
+async function requireAdmin() {
+  if (!(await isAdmin($sender.account))) throw new Error('not admin');
+}
+async function adminRoster() {
+  const rows = await $global.getCollectionItems('admins', { limit: 100 });
+  return {
+    fixed: ADMINS.slice(),
+    added: rows.map((r) => ({ account: r.account, name: r.name || '', addedBy: r.addedBy || '', at: r.at || 0 })),
+  };
+}
+
 class Server {
   // Entry (TIER 0): nickname + email, one-line consent on the page. No sign-up.
   // emailHash = SHA-256(lower-cased trimmed email) computed by the page, used for de-dup.
@@ -530,6 +554,74 @@ class Server {
   }
 
   // Top rows for one game (or 'total') in a season (default: the current week).
+  // ---- Admin (participant list) --------------------------------------------------------
+
+  // Anyone: their own account id (to be added as an admin) and whether they are one.
+  async whoAmI() {
+    return { account: $sender.account, admin: await isAdmin($sender.account) };
+  }
+
+  // One page of participants: everyone who registered an e-mail, oldest first. `after` is the
+  // `next` of the previous page (a registration time). An account that changed its e-mail can
+  // show up twice across pages; the page keeps the latest row.
+  async adminParticipants(after, limit) {
+    await requireAdmin();
+    const n = Math.max(1, Math.min(ADMIN_PAGE, Math.floor(Number(limit) || ADMIN_PAGE)));
+    const filters = Number(after) > 0 ? [{ field: 'at', operator: '>', value: Number(after) }] : [];
+    const rows = await $global.getCollectionItems('emails', { filters, orderBy: [{ field: 'at', direction: 'asc' }], limit: n });
+    const accounts = [...new Set(rows.map((r) => r.account).filter(Boolean))];
+    const states = accounts.length ? await $global.getUserStates(accounts) : [];
+    const byAccount = {};
+    for (const st of states) if (st && st.account) byAccount[st.account] = st;
+    const seen = new Set();
+    const list = [];
+    for (const r of rows) {
+      if (!r.account || seen.has(r.account)) continue;
+      seen.add(r.account);
+      const s = byAccount[r.account] || {};
+      list.push({
+        account: r.account,
+        nickname: s.nickname || '',
+        email: s.email || '',
+        joinedAt: r.at || 0,
+        tickets: s.tickets || 0,
+        presaved: !!s.presaved,
+        referrals: s.referrals || 0,
+        days: (s.days || []).length,
+        lines: (s.lines || []).length,
+        v8: !!s.v8,
+      });
+    }
+    return { rows: list, next: rows.length === n ? rows[rows.length - 1].at : null };
+  }
+
+  async adminListAdmins() {
+    await requireAdmin();
+    return adminRoster();
+  }
+
+  async adminAddAdmin(account, name) {
+    await requireAdmin();
+    const id = String(account || '').trim();
+    if (!ACCOUNT_RE.test(id)) throw new Error('계정 ID를 확인해주세요');
+    if (!(await isAdmin(id))) {
+      await $global.addCollectionItem('admins', {
+        account: id, name: String(name || '').trim().slice(0, 30), addedBy: $sender.account, at: Date.now(),
+      });
+    }
+    return adminRoster();
+  }
+
+  async adminRemoveAdmin(account) {
+    await requireAdmin();
+    const id = String(account || '').trim();
+    if (ADMINS.includes(id)) throw new Error('기본 관리자는 앱에서 뺄 수 없어요');
+    if (id === $sender.account) throw new Error('자기 자신은 뺄 수 없어요');
+    const rows = await $global.getCollectionItems('admins', { filters: [{ field: 'account', operator: '==', value: id }], limit: 10 });
+    for (const r of rows) await $global.deleteCollectionItem('admins', r.__id);
+    return adminRoster();
+  }
+
   async getLeaderboard(gameId, limit, season) {
     const s = cleanSeason(season);
     const col = collectionOf(gameId, s, true);

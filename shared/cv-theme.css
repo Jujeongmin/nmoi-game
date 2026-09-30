@@ -691,3 +691,36 @@ html[data-splash-active="true"] #app { visibility: hidden; }
   color: #7c6230;
   cursor: pointer;
 }
+
+/* ---------- Admin (shared/cv-admin.js) ---------- */
+.cv-admin { z-index: 80; }
+.cv-admin__panel { width: min(100%, 980px); text-align: left; }
+.cv-admin__panel > .cv-eyebrow { text-align: center; }
+.cv-admin__tabs { display: flex; justify-content: center; gap: 6px; margin: 4px 0 12px; }
+.cv-admin__tab { appearance: none; min-height: 34px; padding: 4px 14px; border: 1px solid var(--cv-line-faint); background: transparent; font: 600 12px/1 var(--cv-font-ui); color: var(--cv-ink-soft); cursor: pointer; }
+.cv-admin__tab.is-on { border-color: var(--cv-gold); background: var(--cv-onyx); color: var(--cv-gold-bright); }
+.cv-admin__status { margin: 0 0 10px; font: 600 12px/1.4 var(--cv-font-ui); color: var(--cv-ink); }
+.cv-admin__bar { display: flex; gap: 6px; margin-bottom: 8px; }
+.cv-admin__search, .cv-admin__sort, .cv-admin-entry__field {
+  flex: 1 1 auto; min-width: 0; height: 36px; padding: 0 10px;
+  border: 1px solid var(--cv-line); background: #fff; font: 500 13px/1 var(--cv-font-ui); color: var(--cv-ink);
+}
+.cv-admin__sort { flex: 0 0 auto; }
+.cv-admin__tools { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+.cv-admin__tool { appearance: none; min-height: 32px; padding: 4px 10px; border: 1px solid var(--cv-gold); background: transparent; font: 600 12px/1 var(--cv-font-ui); color: var(--cv-ink); cursor: pointer; }
+.cv-admin__tool:disabled { opacity: 0.45; cursor: default; }
+.cv-admin__table-wrap { max-height: 52vh; overflow: auto; border: 1px solid var(--cv-line-faint); background: #fff; }
+.cv-admin__table { width: 100%; border-collapse: collapse; font: 500 12px/1.35 var(--cv-font-ui); color: var(--cv-ink); }
+.cv-admin__table th { position: sticky; top: 0; padding: 7px 8px; background: var(--cv-onyx); color: var(--cv-gold-bright); font-weight: 700; text-align: left; white-space: nowrap; }
+.cv-admin__table td { padding: 6px 8px; border-top: 1px solid var(--cv-line-faint); white-space: nowrap; }
+.cv-admin__table td.is-email { user-select: all; }
+.cv-admin__table tbody tr:nth-child(even) td { background: rgba(201, 174, 120, 0.07); }
+.cv-admin__empty { padding: 20px 8px !important; text-align: center; color: var(--cv-ink-soft); }
+.cv-admin__text { margin-bottom: 10px; }
+.cv-admin__area { width: 100%; height: 140px; padding: 8px; border: 1px solid var(--cv-line); font: 500 12px/1.4 ui-monospace, monospace; }
+.cv-admin__admins { margin: 0 0 14px; padding: 0; list-style: none; border-top: 1px solid var(--cv-line-faint); }
+.cv-admin__admins li { display: flex; align-items: center; gap: 10px; padding: 8px 2px; border-bottom: 1px solid var(--cv-line-faint); font: 500 12px/1.3 var(--cv-font-ui); }
+.cv-admin__admins b { flex: none; min-width: 70px; }
+.cv-admin__acc { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--cv-ink-soft); user-select: all; }
+.cv-admin__add { display: grid; gap: 6px; }
+.cv-admin-entry__field { width: 100%; margin: 6px 0 4px; font-family: ui-monospace, monospace; font-size: 12px; }

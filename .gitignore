@@ -5,3 +5,4 @@ __pycache__/
 Thumbs.db
 desktop.ini
 .claude/settings.local.json
+verse8/admins.local.json

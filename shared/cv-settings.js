@@ -150,6 +150,7 @@
     done.addEventListener('click', close);
     actions.appendChild(done);
     panel.appendChild(actions);
+    if (NS.admin) NS.admin.settings(panel);   // landing only: admin tools or "내 계정 ID"
   }
 
   function privacyNotice(host) {

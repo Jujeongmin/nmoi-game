@@ -10,6 +10,11 @@ type Me = {
   dailyLimit: number; booster: number; multiplier: number; v8: boolean; lifeTokens: number; streak: number; season: string;
 };
 type LeaderRow = { rank: number; nickname: string; score: number; me?: boolean };
+type Participant = {
+  account: string; nickname: string; email: string; joinedAt: number; tickets: number;
+  presaved: boolean; referrals: number; days: number; lines: number; v8: boolean;
+};
+type AdminRoster = { fixed: string[]; added: { account: string; name: string; addedBy: string; at: number }[] };
 
 const server = new GameServer();
 let pending: Promise<boolean> | null = null;
@@ -54,6 +59,13 @@ const api = {
       "submitScore", [gameId, score, runId]),
   getLeaderboard: (gameId: string, limit = 10, season?: string) =>
     call<{ season: string; top: LeaderRow[]; mine: LeaderRow | null }>("getLeaderboard", [gameId, limit, season]),
+  // Admin: participant list and the admin roster (the server checks the caller).
+  whoAmI: () => call<{ account: string; admin: boolean }>("whoAmI"),
+  adminParticipants: (after?: number | null, limit?: number) =>
+    call<{ rows: Participant[]; next: number | null }>("adminParticipants", [after || 0, limit]),
+  adminListAdmins: () => call<AdminRoster>("adminListAdmins"),
+  adminAddAdmin: (account: string, name?: string) => call<AdminRoster>("adminAddAdmin", [account, name]),
+  adminRemoveAdmin: (account: string) => call<AdminRoster>("adminRemoveAdmin", [account]),
 };
 
 const w = window as unknown as { CAVIAR?: Record<string, unknown> };

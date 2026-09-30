@@ -78,6 +78,19 @@ def main():
         (target / rel).parent.mkdir(parents=True, exist_ok=True)
         shutil.copyfile(ROOT / "verse8" / rel, target / rel)
 
+    # First admins (Verse8 account ids) live in verse8/admins.local.json, which is not in the
+    # public repo: written into the Verse8 copy of server.js only.
+    admins_file = ROOT / "verse8" / "admins.local.json"
+    if admins_file.exists():
+        import json
+        ids = [str(a) for a in json.loads(admins_file.read_text(encoding="utf-8")) if str(a).strip()]
+        srv = target / "server.js"
+        text = srv.read_text(encoding="utf-8")
+        text = text.replace("[/*ADMINS*/]", json.dumps(ids))
+        srv.write_text(text, encoding="utf-8", newline="
+")
+        print(f"admins: {len(ids)} from verse8/admins.local.json")
+
     # Static hub pages (games, content pages) load the built bridge as a module, from the
     # same folder as their cv-storage.js. Pages without it (the integration sample game,
     # which only talks postMessage) get no bridge.
