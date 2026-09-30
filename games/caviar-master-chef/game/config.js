@@ -9,7 +9,7 @@
     duration: 60,                 // seconds
     wrongPenalty: 2,              // seconds removed per wrong pick
     orderLengths: [3, 4, 5, 6],   // steps per order (last step = signature caviar); repeats last
-    memorize: { base: 1.4, perStep: 0.5 }, // seconds the order stays readable
+    memorize: { base: 2.0, perStep: 0.6 }, // seconds the order stays readable (3 steps 3.8 s · 6 steps 5.6 s)
     serveDelay: 1.15,             // completion presentation before the next order
     resultDelay: 1.3,             // pause between time up and the result card
 

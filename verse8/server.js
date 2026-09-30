@@ -31,9 +31,9 @@
 // winner notice; encrypt-at-rest / 30-day deletion needs a Verse8 platform key or job.
 
 const WEEKS = [
-  { id: 'w1', start: '2026-10-26', end: '2026-11-01', game: 'caviar-master-chef' },  // A: canapé stacking
-  { id: 'w2', start: '2026-11-02', end: '2026-11-08', game: 'caviar-escape' },       // B: shark
-  { id: 'w3', start: '2026-11-09', end: '2026-11-15', game: 'caviar-match' },        // C: pearl sorting
+  { id: 'w1', start: '2026-10-26', end: '2026-11-01', game: 'caviar-escape' },       // shark
+  { id: 'w2', start: '2026-11-02', end: '2026-11-08', game: 'caviar-match' },
+  { id: 'w3', start: '2026-11-09', end: '2026-11-15', game: 'caviar-master-chef' },
 ];
 
 // Bingo (overview §4): 16 = per week 5 cells (game score · game rank · referral rank ·

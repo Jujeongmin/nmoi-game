@@ -5,8 +5,8 @@ A light restaurant flow (table → order → serving → caviar cans) leads into
 that share one design system, one set of member sprites, a 4x4 mission bingo, a weekly Verse8
 leaderboard and a Spotify pre-save push after every run. Portrait (세로형) only.
 
-**CAVIAR COURSE** (the campaign): 3 weeks, one new game per week — overview §2: W1 A 카나페 쌓기
-(셰프) 10/26 · W2 B 상어 (훔쳐라) 11/2 · W3 C 펄 소팅 (매치) 11/9, release 11/16. The game bodies
+**CAVIAR COURSE** (the campaign): 3 weeks, one new game per week — W1 상어 (캐비어를 훔쳐라)
+10/26 · W2 캐비어 매치 11/2 · W3 마스터 셰프 11/9, release 11/16. The game bodies
 come from the Verse8 game team (iframe, `pages/play`); the repo games stand in for them.
 Every date and number lives in `shared/cv-campaign.js`.
 

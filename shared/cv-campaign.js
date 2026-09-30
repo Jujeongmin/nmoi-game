@@ -14,11 +14,11 @@
   var C = {
     // Weeks: game + mission release, all dates KST (inclusive)
     weeks: [
-      // overview §2: A canapé stacking · B shark · C pearl sorting (Verse8 game team builds;
-      // the repo games stand in for them)
-      { id: 'w1', label: 'W1', start: '2026-10-26', end: '2026-11-01', game: 'caviar-master-chef', tone: 'gold'  },
-      { id: 'w2', label: 'W2', start: '2026-11-02', end: '2026-11-08', game: 'caviar-escape',      tone: 'green' },
-      { id: 'w3', label: 'W3', start: '2026-11-09', end: '2026-11-15', game: 'caviar-match',       tone: 'white' }
+      // W1 shark (Escape) · W2 Match · W3 Master Chef (Verse8 game team builds; the repo
+      // games stand in for them). verse8/server.js WEEKS keeps the same order.
+      { id: 'w1', label: 'W1', start: '2026-10-26', end: '2026-11-01', game: 'caviar-escape',      tone: 'gold'  },
+      { id: 'w2', label: 'W2', start: '2026-11-02', end: '2026-11-08', game: 'caviar-match',       tone: 'green' },
+      { id: 'w3', label: 'W3', start: '2026-11-09', end: '2026-11-15', game: 'caviar-master-chef', tone: 'white' }
     ],
     releaseDate: '2026-11-16',      // D-day: pre-save button turns into "listen on Spotify"
 

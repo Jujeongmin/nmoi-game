@@ -13,10 +13,10 @@
   /* ---------------- Data (edit freely) ---------------- */
 
   var GAMES = {
-    // week order (cv-campaign.js weeks): W1 셰프 · W2 훔쳐라 · W3 매치
-    'caviar-master-chef': { name: '마스터 셰프',     caviar: 'IMPERIAL', tone: 'green', path: 'games/caviar-master-chef/' },
+    // week order (cv-campaign.js weeks): W1 훔쳐라 · W2 매치 · W3 셰프
     'caviar-escape':      { name: '캐비어를 훔쳐라', caviar: 'ALMAS',    tone: 'white', path: 'games/caviar-escape/' },
-    'caviar-match':       { name: '캐비어 매치',     caviar: 'CLASSIC',  tone: 'black', path: 'games/caviar-match/' }
+    'caviar-match':       { name: '캐비어 매치',     caviar: 'CLASSIC',  tone: 'black', path: 'games/caviar-match/' },
+    'caviar-master-chef': { name: '마스터 셰프',     caviar: 'IMPERIAL', tone: 'green', path: 'games/caviar-master-chef/' }
   };
 
   /* Mission cards in B-cut order: mission n unlocks B-cut n (pages/content.js).
