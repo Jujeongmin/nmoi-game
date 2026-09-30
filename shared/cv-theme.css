@@ -65,59 +65,21 @@ html[lang="zh-Hans"] { --cv-font-ui: "PingFang SC", "Microsoft YaHei", "Noto San
 
 /* ---------- Member chibi (cv-chibi.js) ---------- */
 .cv-chibi { position: relative; width: 90px; height: 110px; pointer-events: none; }
-.cv-sprite {
-  position: absolute;
-  inset: 0;
-  background-image: var(--sheet);
-  background-repeat: no-repeat;
-  background-size: calc(var(--cell) * var(--cols)) calc(var(--cell) * var(--rows));
-  background-position: var(--ox) calc(var(--oy) - var(--row) * var(--cell));
-}
-.cv-sprite.is-playing { animation: cv-sprite var(--dur) steps(var(--frames)) infinite; }
-/* Non-looping rows (frown) play once and hold the last frame. */
-.cv-sprite.is-playing.is-once { animation: cv-sprite-once var(--dur) steps(var(--frames-1)) 1 forwards; }
-@keyframes cv-sprite {
-  from { background-position-x: var(--ox); }
-  to { background-position-x: calc(var(--ox) - var(--frames) * var(--cell)); }
-}
-@keyframes cv-sprite-once {
-  from { background-position-x: var(--ox); }
-  to { background-position-x: calc(var(--ox) - (var(--frames) - 1) * var(--cell)); }
-}
+.cv-sprite { position: absolute; inset: 0; }
 
-/* Member speech bubble (cv-talk.js) — above a chibi, or at the top of a play area */
-.cv-talk {
+/* Sprite window (shared/cv-sprite.js): the whole sheet as an <img>, clipped by the box and
+   moved to the frame in whole pixels. */
+.cv-spr { overflow: hidden; }
+.cv-spr__sheet {
   position: absolute;
-  z-index: 5;
-  max-width: 190px;
-  padding: 7px 10px;
-  border: 1px solid var(--cv-gold);
-  background: var(--cv-ivory);
-  font: 600 12px/1.4 var(--cv-font-ui);
-  color: var(--cv-ink);
-  word-break: keep-all;
+  left: 0;
+  top: 0;
+  max-width: none;
   pointer-events: none;
-  opacity: 0;
-  transform: translateY(6px);
-  transition: opacity 0.25s ease, transform 0.25s ease;
+  user-select: none;
+  -webkit-user-drag: none;
+  transform-origin: 0 0;
 }
-.cv-talk.is-on { opacity: 1; transform: none; }
-.cv-talk b { display: block; margin-bottom: 1px; font-size: 10px; letter-spacing: 0.08em; color: #7c6230; }
-.cv-talk--chibi { left: 0; bottom: calc(100% + 6px); width: max-content; }
-.cv-talk--chibi::after {
-  content: "";
-  position: absolute;
-  left: 22px;
-  bottom: -6px;
-  width: 9px;
-  height: 9px;
-  border-right: 1px solid var(--cv-gold);
-  border-bottom: 1px solid var(--cv-gold);
-  background: var(--cv-ivory);
-  transform: rotate(45deg);
-}
-.cv-talk--top { left: 50%; top: 10px; max-width: min(260px, 80%); text-align: center; transform: translate(-50%, 6px); }
-.cv-talk--top.is-on { transform: translate(-50%, 0); }
 
 /* Result card: the guest's member and one line (overview S4 멤버 멘트) */
 .cv-result-member { display: flex; align-items: flex-end; gap: 10px; margin: 0 0 10px; }

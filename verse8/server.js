@@ -16,6 +16,7 @@
 //     plays: { date, counts: { gameId: n } }, lb: { 'gameId:season': itemId },
 //     runs: { gameId: { id, at } | null },                 the run startRun opened, per game
 //     ticketLog: { first: { gameId: true }, daily: { gameId: date }, share: { gameId: date } },
+//     order: { mood, caviar, eat, drink, member },           order sheet choices (restored on other devices)
 //     refDay: { date, n },                                   referrals credited today (cap)
 //     bingo: [cellId],                                       cells done (kept once done)
 //     v8: bool, v8Week: season,                              V8 login; season of its x1.5 run
@@ -175,6 +176,7 @@ function summary(me) {
   return {
     nickname: me.nickname || '',
     hasEmail: !!me.emailHash,
+    order: me.emailHash && me.order ? me.order : null,   // order sheet choices, never the e-mail
     presaved: !!me.presaved,
     tickets: me.tickets || 0,
     referrals: me.referrals || 0,
@@ -311,6 +313,15 @@ class Server {
       }
       await $global.addCollectionItem('invites', { code, account: $sender.account });
       patch.inviteCode = code;
+    }
+
+    // The order sheet's choices (no e-mail), so the same account skips the sheet on another device.
+    if (p.order && typeof p.order === 'object') {
+      const order = {};
+      for (const k of ['mood', 'caviar', 'eat', 'drink', 'member']) {
+        if (typeof p.order[k] === 'string' && /^[a-z]{1,16}$/.test(p.order[k])) order[k] = p.order[k];
+      }
+      patch.order = order;
     }
 
     const ref = typeof p.ref === 'string' ? p.ref.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 8) : '';

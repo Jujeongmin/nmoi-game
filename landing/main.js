@@ -38,7 +38,9 @@
     }
   }
 
-  ui.on('open', function () { ui.openMenu(function () { go('order'); }); });
+  // A guest who already filled in the order sheet goes straight to the caviar cans
+  // (the sheet stays editable: settings → 주문서 다시 작성, or index.html#order).
+  ui.on('open', function () { ui.openMenu(function () { go(flow.isComplete() ? 'cans' : 'order'); }); });
   ui.on('prev', function () { flow.prev(); render(); });
   ui.on('answer', function (a) {
     flow.set(a.key, a.value);
@@ -149,11 +151,22 @@
   });
 
   // Returning guest: keep their answers; #cans jumps back to the can selection.
-  if (flow.restore(NS.hub.getOrder())) {
+  function restore(order) {
+    if (!flow.restore(order)) return false;
     ui.fillForm(flow.answers);
     ui.setComplete(true);
+    return true;
+  }
+  if (restore(NS.hub.getOrder())) {
     if (window.location.hash === '#cans') flow.go('cans');
     else if (window.location.hash === '#order') flow.go('order');
+  } else {
+    // Same Verse8 account, new device: the server remembers the order sheet (not the e-mail).
+    NS.account.serverOrder().then(function (order) {
+      if (!order || NS.hub.getOrder() || flow.step !== 'table') return;
+      NS.hub.setOrder(order);
+      restore(order);
+    });
   }
   render();
 

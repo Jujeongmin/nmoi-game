@@ -111,21 +111,6 @@
   100% { opacity: 1; transform: none; }
 }
 
-/* ---------- Sprite sheet window (CSS) ----------
-   Set per element: --sheet (url), --cell (display px per cell), --cols, --rows,
-   --row, --frames, --ox/--oy (crop offset), --dur. Add .is-playing to animate. */
-.ce-sprite {
-  background-image: var(--sheet);
-  background-repeat: no-repeat;
-  background-size: calc(var(--cell) * var(--cols)) calc(var(--cell) * var(--rows));
-  background-position: var(--ox) calc(var(--oy) - var(--row) * var(--cell));
-}
-.ce-sprite.is-playing { animation: ce-sprite var(--dur) steps(var(--frames)) infinite; }
-@keyframes ce-sprite {
-  from { background-position-x: var(--ox); }
-  to { background-position-x: calc(var(--ox) - var(--frames) * var(--cell)); }
-}
-
 /* ---------- Member picker ---------- */
 .ce-picker { margin: 0 0 18px; }
 .ce-picker__row {
@@ -135,6 +120,8 @@
   margin: 12px 0 8px;
 }
 .ce-member {
+  position: relative;
+  overflow: hidden;   /* the sprite sheet window (cv-sprite.js) is clipped to the circle */
   appearance: none;
   flex: none;
   width: 46px;
@@ -162,6 +149,7 @@
 
 /* Result: the chosen member dances (success) or stands (game over). */
 .ce-figure {
+  position: relative;
   width: 96px;
   height: 92px;
   margin: 14px auto -6px;

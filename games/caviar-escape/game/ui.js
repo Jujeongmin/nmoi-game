@@ -11,25 +11,9 @@
      cellPx: display size of one cell; boxW: element width; top: px above the head. */
   var assetRoot = '';
 
-  function applySprite(el, member, anim, cellPx, boxW, top) {
-    var a = member.anims[anim], b = member.bounds, k = cellPx / member.cell;
-    var cols = 0, rows = 0;
-    for (var key in member.anims) {
-      cols = Math.max(cols, member.anims[key].frames);
-      rows = Math.max(rows, member.anims[key].row + 1);
-    }
-    el.classList.add('ce-sprite');
-    var st = el.style;
-    // Absolute URL: a url() inside a custom property resolves against the stylesheet otherwise.
-    st.setProperty('--sheet', 'url("' + NS.url(member.sheet) + '")');
-    st.setProperty('--cell', cellPx + 'px');
-    st.setProperty('--cols', cols);
-    st.setProperty('--rows', rows);
-    st.setProperty('--row', a.row);
-    st.setProperty('--frames', a.frames);
-    st.setProperty('--dur', (a.frames / a.fps) + 's');
-    st.setProperty('--ox', (boxW / 2 - (b.x + b.w / 2) * k) + 'px');
-    st.setProperty('--oy', (top - b.y * k) + 'px');
+  function applySprite(el, member, anim, cellPx, boxW, top, play) {
+    var b = member.bounds, k = cellPx / member.cell;
+    NS.sprite.show(el, member, anim, { cell: cellPx, ox: boxW / 2 - (b.x + b.w / 2) * k, oy: top - b.y * k, play: !!play });
   }
 
   function UI(config) {
@@ -83,6 +67,7 @@
     this.members = members;
     this.memberButtons = [];
     row.innerHTML = '';
+    this.memberList = [];
     members.forEach(function (m) {
       var b = document.createElement('button');
       b.type = 'button';
@@ -90,10 +75,11 @@
       b.setAttribute('role', 'radio');
       b.setAttribute('aria-label', m.name);
       b.dataset.id = m.id;
-      applySprite(b, m, 'idle', 88, 46, 4);
+      applySprite(b, m, 'idle', 88, 46, 4, false);
       b.addEventListener('click', function () { self._fire('member', m.id); });
       row.appendChild(b);
       self.memberButtons.push(b);
+      self.memberList.push(m);
     });
   };
 
@@ -102,7 +88,7 @@
     for (var i = 0; i < this.memberButtons.length; i++) {
       var b = this.memberButtons[i], on = b.dataset.id === member.id;
       b.setAttribute('aria-checked', on ? 'true' : 'false');
-      b.classList.toggle('is-playing', on);
+      applySprite(b, this.memberList[i], 'idle', 88, 46, 4, on);   // the chosen member breathes
     }
     this.el.memberName.textContent = member.name;
   };
@@ -193,8 +179,7 @@
     el.resultDetail.textContent = parts.join('  ·  ');
 
     if (this.member) {
-      applySprite(el.resultFigure, this.member, success ? 'dance' : 'idle', 96, 96, 4);
-      restartClass(el.resultFigure, 'is-playing');
+      applySprite(el.resultFigure, this.member, success ? 'dance' : 'idle', 96, 96, 4, true);
     }
 
     // Success / fail art (real images later; placeholder slot until then)

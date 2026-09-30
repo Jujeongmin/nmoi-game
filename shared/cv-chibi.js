@@ -3,7 +3,7 @@
    CAVIAR.chibi.create(host, { className })  → { el, member, play(anim, holdMs), setMember(id) }
      play('idle' | 'frown' | 'dance', holdMs): after holdMs the member goes back to idle.
    The member is the one the guest's order picked (cv-hub), else the first of the list.
-   Needs assets/chibi/members.js (and cv-hub.js for the guest's member). Styles: cv-theme.css. */
+   Needs assets/chibi/members.js, cv-sprite.js (and cv-hub.js for the guest's member). */
 (function (NS) {
   'use strict';
 
@@ -14,31 +14,11 @@
     return list[0] || null;
   }
 
-  /* Point a sprite element at one row of a member sheet: the body centred and standing on
-     the bottom of a boxW x boxH box, cellPx = display size of one sheet cell. */
+  /* Show one row of a member sheet: the body centred and standing on the bottom of a
+     boxW x boxH box, cellPx = display size of one sheet cell (cv-sprite.js draws it). */
   function apply(node, m, anim, cellPx, boxW, boxH) {
-    var a = m.anims[anim] || m.anims.idle;
     var b = m.bounds, k = cellPx / m.cell;
-    var cols = 0, rows = 0;
-    for (var key in m.anims) {
-      cols = Math.max(cols, m.anims[key].frames);
-      rows = Math.max(rows, m.anims[key].row + 1);
-    }
-    var st = node.style;
-    st.setProperty('--sheet', 'url("' + NS.url(m.sheet) + '")');
-    st.setProperty('--cell', cellPx + 'px');
-    st.setProperty('--cols', cols);
-    st.setProperty('--rows', rows);
-    st.setProperty('--row', a.row);
-    st.setProperty('--frames', a.frames);
-    st.setProperty('--frames-1', Math.max(1, a.frames - 1));
-    st.setProperty('--dur', (a.frames / a.fps) + 's');
-    st.setProperty('--ox', (boxW / 2 - (b.x + b.w / 2) * k) + 'px');
-    st.setProperty('--oy', (boxH - 2 - (b.y + b.h) * k) + 'px');
-    node.classList.toggle('is-once', a.loop === false);
-    node.classList.remove('is-playing');
-    void node.offsetWidth;   // restart the row
-    node.classList.add('is-playing');
+    NS.sprite.show(node, m, anim, { cell: cellPx, ox: boxW / 2 - (b.x + b.w / 2) * k, oy: boxH - 2 - (b.y + b.h) * k, play: true });
   }
 
   function create(host, opts) {

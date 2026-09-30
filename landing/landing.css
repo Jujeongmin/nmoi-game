@@ -494,25 +494,7 @@
 .lp-serve__cta { width: 100%; }
 
 /* Member sprite window (same sheet format as Caviar Escape) */
-.lp-sprite {
-  position: absolute;
-  inset: 0;
-  background-image: var(--sheet);
-  background-repeat: no-repeat;
-  background-size: calc(var(--cell) * var(--cols)) calc(var(--cell) * var(--rows));
-  background-position: var(--ox) calc(var(--oy) - var(--row) * var(--cell));
-}
-.lp-sprite.is-playing { animation: lp-sprite var(--dur) steps(var(--frames)) infinite; }
-/* Non-looping rows (frown) play once and hold the last frame. --frames-1 is set by JS. */
-.lp-sprite.is-playing.is-once { animation: lp-sprite-once var(--dur) steps(var(--frames-1)) 1 forwards; }
-@keyframes lp-sprite {
-  from { background-position-x: var(--ox); }
-  to { background-position-x: calc(var(--ox) - var(--frames) * var(--cell)); }
-}
-@keyframes lp-sprite-once {
-  from { background-position-x: var(--ox); }
-  to { background-position-x: calc(var(--ox) - (var(--frames) - 1) * var(--cell)); }
-}
+.lp-sprite { position: absolute; inset: 0; }   /* the sheet window: shared/cv-sprite.js */
 
 /* ---------- Caviar tin (CSS placeholder; an image replaces the whole thing) ---------- */
 .lp-tin {

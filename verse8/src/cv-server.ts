@@ -5,7 +5,7 @@
 import { GameServer } from "@agent8/gameserver";
 
 type Me = {
-  nickname: string; hasEmail: boolean; presaved: boolean; tickets: number; referrals: number;
+  nickname: string; hasEmail: boolean; order: Record<string, string> | null; presaved: boolean; tickets: number; referrals: number;
   days: number; lines: string[]; inviteCode: string; playsToday: Record<string, number>;
   dailyLimit: number; booster: number; multiplier: number; v8: boolean; lifeTokens: number; streak: number; season: string;
 };
@@ -39,7 +39,7 @@ const api = {
   account: server.account,
   connect,
   connected: () => server.connected,
-  setProfile: (p: { nickname: string; email: string; emailHash: string; ref?: string }) => call<Me>("setProfile", [p]),
+  setProfile: (p: { nickname: string; email: string; emailHash: string; ref?: string; order?: Record<string, string | null> }) => call<Me>("setProfile", [p]),
   getMe: () => call<Me>("getMe"),
   markLogin: () => call<Me>("markLogin"),
   getStats: () => call<{ participants: number; season: string }>("getStats"),

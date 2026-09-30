@@ -169,18 +169,33 @@
 
     /** Entry form: nickname + email (consent is on the form). */
     profile: function (order) {
-      if (!order || !order.nickname || !order.email) return Promise.resolve();
+      if (!order || !order.nickname || !order.email) return Promise.resolve();   // restored from the server: already there
       var email = String(order.email).trim().toLowerCase();
+      var choices = { mood: order.mood, caviar: order.caviar, eat: order.eat, drink: order.drink, member: order.member };
       return sha256(email).then(function (hash) {
-        var key = order.nickname + '|' + hash;
+        var key = order.nickname + '|' + hash + '|' + JSON.stringify(choices);
         if (store.get('profileSent', '') === key) return;
         return server().then(function (s) {
-          return s.setProfile({ nickname: order.nickname, email: email, emailHash: hash, ref: store.get('ref', '') });
+          return s.setProfile({ nickname: order.nickname, email: email, emailHash: hash, ref: store.get('ref', ''), order: choices });
         }).then(function (me) { store.set('profileSent', key); merge(me); });
       }).catch(function () { /* retried on the next submit */ });
     },
 
     presaved: function () { return !!state.presaved; },
+
+    /** The same Verse8 account's order sheet from the server (another device), or null.
+        The e-mail stays on the server: the order is marked emailOnServer. */
+    serverOrder: function () {
+      var t = new Promise(function (resolve) { setTimeout(function () { resolve(null); }, WAIT_MS); });
+      var q = server().then(function (s) { return s.getMe(); }).then(function (me) {
+        if (!me || !me.hasEmail || !me.order || !me.nickname) return null;
+        merge(me);
+        var o = me.order;
+        return { nickname: me.nickname, email: '', emailOnServer: true, consent: true,
+                 mood: o.mood, caviar: o.caviar, eat: o.eat, drink: o.drink, member: o.member };
+      }, function () { return null; });
+      return Promise.race([q, t]);
+    },
 
     /** Pre-save click (smart link opened by cv-presave.js). */
     presave: function () {
@@ -379,7 +394,7 @@
     submit: function (gameId, score) {
       if (typeof score !== 'number' || !isFinite(score)) return;
       var order = NS.hub && NS.hub.getOrder && NS.hub.getOrder();
-      if (!order || !order.email) {
+      if (!order || (!order.email && !order.emailOnServer)) {
         last[gameId] = Promise.reject(new Error('no-profile'));
       } else {
         var run = runs[gameId];

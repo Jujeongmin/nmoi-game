@@ -17,28 +17,13 @@
   /* Point a .lp-sprite element at one row of a member sheet (format of assets/chibi/members.js).
      cellPx: display size of one cell; box: element size; the body is centred and stands on the floor. */
   function applySprite(node, member, anim, cellPx, boxW, boxH) {
-    var a = member.anims[anim] || member.anims.idle;
     var b = member.bounds, k = cellPx / member.cell;
-    var cols = 0, rows = 0;
-    for (var key in member.anims) {
-      cols = Math.max(cols, member.anims[key].frames);
-      rows = Math.max(rows, member.anims[key].row + 1);
-    }
-    var st = node.style;
-    st.setProperty('--sheet', 'url("' + assetUrl(member.sheet) + '")');
-    st.setProperty('--cell', cellPx + 'px');
-    st.setProperty('--cols', cols);
-    st.setProperty('--rows', rows);
-    st.setProperty('--row', a.row);
-    st.setProperty('--frames', a.frames);
-    st.setProperty('--frames-1', Math.max(1, a.frames - 1));
-    st.setProperty('--dur', (a.frames / a.fps) + 's');
-    st.setProperty('--ox', (boxW / 2 - (b.x + b.w / 2) * k) + 'px');
-    st.setProperty('--oy', (boxH - 6 - (b.y + b.h) * k) + 'px');
-    node.classList.toggle('is-once', a.loop === false);
-    node.classList.remove('is-playing');
-    void node.offsetWidth; // restart the row
-    node.classList.add('is-playing');
+    NS.sprite.show(node, member, anim, {
+      cell: cellPx,
+      ox: boxW / 2 - (b.x + b.w / 2) * k,
+      oy: boxH - 6 - (b.y + b.h) * k,
+      play: true
+    });
   }
 
   /* Caviar tin: CSS placeholder, or the configured image. */

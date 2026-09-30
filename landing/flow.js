@@ -36,12 +36,16 @@
 
   P.set = function (key, value) {
     if (key === 'nickname') value = String(value || '').trim().slice(0, this.cfg.nicknameMax);
-    if (key === 'email') value = String(value || '').trim().toLowerCase();
+    if (key === 'email') { value = String(value || '').trim().toLowerCase(); if (value) this.answers.emailOnServer = false; }
     this.answers[key] = value;
   };
 
   var EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
-  P.emailOk = function () { return EMAIL.test(this.answers.email) && this.answers.email.length <= 120; };
+  P.emailOk = function () {
+    var a = this.answers;
+    if (!a.email && a.emailOnServer) return true;   // same account on another device: the server has it
+    return EMAIL.test(a.email) && a.email.length <= 120;
+  };
 
   P.isComplete = function () {
     var a = this.answers;
@@ -59,6 +63,7 @@
     return {
       nickname: this.answers.nickname,
       email: this.answers.email,          // winner notice + de-dup only (hashed on the server side)
+      emailOnServer: !!this.answers.emailOnServer && !this.answers.email,
       mood: this.answers.mood,
       caviar: this.answers.caviar,
       eat: this.answers.eat,
@@ -74,6 +79,7 @@
     var a = this.answers;
     a.nickname = order.nickname || '';
     a.email = order.email || '';
+    a.emailOnServer = !!order.emailOnServer;
     a.mood = find(this.cfg.moods, order.mood) ? order.mood : null;
     a.caviar = find(this.cfg.caviars, order.caviar) ? order.caviar : null;
     a.eat = find(this.cfg.eats, order.eat) ? order.eat : null;
