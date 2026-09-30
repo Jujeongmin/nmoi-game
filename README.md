@@ -213,8 +213,10 @@ and in the menu. Real inst tracks: set `BGM[key]` to a file path.
 
 ## Settings + languages (shared/cv-settings.js, shared/cv-i18n.js)
 
-Settings open from the landing menu (Settings), a button next to the sound switch on every game
-title card, and the header of the recipe / trailer / play pages:
+Settings open from a button that is always at the top: the right end of the score bar in the games
+(above the title / result cards; the game pauses while the panel is open), the left of the landing
+top bar, and the header of the recipe / trailer / play pages; also from the landing menu (Settings).
+The icon is drawn for the campaign (gold line gear around a caviar pearl on onyx), no emoji:
 - **Language**: 한국어 · English · 日本語 · 繁體中文 · 简体中文. `?lang=en` also works; otherwise the
   saved choice, then the browser language, then English. Switching reloads the page.
 - **Sound**: on/off, music volume, effects volume (remembered).

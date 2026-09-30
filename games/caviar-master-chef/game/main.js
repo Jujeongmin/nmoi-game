@@ -74,10 +74,13 @@
     }
   }
 
-  document.addEventListener('visibilitychange', function () {
-    paused = document.hidden;
+  // Paused while the tab is hidden or the settings panel is open.
+  function syncPause() {
+    paused = document.hidden || !!(NS.settings && NS.settings.isOpen());
     last = performance.now();
-  });
+  }
+  document.addEventListener('visibilitychange', syncPause);
+  window.addEventListener('cv-settings', syncPause);
 
   function tick(dt) {
     game.update(dt);

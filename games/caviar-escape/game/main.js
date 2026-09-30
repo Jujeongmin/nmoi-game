@@ -127,11 +127,14 @@
   ui.on('retry', startRun);
   ui.on('back', NS.hub.backOr(toTitle));
 
-  document.addEventListener('visibilitychange', function () {
-    paused = document.hidden;
+  // Paused while the tab is hidden or the settings panel is open.
+  function syncPause() {
+    paused = document.hidden || !!(NS.settings && NS.settings.isOpen());
     last = performance.now();
     input.reset();
-  });
+  }
+  document.addEventListener('visibilitychange', syncPause);
+  window.addEventListener('cv-settings', syncPause);
 
   function tick(dt) {
     game.update(dt, input.enabled ? input.vector() : null);

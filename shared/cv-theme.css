@@ -208,22 +208,31 @@ html[lang="zh-Hans"] { --cv-font-ui: "PingFang SC", "Microsoft YaHei", "Noto San
 }
 .cv-settings__note { margin: 0; font: 500 12px/1.5 var(--cv-font-ui); color: var(--cv-ink-soft); word-break: keep-all; }
 .cv-settings__panel .cv-actions { margin-top: 12px; }
-.cv-settings__bar { display: flex; justify-content: center; align-items: flex-start; gap: 8px; }
 .cv-settings-btn {
   appearance: none;
+  flex: none;
   display: inline-grid;
   place-items: center;
-  width: 34px;
-  height: 34px;
+  width: 36px;
+  height: 36px;
   padding: 0;
-  border: 1px solid var(--cv-line-faint);
-  border-radius: 999px;
-  background: transparent;
-  color: var(--cv-ink-soft);
+  border: 1px solid var(--cv-gold);
+  border-radius: 50%;
+  background: var(--cv-onyx);
+  /* inner hairline: the double gold frame of the cards and tins */
+  box-shadow: inset 0 0 0 2px var(--cv-onyx), inset 0 0 0 2.6px rgba(201, 174, 120, 0.5);
+  color: var(--cv-gold-bright);
   cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
 }
-.cv-settings-btn svg { display: block; }
-.cv-settings-btn.is-icon { border-color: var(--cv-gold); background: var(--cv-onyx); color: var(--cv-gold); }
+.cv-settings-btn__icon { display: block; transition: transform 0.5s ease; }
+.cv-settings-btn:hover .cv-settings-btn__icon,
+.cv-settings-btn:focus-visible .cv-settings-btn__icon { transform: rotate(45deg); }
+.cv-settings-btn:focus-visible { outline: 1px solid var(--cv-gold); outline-offset: 2px; }
+.cv-settings-btn:active { background: #1a1612; }
+/* Games: last cell of the score bar, painted above the title / result overlays */
+.cv-has-hud-settings > .cv-overlay { padding-top: 60px; }
+.cv-settings-btn--hud { position: relative; z-index: 60; align-self: center; margin: 0 2px 0 6px; }
 .cv-settings__headbtns { justify-self: end; display: flex; gap: 6px; align-items: center; }
 
 html, body {

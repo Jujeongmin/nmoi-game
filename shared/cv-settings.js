@@ -167,44 +167,66 @@
     host.appendChild(dl);
   }
 
+  /* Games pause while the panel is open ('cv-settings' event, detail.open). */
+  function isOpen() { return !!(box && box.classList.contains('is-open')); }
+  function announce() { window.dispatchEvent(new CustomEvent('cv-settings', { detail: { open: isOpen() } })); }
+
   function open() {
     render();
     box.classList.add('is-open');
+    announce();
     var first = box.querySelector('.cv-settings__lang.is-on');
     if (first) first.focus();
   }
-  function close() { if (box) box.classList.remove('is-open'); }
+  function close() { if (!isOpen()) return; box.classList.remove('is-open'); announce(); }
   document.addEventListener('keydown', function (e) { if (e.key === 'Escape') close(); });
 
-  var GEAR = '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false">' +
-    '<path fill="currentColor" fill-rule="evenodd" d="M10.3 2h3.4l.5 2.6c.6.2 1.2.5 1.7.9l2.5-.9 1.7 2.9-2 1.8c.1.6.1 1.2 0 1.8l2 1.8-1.7 2.9-2.5-.9c-.5.4-1.1.7-1.7.9l-.5 2.6h-3.4l-.5-2.6c-.6-.2-1.2-.5-1.7-.9l-2.5.9-1.7-2.9 2-1.8c-.1-.6-.1-1.2 0-1.8l-2-1.8 1.7-2.9 2.5.9c.5-.4 1.1-.7 1.7-.9zM12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6z"/></svg>';
+  /* The icon: a fine gold gear around one caviar pearl — the gold-line, onyx and pearl
+     vocabulary of the tins and cards, not a system emoji. */
+  var GEAR = '<svg class="cv-settings-btn__icon" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false">' +
+    '<path d="M10.13 4.22L10.64 1.89L13.36 1.89L13.87 4.22A8.0 8.0 0 0 1 16.18 5.18L18.19 3.89L20.11 5.81L18.82 7.82A8.0 8.0 0 0 1 19.78 10.13L22.11 10.64L22.11 13.36L19.78 13.87A8.0 8.0 0 0 1 18.82 16.18L20.11 18.19L18.19 20.11L16.18 18.82A8.0 8.0 0 0 1 13.87 19.78L13.36 22.11L10.64 22.11L10.13 19.78A8.0 8.0 0 0 1 7.82 18.82L5.81 20.11L3.89 18.19L5.18 16.18A8.0 8.0 0 0 1 4.22 13.87L1.89 13.36L1.89 10.64L4.22 10.13A8.0 8.0 0 0 1 5.18 7.82L3.89 5.81L5.81 3.89L7.82 5.18A8.0 8.0 0 0 1 10.13 4.22Z" fill="none" stroke="currentColor" stroke-width="1.15" stroke-linejoin="round"/>' +
+    '<circle cx="12" cy="12" r="4.7" fill="none" stroke="currentColor" stroke-width="0.8" opacity="0.6"/>' +
+    '<circle cx="12" cy="12" r="2.4" fill="currentColor"/>' +
+    '<circle cx="11.25" cy="11.2" r="0.75" fill="#fff" opacity="0.8"/></svg>';
 
-  /** A settings button (gear icon only; the name is in aria-label) for title cards and page headers. */
+  /** The settings button (icon only; the name is in aria-label / title). */
   function button(extraClass) {
     var b = el('button', 'cv-settings-btn' + (extraClass ? ' ' + extraClass : ''));
     b.type = 'button';
     b.setAttribute('aria-label', '설정');
     b.title = '설정';
     b.innerHTML = GEAR;
-    b.addEventListener('click', open);
+    b.addEventListener('click', function () { if (isOpen()) close(); else open(); });
     return b;
   }
 
-  // Game title cards: next to the sound switch. Page headers: before the bingo button.
-  var sw = document.querySelector('#screen-title .cv-sound-toggle');
-  if (sw) {
-    var row = el('div', 'cv-settings__bar');
-    sw.parentNode.insertBefore(row, sw);
-    row.appendChild(sw);
-    row.appendChild(button());
+  /* Always at the top of the screen:
+     - games: the right end of the score bar, above the title / result cards and the board;
+     - landing: the left of the top bar (the right holds 빙고 and the menu);
+     - content pages and the game host: the header, before the bingo button. */
+  var hud = document.querySelector('.cv-hud');
+  if (hud) {
+    var cols = hud.querySelectorAll('.cv-hud__item').length || 3;
+    hud.style.gridTemplateColumns = 'repeat(' + cols + ', minmax(0, 1fr)) auto';
+    hud.classList.add('has-settings');
+    if (hud.parentNode) hud.parentNode.classList.add('cv-has-hud-settings');   // cards start below the button
+    hud.appendChild(button('cv-settings-btn--hud'));
+  }
+  var lpBar = document.querySelector('.lp-bar');
+  if (lpBar) {
+    var left = el('div', 'lp-bar__left');
+    lpBar.insertBefore(left, lpBar.firstChild);
+    left.appendChild(button('cv-settings-btn--bar'));
+    var prev = lpBar.querySelector('.lp-bar__prev');
+    if (prev) left.appendChild(prev);
   }
   var bar = document.querySelector('.pg-bar, .cv-host__bar');
   if (bar) {
     var bingo = bar.querySelector('#btn-bingo');
     var holder = el('div', 'cv-settings__headbtns');
-    if (bingo) { bingo.parentNode.insertBefore(holder, bingo); holder.appendChild(button('is-icon')); holder.appendChild(bingo); }
-    else bar.appendChild(button('is-icon'));
+    if (bingo) { bingo.parentNode.insertBefore(holder, bingo); holder.appendChild(button('cv-settings-btn--bar')); holder.appendChild(bingo); }
+    else bar.appendChild(button('cv-settings-btn--bar'));
   }
 
-  NS.settings = { open: open, close: close, button: button, reduceMotion: reduceMotion };
+  NS.settings = { open: open, close: close, isOpen: isOpen, button: button, reduceMotion: reduceMotion };
 })(window.CAVIAR = window.CAVIAR || {});

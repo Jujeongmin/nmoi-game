@@ -148,8 +148,16 @@
   // --- Loop -------------------------------------------------------------
 
   let last = performance.now();
+  // Paused while the tab is hidden or the settings panel is open.
+  let paused = false;
+  function syncPause() {
+    paused = document.hidden || !!(window.CAVIAR.settings && window.CAVIAR.settings.isOpen());
+    last = performance.now();
+  }
+  document.addEventListener('visibilitychange', syncPause);
+  window.addEventListener('cv-settings', syncPause);
   function frame(now) {
-    const dt = Math.min(0.05, (now - last) / 1000);
+    const dt = paused ? 0 : Math.min(0.05, (now - last) / 1000);
     last = now;
 
     game.update(dt);
