@@ -34,17 +34,19 @@
     // Retargeting (overview §6): events go to window.dataLayer, and to fbq / kreatorsPixel when
     // Kreators' pixel snippet is on the page. Event names: see CAVIAR.track in cv-storage.js.
     tracking: { prefix: 'caviar_' },
-    tickets: { presave: 2, line: 3, firstRun: 1, dailyRun: 1, share: 1 },   // run / share: once per game per day
+    tickets: { presave: 2, cell: 1, line: 3, firstRun: 1, dailyRun: 1, share: 1 },   // cell: each bingo mission · run / share: once per game per day
     referralDailyCap: 5,            // referrals credited per inviter per day (abuse cap)
 
-    // Bingo numbers (overview §4) — provisional until the alpha data (10/13).
-    // verse8/server.js keeps the same numbers in BINGO and judges every cell.
+    // Bingo numbers (5x5: 24 missions + pre-save in the centre) — provisional until the alpha
+    // data (10/13). verse8/server.js keeps the same numbers in BINGO and judges every cell.
     bingo: {
-      score: { 'caviar-match': 5000, 'caviar-escape': 4000, 'caviar-master-chef': 5000 },  // booster score
+      scoreEasy: { 'caviar-match': 2500, 'caviar-escape': 2000, 'caviar-master-chef': 2500 },  // score cell I (booster score)
+      score: { 'caviar-match': 5000, 'caviar-escape': 4000, 'caviar-master-chef': 5000 },      // score cell II
       rankTopPct: 10,               // game rank cell: weekly top 10 %
       refRankTop: 10,               // referral rank cell: weekly top 10
       refNeed: [3, 5, 10],          // referral count cells (cumulative)
-      attNeed: [7, 10, 14]          // attendance cells (days with a finished run, of 21)
+      attNeed: [7, 10, 14],         // attendance cells (days with a finished run, of 21)
+      bcuts: 10                     // B-cut cards: the n-th finished line opens card n (the rest of the lines pay tickets only)
     },
 
     links: {

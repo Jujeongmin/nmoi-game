@@ -8,6 +8,7 @@
    CAVIAR.account.state()                  { tickets, presaved, referrals, days, lines, inviteCode, ... }
    CAVIAR.account.profile(order)           entry: nickname + email (+ ?ref invite code)
    CAVIAR.account.presave()                pre-save click → +2 tickets, booster, +1 run/day
+   CAVIAR.account.cellTickets(n)           new bingo cells → +1 ticket each (local mirror)
    CAVIAR.account.lineTicket(id)           bingo line → +3 tickets (local mirror; the server pays in getBingo)
    CAVIAR.account.recordRun(gameId)        finished run → attendance day + run tickets (returns grants)
    CAVIAR.account.share(gameId)            result-screen share → +1 ticket (once per game per day)
@@ -208,6 +209,13 @@
         save();
       }
       return quiet(server().then(function (s) { return s.markPresave(); }).then(merge));
+    },
+
+    /** New bingo mission cells → +1 ticket each (local mirror; the server pays in getBingo). */
+    cellTickets: function (n) {
+      if (!(n > 0)) return;
+      state.tickets += n;
+      save();
     },
 
     lineTicket: function (lineId) {

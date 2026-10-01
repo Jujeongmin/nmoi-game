@@ -1,5 +1,5 @@
 /* RECIPE BOOK — the B-cut card collection (polaroid browser + full-size viewer and save).
-   B-cut n is the reward card of bingo mission n (shared/cv-bingo.js): locked until done. */
+   B-cut n opens with the n-th finished bingo line (shared/cv-bingo.js): locked until then. */
 (function (NS) {
   'use strict';
 
@@ -38,12 +38,12 @@
     } else {
       var locked = el('div', 'pg-polaroid__lock');
       locked.appendChild(el('b', '', 'LOCKED'));
-      locked.appendChild(el('span', '', '미션 「' + lock.mission.title + '」'));
-      locked.appendChild(el('span', '', '달성하면 이 B컷이 열려요'));
+      locked.appendChild(el('span', '', '빙고 ' + lock.line + '줄'));
+      locked.appendChild(el('span', '', '완성하면 이 B컷이 열려요'));
       photo.appendChild(locked);
     }
     $('bcut-card').classList.toggle('is-locked', !lock.unlocked);
-    $('bcut-open').textContent = lock.unlocked ? '크게 보기 · 저장하기' : '미션 보기 →';
+    $('bcut-open').textContent = lock.unlocked ? '크게 보기 · 저장하기' : '빙고판 보기 →';
     $('bcut-caption').textContent = b.caption;
     $('bcut-no').textContent = two(index + 1) + ' / ' + two(list.length);
     $('bcut-member').textContent = b.member;
@@ -69,14 +69,9 @@
     $('viewer-no').textContent = two(index + 1) + ' / ' + two(C.bcuts.length);
     $('viewer-cap').textContent = b.member + ' · ' + b.caption;
   }
-  function missionCell(id) {
-    var cells = NS.bingo.cells();
-    for (var i = 0; i < cells.length; i++) if (cells[i].id === id) return i;
-    return undefined;
-  }
   function openViewer() {
     var lock = NS.bingo.bcut(index);
-    if (!lock.unlocked) { NS.bingoUI.open(missionCell(lock.mission.id)); return; }
+    if (!lock.unlocked) { NS.bingoUI.open(); return; }
     renderViewer();
     viewer.hidden = false;
   }

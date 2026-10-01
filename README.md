@@ -2,7 +2,7 @@
 
 n Moi PRE-SAVE interactive page — "Caviar at a fine-dining restaurant".
 A light restaurant flow (table → order → serving → caviar cans) leads into three mini games
-that share one design system, one set of member sprites, a 4x4 mission bingo, a weekly Verse8
+that share one design system, one set of member sprites, a 5x5 mission bingo, a weekly Verse8
 leaderboard and a Spotify pre-save push after every run. Portrait (세로형) only.
 
 **Group name**: **n Moi** (lower-case n, space, capital M) — Korean **앤무아** (French *moi*).
@@ -47,7 +47,7 @@ shared/                     used by every page
   cv-campaign.js            weeks, dates, limits, booster, links (one place for every number)
   cv-hub.js                 landing ⇄ game hand-off (order, ?from=hub, Verse8 ?account/auth kept)
   cv-account.js             tickets, pre-save, referrals, attendance, runs/day, leaderboard client
-  cv-bingo.js / -ui.js      4x4 mission bingo (15 missions + pre-save) / board, login gate, cards
+  cv-bingo.js / -ui.js      5x5 mission bingo (24 missions + pre-save) / board, login gate, cards
   cv-bridge.js / cv-host.js game integration: game side (drop-in) / hub side (pages/play)
   cv-bingo.css              bingo, pre-save panel, rank line styles
   cv-brand.js               asset slots (CAVIAR.assetSlot), runs the Verse8 splash, logo badge
@@ -128,19 +128,21 @@ that day (KST) and shows the real week locks — carried across pages.
 
 ## Bingo (shared/cv-bingo.js) — TIER 1
 
-4x4 = 15 missions + the n Moi pre-save cell (on a diagonal, so it counts for 3 lines). Overview §4:
-per week 5 — game score (booster score ≥ N) · game rank (weekly top 10 %) · referral rank (weekly
-top 10 of friends who came through my invite link and played) · referral count (3 / 5 / 10, cumulative) · attendance
-(7 / 10 / 14 days with a finished run, of 21). Game and referral-rank cells open with their week
+5x5 = 24 missions + the n Moi pre-save cell in the centre (it counts for 4 lines). Per week 8 —
+first run · score I and II (booster score ≥ N) · result share · game rank (weekly top 10 %) ·
+referral rank (weekly top 10 of friends who came through my invite link and played) · referral
+count (3 / 5 / 10, cumulative) · attendance (7 / 10 / 14 days with a finished run, of 21). The top
+row is all W1, so a first line is possible in week 1. Game and referral-rank cells open with their week
 ("11/2 공개"); referral count and attendance count from D1. Rank cells are judged on the final
 weekly board after the week ends. Numbers are provisional (alpha data 10/13): `bingo` in
 `shared/cv-campaign.js` and `BINGO` in `verse8/server.js`.
-Each mission opens a B-cut card; a finished line → +3 tickets (once per line); the full board →
-top tier (showcase invite draw). Real name only when a reward is claimed. Without V8 login the
-board shows the login gate.
+Each mission cell → +1 ticket; a finished line → +3 tickets, and the n-th line opens B-cut card n
+(`bingo.bcuts` cards; later lines pay tickets only); the full board → top-tier prize draw. Real
+name only when a reward is claimed. Without V8 login the board shows the login gate.
 The Verse8 server judges every cell (`getBingo`, from its own leaderboards, referral boards,
-attendance and pre-save records) and pays the line tickets; the page mirrors score, referral
-count, attendance and pre-save so a local preview still fills the board. Referrals are credited
+ticket log, attendance and pre-save records) and pays the cell and line tickets; the page mirrors
+first run, share, score, referral count, attendance and pre-save so a local preview still fills
+the board. Referrals are credited
 at most 5 per inviter per day. Games only report their score (`CAVIAR.bingo.report(gameId, stats)`).
 Reset: menu → Demo Reset.
 

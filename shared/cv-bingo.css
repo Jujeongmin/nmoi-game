@@ -39,18 +39,18 @@
 .cv-bingo__board {
   position: relative;
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 4px;
-  padding: 6px;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 3px;
+  padding: 5px;
   border: 1px solid var(--cv-line-faint);
   background: #080706;
 }
 .cv-bingo__lines {
   position: absolute;
   z-index: 0;         /* behind the tins: the rule shows between them */
-  inset: 8px;
-  width: calc(100% - 16px);
-  height: calc(100% - 16px);
+  inset: 7px;
+  width: calc(100% - 14px);
+  height: calc(100% - 14px);
   pointer-events: none;
   overflow: visible;
 }

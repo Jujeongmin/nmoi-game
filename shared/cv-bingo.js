@@ -1,7 +1,8 @@
 /* CAVIAR BINGO — missions, board and progress. No DOM (see cv-bingo-ui.js).
-   Overview §4: 4x4 = 15 mission cards + n Moi pre-save. Per week 5: game score · game rank ·
-   referral rank · referral count · attendance. Rewards: each mission = one B-cut card ·
-   a line = +3 tickets · full board = top tier.
+   5x5 = 24 missions + n Moi pre-save in the centre. Per week 8: first run · score I · score II ·
+   share · game rank · referral rank · referral count · attendance. Rewards: each cell = +1
+   ticket · each line = +3 tickets, and the n-th finished line opens B-cut card n · full
+   board = top tier.
    Game and referral-rank cells open with their week; referral count and attendance count
    from D1. Rank cells are judged on the final weekly board, after the week ends.
    The Verse8 server judges every cell (getBingo); this page mirrors what it can (score,
@@ -19,16 +20,21 @@
     'caviar-master-chef': { name: '마스터 셰프',     caviar: 'IMPERIAL', tone: 'green', path: 'games/caviar-master-chef/' }
   };
 
-  /* Mission cards in B-cut order: mission n unlocks B-cut n (pages/content.js).
-     week: 0..2 · type: score | rank | refrank | ref | att.  `fromStart`: counts from D1
-     (not gated by its week). Numbers: cv-campaign.js bingo. */
+  /* Missions, week by week. week: 0..2 · type: first | score | share | rank | refrank | ref | att.
+     `fromStart`: counts from D1 (not gated by its week). Numbers: cv-campaign.js bingo. */
   var BC = NS.campaign.config.bingo;
   var MISSIONS = [];
   NS.campaign.weeks.forEach(function (w, i) {
     var g = GAMES[w.game], k = 'w' + (i + 1), end = NS.campaign.md(w.end);
     MISSIONS.push(
-      { id: k + '-score', week: i, type: 'score', game: w.game, score: BC.score[w.game],
+      { id: k + '-first', week: i, type: 'first', game: w.game,
+        title: w.label + ' 첫 판', desc: g.name + ' 한 판 끝까지 플레이' },
+      { id: k + '-score1', week: i, type: 'score', game: w.game, score: BC.scoreEasy[w.game],
+        title: w.label + ' ' + fmt(BC.scoreEasy[w.game]) + '점', desc: g.name + ' 한 판 ' + fmt(BC.scoreEasy[w.game]) + '점 이상 (부스터 적용 점수)' },
+      { id: k + '-score2', week: i, type: 'score', game: w.game, score: BC.score[w.game],
         title: w.label + ' ' + fmt(BC.score[w.game]) + '점', desc: g.name + ' 한 판 ' + fmt(BC.score[w.game]) + '점 이상 (부스터 적용 점수)' },
+      { id: k + '-share', week: i, type: 'share', game: w.game,
+        title: w.label + ' 결과 공유', desc: g.name + ' 결과 화면에서 공유하기 1번' },
       { id: k + '-rank', week: i, type: 'rank', game: w.game,
         title: w.label + ' 상위 ' + BC.rankTopPct + '%', desc: g.name + ' 주간 리더보드 상위 ' + BC.rankTopPct + '% (' + end + ' 마감 순위로 판정)' },
       { id: k + '-refrank', week: i, type: 'refrank',
@@ -43,15 +49,17 @@
 
   var PRESAVE = { id: 'presave', type: 'presave', tone: 'pearl', title: 'n Moi 프리세이브', desc: 'Spotify에서 프리세이브하고 채우기' };
 
-  /* Board, row by row (W1 gold, W2 green, W3 ivory). Pre-save sits on a diagonal so it
-     counts for 3 lines (overview §4). Same layout as BINGO.layout in verse8/server.js. */
+  /* Board, row by row (W1 gold, W2 green, W3 ivory). Pre-save in the centre counts for 4
+     lines; the top row is all W1, so a first line is possible in week 1.
+     Same layout as BINGO.layout in verse8/server.js. */
   var LAYOUT = [
-    'w1-score', 'w1-refrank', 'w2-score', 'w2-refrank',
-    'w1-rank', 'presave', 'w2-rank', 'w3-score',
-    'w1-att', 'w2-att', 'w3-refrank', 'w3-rank',
-    'w1-ref', 'w2-ref', 'w3-att', 'w3-ref'
+    'w1-first',  'w1-score1',  'w1-share',  'w1-score2',  'w1-rank',
+    'w1-att',    'w2-first',   'w2-score1', 'w2-share',   'w1-ref',
+    'w2-score2', 'w1-refrank', 'presave',   'w2-rank',    'w2-att',
+    'w2-ref',    'w3-first',   'w3-score1', 'w2-refrank', 'w3-share',
+    'w3-score2', 'w3-rank',    'w3-att',    'w3-ref',     'w3-refrank'
   ];
-  var SIZE = 4;
+  var SIZE = 5;
 
   var WEEK_TONE = ['gold', 'green', 'white'];
   var ART = {
@@ -65,10 +73,11 @@
     }
   };
 
+  var CELL_TICKETS = NS.campaign.config.tickets.cell;
   var REWARDS = [
-    { key: 'card', label: '달성', reward: '칸마다 B컷 1장' },
-    { key: 'line', label: '줄 완성', reward: '응모권 +3' },
-    { key: 'full', label: '판 완성', reward: '상위 등급 · 쇼케이스 초청 추첨' }
+    { key: 'cell', label: '칸', reward: '응모권 +' + CELL_TICKETS },
+    { key: 'line', label: '줄 완성', reward: 'B컷 1장 · 응모권 +' + NS.campaign.config.tickets.line },
+    { key: 'full', label: '판 완성', reward: '상위 등급 경품 추첨' }
   ];
   var REWARD_NOTE = '보상은 계정당 1회 · 수령 시에만 실명 확인';
 
@@ -118,8 +127,12 @@
     var before = finishedLines().length;
     writeDone(readDone().concat(ids));
     var now = finishedLines();
-    // A finished line pays +3 tickets once (the server pays it on its own board, getBingo).
-    if (NS.account) now.forEach(function (l) { NS.account.lineTicket(l.id); });
+    // Each mission cell pays +1 ticket, a finished line +3, once each (the server pays them
+    // on its own board, getBingo, and its count wins).
+    if (NS.account) {
+      NS.account.cellTickets(ids.filter(function (id) { return id !== PRESAVE.id; }).length * CELL_TICKETS);
+      now.forEach(function (l) { NS.account.lineTicket(l.id); });
+    }
     emit({ added: ids, newLines: now.length - before });
   }
 
@@ -138,12 +151,14 @@
     NS.whenServer(function (s) { if (s && s.getBingo) s.getBingo().then(fromServer, function () {}); });
   }
 
-  /** Referral / attendance / pre-save cells from the account state. */
+  /** First run / share / referral / attendance / pre-save cells from the account state. */
   function sync() {
     if (!NS.account) return [];
     var st = NS.account.state(), days = NS.account.days(), done = readDone();
     var fresh = MISSIONS.filter(function (m) {
       if (done.indexOf(m.id) >= 0 || !weekOpen(m)) return false;
+      if (m.type === 'first') return !!st.ticketLog.first[m.game];
+      if (m.type === 'share') return !!st.ticketLog.share[m.game];
       if (m.type === 'ref') return st.referrals >= m.need;
       if (m.type === 'att') return days >= m.need;
       return false;
@@ -189,7 +204,7 @@
       return LAYOUT.map(function (id, index) { return cellOf(id, index, done); });
     },
 
-    /** The week's 5 missions (default: the running week, or W1 before the start). */
+    /** The week's 8 missions (default: the running week, or W1 before the start). */
     weekProgress: function (weekIdx) {
       var i = typeof weekIdx === 'number' ? weekIdx : Math.min(Math.max(NS.campaign.weekIndex(), 0), 2);
       var list = MISSIONS.filter(function (m) { return m.week === i; });
@@ -211,11 +226,9 @@
       return { done: list.filter(function (q) { return q.done; }).length, total: list.length };
     },
 
-    /** B-cut n (0-based) is unlocked by mission n. */
-    bcut: function (n) {
-      var m = MISSIONS[n];
-      return m ? { mission: m, unlocked: isDone(m.id) } : { mission: null, unlocked: true };
-    },
+    /** B-cut cards: card n (0-based) opens with the (n+1)-th finished line. */
+    bcutCount: BC.bcuts,
+    bcut: function (n) { return { line: n + 1, unlocked: finishedLines().length > n }; },
 
     doneCount: function () { return readDone().length; },
     missionCount: function () { return readDone().filter(function (id) { return id !== PRESAVE.id; }).length; },
@@ -239,14 +252,16 @@
       stats = stats || {};
       var booster = NS.account ? NS.account.runMultiplier(gameId) : 1;
       stats.boostedScore = Math.floor((stats.score || 0) * booster);
-      lastRun[gameId] = { score: stats.score || 0, boosted: booster > 1, need: this.scoreMission(gameId) };
+      var before = readDone(), linesBefore = finishedLines().length;
+      var run = lastRun[gameId] = { score: stats.score || 0, boosted: booster > 1, need: this.scoreMission(gameId), newLines: 0 };
       if (NS.account) { NS.account.recordRun(gameId); sync(); }   // attendance day + run tickets
-      var done = readDone();
       // Score cells from this run; rank cells only come from the server's final boards.
-      var fresh = MISSIONS.filter(function (m) {
-        return m.type === 'score' && m.game === gameId && done.indexOf(m.id) < 0 && weekOpen(m) && stats.boostedScore >= m.score;
-      });
-      complete(fresh.map(function (m) { return m.id; }));
+      complete(MISSIONS.filter(function (m) {
+        return m.type === 'score' && m.game === gameId && !isDone(m.id) && weekOpen(m) && stats.boostedScore >= m.score;
+      }).map(function (m) { return m.id; }));
+      run.newLines = finishedLines().length - linesBefore;
+      // Everything this run finished (the first-run cell from sync included).
+      var fresh = MISSIONS.filter(function (m) { return before.indexOf(m.id) < 0 && isDone(m.id); });
       if (NS.leaderboard) {
         var sent = NS.leaderboard.submit(gameId, stats.score);
         if (sent && sent.then) sent.then(function (r) { if (r && r.counted) refresh(); }, function () {});

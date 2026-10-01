@@ -113,7 +113,7 @@
     els.title.textContent = !logged ? 'CAVIAR BINGO' : lines.length ? 'BINGO × ' + lines.length : 'CAVIAR BINGO';
     els.sub.innerHTML = '';
     els.sub.appendChild(document.createTextNode('미션 '));
-    els.sub.appendChild(el('b', '', B.missionCount() + ' / 15'));
+    els.sub.appendChild(el('b', '', B.missionCount() + ' / ' + B.missions.length));
     els.sub.appendChild(document.createTextNode(' · 응모권 '));
     els.sub.appendChild(el('b', '', st.tickets + '장'));
     if (!logged) { renderGate(); return; }
@@ -157,7 +157,7 @@
 
   function rewardTiers() {
     var tiers = el('div', 'cv-bingo__rewards');
-    var state = [B.missionCount() + '/15장', B.lines().length + '줄', B.fullBoard() ? '달성' : '—'];
+    var state = [B.missionCount() + '/' + B.missions.length + '칸', B.lines().length + '줄', B.fullBoard() ? '달성' : '—'];
     var on = [B.missionCount() > 0, B.lines().length > 0, B.fullBoard()];
     B.rewards.forEach(function (r, i) {
       var t = el('div', 'cv-bingo__reward' + (on[i] ? ' is-on' : ''));
@@ -220,13 +220,13 @@
     d.innerHTML = '';
     var cell = selected === null ? null : cells[selected];
     if (!cell) {
-      d.appendChild(el('p', 'cv-bingo__hint', '칸을 누르면 미션을 볼 수 있어요. 미션마다 B컷 카드가 열려요.'));
+      d.appendChild(el('p', 'cv-bingo__hint', '칸을 누르면 미션을 볼 수 있어요. 칸마다 응모권, 줄마다 B컷 카드가 열려요.'));
       d.appendChild(rewardTiers());
       d.appendChild(el('p', 'cv-bingo__note', B.rewardNote));
       return;
     }
     var q = cell.quest;
-    var kind = { score: '게임 스코어', rank: '게임 순위', refrank: '레퍼럴 순위', ref: '레퍼럴', att: '출석' }[cell.type];
+    var kind = { first: '첫 판', score: '게임 스코어', share: '공유', rank: '게임 순위', refrank: '레퍼럴 순위', ref: '레퍼럴', att: '출석' }[cell.type];
     var metaText = cell.type === 'presave' ? 'SPECIAL · 프리세이브'
       : weekLabel(cell.week) + ' · ' + (cell.game ? cell.game.name + ' · ' : '') + kind;
     d.appendChild(el('p', 'cv-bingo__meta', metaText));
@@ -234,8 +234,7 @@
     if (cell.done) qt.appendChild(el('span', 'cv-tag cv-bingo__done', '완료'));
     d.appendChild(qt);
     d.appendChild(el('p', 'cv-bingo__desc', q.desc));
-    var n = B.missions.indexOf(q);
-    if (n >= 0) d.appendChild(el('p', 'cv-bingo__card', '달성 보상 · B컷 카드 #' + (n + 1)));
+    if (cell.type !== 'presave') d.appendChild(el('p', 'cv-bingo__card', '달성 보상 · 응모권 +' + CFG.tickets.cell));
 
     if (cell.locked) {
       d.appendChild(el('p', 'cv-bingo__hint', NS.campaign.md(NS.campaign.weeks[cell.week].start) + '에 공개되는 미션이에요.'));
@@ -436,10 +435,16 @@
       var box = panel.querySelector('.cv-quest-result');
       if (!box) { box = el('div', 'cv-quest-result'); insertBeforeActions(panel, box); }
       box.innerHTML = '';
+      var run = B.lastRun(gameId);
+      var newLines = run ? run.newLines : 0;
       if (fresh && fresh.length) {
         box.classList.add('is-new');
-        box.appendChild(el('p', 'cv-quest-result__head', '미션 달성 · B컷 카드가 열렸어요'));
-        fresh.forEach(function (q) { box.appendChild(el('p', 'cv-quest-result__item', q.title)); });
+        var lineNo = B.lines().length;
+        box.appendChild(el('p', 'cv-quest-result__head', !newLines
+          ? '미션 달성 · 응모권 +' + fresh.length * CFG.tickets.cell
+          : lineNo <= B.bcutCount ? '빙고 ' + lineNo + '줄 · B컷 카드가 열렸어요'
+          : '빙고 ' + lineNo + '줄 · 응모권 +' + CFG.tickets.line));
+        box.appendChild(el('p', 'cv-quest-result__item', fresh.map(function (q) { return q.title; }).join(' · ')));
       } else {
         box.classList.remove('is-new');
       }

@@ -7,8 +7,8 @@
 //   referral credit (only a NEW email that pre-saves counts, 5 a day), attendance days (a day
 //   counts only with a finished run), runs per day, weekly leaderboard seasons (+ combined
 //   board, + referral board), the bingo board (every cell, see BINGO) and its tickets:
-//   pre-save +2, bingo line +3, per game first run +1 (once), a run +1 and a share +1 (each
-//   once per game per day).
+//   pre-save +2, bingo cell +1, bingo line +3, per game first run +1 (once), a run +1 and a
+//   share +1 (each once per game per day).
 //
 // User state ($global user state — only this server reads it):
 //   { nickname, email, emailHash, emailNew, ref, refCredited, inviteCode,
@@ -37,22 +37,26 @@ const WEEKS = [
   { id: 'w3', start: '2026-11-09', end: '2026-11-15', game: 'caviar-master-chef' },
 ];
 
-// Bingo (overview §4): 16 = per week 5 cells (game score · game rank · referral rank ·
-// referral count · attendance) x 3 + pre-save. Cell n (0..14 in MISSION order) = B-cut n.
-// Game and referral-rank cells open with their week; referral count and attendance count
-// from D1. Rank cells are judged when their week has ended (the final weekly board).
+// Bingo 5x5: per week 8 cells (first run · score I · score II · share · game rank · referral
+// rank · referral count · attendance) x 3 + pre-save in the centre. Each cell +1 ticket, each
+// line +3 (the page opens B-cut n with the n-th line). Game and referral-rank cells open with
+// their week; referral count and attendance count from D1. Rank cells are judged when their
+// week has ended (the final weekly board).
 // Numbers are provisional until the alpha data (10/13) — keep shared/cv-campaign.js in step.
 const BINGO = {
-  score: { 'caviar-match': 5000, 'caviar-escape': 4000, 'caviar-master-chef': 5000 },  // booster score
+  scoreEasy: { 'caviar-match': 2500, 'caviar-escape': 2000, 'caviar-master-chef': 2500 },  // score I (booster score)
+  score: { 'caviar-match': 5000, 'caviar-escape': 4000, 'caviar-master-chef': 5000 },      // score II
   rankTopPct: 10,          // game rank cell: weekly top 10 %
   refRankTop: 10,          // referral rank cell: weekly top 10
   refNeed: [3, 5, 10],     // referral count cells (cumulative)
   attNeed: [7, 10, 14],    // attendance cells (days with a finished run, of 21)
+  size: 5,
   layout: [
-    'w1-score', 'w1-refrank', 'w2-score', 'w2-refrank',
-    'w1-rank', 'presave', 'w2-rank', 'w3-score',
-    'w1-att', 'w2-att', 'w3-refrank', 'w3-rank',
-    'w1-ref', 'w2-ref', 'w3-att', 'w3-ref',
+    'w1-first',  'w1-score1',  'w1-share',  'w1-score2',  'w1-rank',
+    'w1-att',    'w2-first',   'w2-score1', 'w2-share',   'w1-ref',
+    'w2-score2', 'w1-refrank', 'presave',   'w2-rank',    'w2-att',
+    'w2-ref',    'w3-first',   'w3-score1', 'w2-refrank', 'w3-share',
+    'w3-score2', 'w3-rank',    'w3-att',    'w3-ref',     'w3-refrank',
   ],
 };
 const REF_DAILY_CAP = 5;
@@ -77,7 +81,7 @@ const V8_WEEKLY_BOOSTER = 1.5;   // V8 login: the first counted run of each week
 const REF_RUN_CAP = 3;           // +1 run a day per referral, at most +3
 const STREAK_LIFE_EVERY = 3;     // every 3 days in a row with a finished run: one +1 life booster
 const LEADERBOARD_TOP = 10;
-const TICKETS = { presave: 2, line: 3, firstRun: 1, dailyRun: 1, share: 1 };
+const TICKETS = { presave: 2, cell: 1, line: 3, firstRun: 1, dailyRun: 1, share: 1 };
 const NICK_MAX = 12;
 const TOTAL = 'total';
 
@@ -253,10 +257,10 @@ async function upsertBest(col, itemId, score, nickname) {
 }
 
 function bingoLines(done) {
-  const n = 4, lines = [];
-  for (let r = 0; r < n; r++) lines.push({ id: 'r' + r, cells: [0, 1, 2, 3].map(c => r * n + c) });
-  for (let c = 0; c < n; c++) lines.push({ id: 'c' + c, cells: [0, 1, 2, 3].map(r => r * n + c) });
-  lines.push({ id: 'd0', cells: [0, 5, 10, 15] }, { id: 'd1', cells: [3, 6, 9, 12] });
+  const n = BINGO.size, idx = [...Array(n).keys()], lines = [];
+  for (const r of idx) lines.push({ id: 'r' + r, cells: idx.map(c => r * n + c) });
+  for (const c of idx) lines.push({ id: 'c' + c, cells: idx.map(r => r * n + c) });
+  lines.push({ id: 'd0', cells: idx.map(i => i * n + i) }, { id: 'd1', cells: idx.map(i => i * n + (n - 1 - i)) });
   return lines.filter(l => l.cells.every(k => done.includes(BINGO.layout[k]))).map(l => l.id);
 }
 
@@ -277,6 +281,7 @@ async function judgeBingo(me) {
   const done = (me.bingo || []).slice();
   const status = {};
   const lb = me.lb || {};
+  const log = ticketLog(me);
   const mark = id => { if (!done.includes(id)) done.push(id); };
 
   if (me.presaved) mark('presave');
@@ -288,16 +293,21 @@ async function judgeBingo(me) {
     if ((me.days || []).length >= BINGO.attNeed[i]) mark(key + '-att');
     if (!open) continue;
 
-    // Game score: best booster score of the week's game in any season since it opened.
-    if (!done.includes(key + '-score')) {
+    if (log.first[w.game]) mark(key + '-first');
+    if (log.share[w.game]) mark(key + '-share');
+
+    // Game score I / II: best booster score of the week's game in any season since it opened.
+    if (!done.includes(key + '-score1') || !done.includes(key + '-score2')) {
       let best = 0;
       for (const s of WEEKS.slice(i)) {
         const id = lb[w.game + ':' + s.id];
         if (!id) continue;
         try { const item = await $global.getCollectionItem(collectionOf(w.game, s.id), id); best = Math.max(best, (item && item.score) || 0); } catch (e) { /* gone */ }
       }
-      if (best >= BINGO.score[w.game]) mark(key + '-score');
-      else status[key + '-score'] = { best, need: BINGO.score[w.game] };
+      for (const [cell, need] of [[key + '-score1', BINGO.scoreEasy[w.game]], [key + '-score2', BINGO.score[w.game]]]) {
+        if (best >= need) mark(cell);
+        else status[cell] = { best, need };
+      }
     }
 
     // Game rank: weekly top N % of that week's board, judged on the final board.
@@ -446,17 +456,23 @@ class Server {
     return summary(Object.assign({}, me, patch));
   }
 
-  // The bingo board as the server judges it; a newly finished line pays +3 tickets once
-  // (r0-r3 rows, c0-c3 columns, d0-d1 diagonals). Returns { done, lines, status, me }.
+  // The bingo board as the server judges it; a newly done mission cell pays +1 ticket and a
+  // newly finished line +3, once each (r0-r4 rows, c0-c4 columns, d0-d1 diagonals; old
+  // cell ids from an earlier board are dropped). Returns { done, lines, status, me }.
   async getBingo() {
     const me = await myState();
     const judged = await judgeBingo(me);
+    judged.done = judged.done.filter(id => BINGO.layout.includes(id));
     const lines = bingoLines(judged.done);
     const paid = me.lines || [];
     const fresh = lines.filter(id => !paid.includes(id));
+    const had = me.bingo || [];
+    const newCells = judged.done.filter(id => id !== 'presave' && !had.includes(id)).length;
     const patch = {};
-    if (judged.done.length !== (me.bingo || []).length) patch.bingo = judged.done;
-    if (fresh.length) { patch.lines = paid.concat(fresh); patch.tickets = (me.tickets || 0) + fresh.length * TICKETS.line; }
+    if (judged.done.length !== had.length || newCells) patch.bingo = judged.done;
+    let tickets = (me.tickets || 0) + newCells * TICKETS.cell;
+    if (fresh.length) { patch.lines = paid.concat(fresh); tickets += fresh.length * TICKETS.line; }
+    if (tickets !== (me.tickets || 0)) patch.tickets = tickets;
     if (Object.keys(patch).length) await $global.updateMyState(patch);
     Object.assign(me, patch);
     return { done: judged.done, lines, status: judged.status, me: summary(me) };

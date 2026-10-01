@@ -7,9 +7,10 @@
 
   var MEMBERS = ['나라', '나탈리', '세린', '티야', '유온'];
 
-  /* 15 B-cuts, 3 per member. image: 'assets/bcut/01.jpg' (4:5 portrait recommended). */
+  /* B-cut cards (count: cv-campaign.js bingo.bcuts), one per finished bingo line, members in
+     turn. image: 'assets/bcut/01.jpg' (4:5 portrait recommended). */
   var bcuts = [];
-  for (var i = 0; i < 15; i++) {
+  for (var i = 0; i < NS.campaign.config.bingo.bcuts; i++) {
     bcuts.push({
       image: null,
       member: MEMBERS[i % MEMBERS.length],
