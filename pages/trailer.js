@@ -12,7 +12,7 @@
     return n;
   }
 
-  $('link-home').href = NS.hub.link('index.html');
+  $('link-home').href = NS.hub.link('index.html#cans');   // back to the can (game) selection
   NS.bingoUI.mount();
   if (NS.sound) NS.sound.bgm('pages');
   $('btn-bingo').addEventListener('click', function () { NS.bingoUI.open(); });
