@@ -83,7 +83,8 @@
     a.mood = find(this.cfg.moods, order.mood) ? order.mood : null;
     a.caviar = find(this.cfg.caviars, order.caviar) ? order.caviar : null;
     a.eat = find(this.cfg.eats, order.eat) ? order.eat : null;
-    a.drink = find(this.cfg.drinks, order.drink) ? order.drink : null;
+    var drink = (this.cfg.drinkAliases || {})[order.drink] || order.drink;
+    a.drink = find(this.cfg.drinks, drink) ? drink : null;
     a.consent = !!order.consent;
     return this.isComplete();
   };

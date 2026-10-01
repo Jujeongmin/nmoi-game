@@ -38,13 +38,15 @@
       { id: 'steel',   label: '고급진 쇠젓가락',   anim: 'frown' },
     ],
 
-    /* Q. 같이 마실 음료 */
+    /* Q. 같이 마실 음료 — no alcohol (minors play too). */
     drinks: [
-      { id: 'white',    label: '화이트 와인', glass: 'wine',   tint: '#efe3b8', image: 'assets/landing/drink-white.webp' },
-      { id: 'red',      label: '레드 와인',   glass: 'wine',   tint: '#7a2430', image: 'assets/landing/drink-red.webp' },
-      { id: 'water',    label: '물',          glass: 'tumbler', tint: '#e6eef0', image: 'assets/landing/drink-water.webp' },
-      { id: 'highball', label: '위스키하이볼', glass: 'tall',  tint: '#d9a857', image: 'assets/landing/drink-highball.webp' },
+      { id: 'greengrape', label: '청포도 에이드', glass: 'tall',    tint: '#cfe39a', image: 'assets/landing/drink-greengrape.webp' },
+      { id: 'strawberry', label: '딸기 에이드',   glass: 'tall',    tint: '#e0444e', image: 'assets/landing/drink-strawberry.webp' },
+      { id: 'water',      label: '물',            glass: 'tumbler', tint: '#e6eef0', image: 'assets/landing/drink-water.webp' },
+      { id: 'lemon',      label: '레몬에이드',     glass: 'tall',    tint: '#f3e27a', image: 'assets/landing/drink-lemon.webp' },
     ],
+    // Orders saved before the drinks changed keep their slot.
+    drinkAliases: { white: 'greengrape', red: 'strawberry', highball: 'lemon' },
 
     /* 04 캐비어 캔 → game, in week order (W1 이스케이프 · W2 매치 · W3 셰프, shared/cv-campaign.js).
        Paths are from the repo root. */
