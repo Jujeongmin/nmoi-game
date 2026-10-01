@@ -1,5 +1,6 @@
 /* Settings — one panel on every page (landing menu, game title cards, page headers).
-     언어         ko · en · ja · 繁中 · 简中 (cv-i18n.js; the page reloads in the new language)
+     언어         ko · en · ja · 繁中 · 简中 (cv-i18n.js; the page reloads in the new language;
+                  the landing also has it in the top bar, next to the gear)
      사운드       on/off, BGM volume, effects volume (cv-sound.js, remembered)
      내 정보      nickname / e-mail of the entry sheet, edit on the landing, privacy notice
      계정         V8 login state (placeholder until the Verse8 login is wired)
@@ -203,6 +204,42 @@
     return b;
   }
 
+  /* Landing: the language right in the top bar (the same choice as in the settings; the page
+     reloads in the new language). */
+  var LANG_SHORT = { ko: 'KO', en: 'EN', ja: 'JA', 'zh-Hant': '繁中', 'zh-Hans': '简中' };
+  var GLOBE = '<svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.3">' +
+    '<circle cx="12" cy="12" r="9"/><ellipse cx="12" cy="12" rx="4" ry="9"/><path d="M3 12h18M4.6 7.5h14.8M4.6 16.5h14.8"/></svg>';
+  function langPicker() {
+    var wrap = el('div', 'cv-lang');
+    var btn = el('button', 'cv-lang__btn');
+    btn.type = 'button';
+    btn.setAttribute('aria-label', '언어');
+    btn.setAttribute('aria-haspopup', 'true');
+    btn.setAttribute('aria-expanded', 'false');
+    btn.innerHTML = GLOBE;
+    btn.appendChild(el('span', 'cv-lang__code', LANG_SHORT[NS.i18n.lang] || NS.i18n.lang));
+    var list = el('div', 'cv-lang__list');
+    list.hidden = true;
+    NS.i18n.langs.forEach(function (l) {
+      var b = el('button', 'cv-lang__item' + (l.id === NS.i18n.lang ? ' is-on' : ''), l.label);
+      b.type = 'button';
+      b.lang = l.id;
+      b.setAttribute('aria-pressed', l.id === NS.i18n.lang ? 'true' : 'false');
+      b.addEventListener('click', function () { if (l.id === NS.i18n.lang) show(false); else NS.i18n.set(l.id); });
+      list.appendChild(b);
+    });
+    function show(on) {
+      list.hidden = !on;
+      btn.setAttribute('aria-expanded', on ? 'true' : 'false');
+    }
+    btn.addEventListener('click', function () { show(list.hidden); });
+    document.addEventListener('click', function (e) { if (!wrap.contains(e.target)) show(false); });
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !list.hidden) { show(false); btn.focus(); } });
+    wrap.appendChild(btn);
+    wrap.appendChild(list);
+    return wrap;
+  }
+
   /* Always at the top of the screen:
      - games: the right end of the score bar, above the title / result cards and the board;
      - landing: the left of the top bar (the right holds 빙고 and the menu);
@@ -220,6 +257,7 @@
     var left = el('div', 'lp-bar__left');
     lpBar.insertBefore(left, lpBar.firstChild);
     left.appendChild(button('cv-settings-btn--bar'));
+    left.appendChild(langPicker());
     var prev = lpBar.querySelector('.lp-bar__prev');
     if (prev) left.appendChild(prev);
   }
