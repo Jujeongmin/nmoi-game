@@ -77,7 +77,9 @@
     });
   }
 
+  var UNLIMITED = 9999;   // demo: no daily run limit (campaign.config.demo.unlimitedPlays)
   function limit() {
+    if (CFG.demo && CFG.demo.unlimitedPlays) return UNLIMITED;
     return CFG.dailyPlays + (state.presaved ? CFG.presaveBonusPlays : 0) + Math.min(CFG.referralRunCap, state.referrals || 0);
   }
 
@@ -333,6 +335,14 @@
           return;
         }
         var left = NS.account.playsLeft(gameId);
+        if (limit() >= UNLIMITED) {
+          line.textContent = '데모 · 판수 제한 없음' + (state.presaved ? ' · 부스터 x' + CFG.booster + ' 적용' : '');
+          ['btn-start', 'btn-retry'].forEach(function (id) {
+            var btn = document.getElementById(id);
+            if (btn && btn.dataset.out === '1') { btn.dataset.out = ''; if (btn.dataset.label) btn.textContent = btn.dataset.label; }
+          });
+          return;
+        }
         var b = document.createElement('b');
         b.textContent = left + ' / ' + limit();
         line.appendChild(document.createTextNode('오늘 남은 판 '));

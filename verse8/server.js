@@ -69,6 +69,7 @@ const GAMES = {
 };
 const MIN_RUN_MS = 3000;
 const DAILY_PLAYS = 3;
+const DEMO_UNLIMITED_PLAYS = true;   // demo: no daily run limit — set false for launch (and campaign demo.unlimitedPlays)
 const PRESAVE_BONUS_PLAYS = 1;
 const BOOSTER = 1.2;
 // Booster benefits beyond pre-save (overview §5):
@@ -192,6 +193,7 @@ function runRewards(me, gameId) {
 }
 
 function dailyLimit(me) {
+  if (DEMO_UNLIMITED_PLAYS) return 9999;
   return DAILY_PLAYS + (me.presaved ? PRESAVE_BONUS_PLAYS : 0) + Math.min(REF_RUN_CAP, me.referrals || 0);
 }
 

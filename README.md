@@ -195,7 +195,8 @@ encryption) — the production plan is an external server + DB.
 
 `verse8/server.js`: profile (nickname + email; email kept as a hash for de-dup), tickets,
 pre-save, referrals (share link `?ref=CODE`; counted only when a **new** email finishes a first counted run — Spotify does not say who pre-saved, max 6),
-attendance, runs per day (3, +1 after pre-save), weekly leaderboards `lb-<game>-<w1|w2|w3>` +
+attendance, runs per day (3, +1 after pre-save; the demo has no limit — `demo.unlimitedPlays` in
+cv-campaign.js and `DEMO_UNLIMITED_PLAYS` in server.js, both to turn off for launch), weekly leaderboards `lb-<game>-<w1|w2|w3>` +
 a combined board, score x1.2 after pre-save. A result card's rank line has "순위표 ›", which opens
 the week's TOP 10 of that game over the card (`CAVIAR.leaderboard.open(gameId)`); the landing
 menu → Ranking has every week and the combined board. The page keeps a local mirror so everything works

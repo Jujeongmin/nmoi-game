@@ -53,7 +53,8 @@
     },
 
     demo: {
-      unlockAllWeeks: true          // set false for launch: weeks then open on their dates
+      unlockAllWeeks: true,         // set false for launch: weeks then open on their dates
+      unlimitedPlays: true          // set false for launch (and DEMO_UNLIMITED_PLAYS in verse8/server.js): 3 runs a day again
     }
   };
 
