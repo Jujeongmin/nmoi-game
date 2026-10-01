@@ -447,8 +447,8 @@
     renderResult: function (box, gameId) {
       if (!box) return;
       var line = box.querySelector('.cv-rank-line');
-      if (!line) { line = el('p', 'cv-rank-line'); box.insertBefore(line, box.firstChild); }
-      line.classList.remove('is-off');
+      if (!line) { line = el('div', 'cv-rank-line'); box.insertBefore(line, box.firstChild); }
+      line.classList.remove('is-off', 'is-ranked');
       line.textContent = '리더보드 집계 중…';
       var task = last[gameId];
       if (!task) { line.textContent = ''; return; }
@@ -461,14 +461,20 @@
             : '이번 판은 리더보드에 기록되지 않았어요';
           return;
         }
-        line.appendChild(el('span', 'cv-rank-line__tag', 'RANK'));
+        // Rank first and large; the week's TOP 10 is one tap away.
+        line.classList.add('is-ranked');
         var mult = r.multiplier || (r.boosted ? CFG.booster : 1);
-        line.appendChild(document.createTextNode(' ' + NS.campaign.seasonLabel(r.season).split(' · ')[0] + ' ' + r.rank + '위 · 최고 ' + r.best.toLocaleString('en-US') + '점' +
-          (mult > 1 ? ' · x' + mult + (mult === CFG.v8Booster ? ' V8 주간 부스터' : ' 부스터') : '') + (r.improved ? ' · 기록 갱신!' : '')));
-        var open = el('button', 'cv-rank-line__open', '순위표 ›');
+        var main = el('div', 'cv-rank-line__main');
+        main.appendChild(el('span', 'cv-rank-line__tag', NS.campaign.seasonLabel(r.season).split(' · ')[0]));
+        main.appendChild(el('b', 'cv-rank-line__no', r.rank + '위'));
+        main.appendChild(el('span', 'cv-rank-line__best', '최고 ' + r.best.toLocaleString('en-US') + '점'));
+        line.appendChild(main);
+        var open = el('button', 'cv-rank-line__open', '순위표 보기 ›');
         open.type = 'button';
         open.addEventListener('click', function () { NS.leaderboard.open(gameId); });
         line.appendChild(open);
+        var meta = (mult > 1 ? 'x' + mult + (mult === CFG.v8Booster ? ' V8 주간 부스터' : ' 부스터') : '') + (r.improved ? (mult > 1 ? ' · ' : '') + '기록 갱신!' : '');
+        if (meta) line.appendChild(el('p', 'cv-rank-line__meta', meta));
       }, function (err) {
         line.classList.add('is-off');
         line.textContent = err && err.message === 'no-profile'
@@ -481,7 +487,7 @@
       return server().then(function (s) { return s.getLeaderboard(gameId, limitN || 20, season); });
     },
 
-    /** This week's TOP N of one game, over the game (result card "순위표 ›"). */
+    /** This week's TOP N of one game, over the game (result card "순위표 보기 ›"). */
     open: function (gameId) {
       var box = document.querySelector('.cv-lb');
       if (!box) {

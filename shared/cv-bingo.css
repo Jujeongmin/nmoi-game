@@ -464,18 +464,35 @@
 .cv-invite__reward { margin: 8px 0 0; font: 700 12px/1.4 var(--cv-font-ui); color: var(--cv-gold-bright); }
 .lp-invite .cv-invite__reward { color: var(--lp-gold-ink, #7c6230); }
 
-/* Result card: "순위표 ›" and the week's TOP 10 over the game */
+/* Result card: the rank (large) and a real "순위표 보기 ›" button */
+.cv-rank-line.is-ranked {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 10px;
+  padding: 8px 10px;
+  border: 1px solid var(--cv-gold);
+  background: rgba(201, 174, 120, 0.12);
+  text-align: left;
+}
+.cv-rank-line__main { flex: 1 1 auto; display: flex; align-items: baseline; flex-wrap: wrap; gap: 2px 8px; min-width: 0; }
+.cv-rank-line.is-ranked .cv-rank-line__tag { align-self: center; }
+.cv-rank-line__no { font: 600 22px/1 var(--cv-font-num); color: var(--cv-ink); }
+.cv-rank-line__best { font: 600 12px/1.3 var(--cv-font-ui); color: var(--cv-ink-soft); }
+.cv-rank-line__meta { flex-basis: 100%; margin: 0; font: 700 11px/1.3 var(--cv-font-ui); color: #7c6230; }
 .cv-rank-line__open {
   appearance: none;
-  margin-left: 6px;
-  padding: 6px 0 4px;
-  border: 0;
-  border-bottom: 1px solid var(--cv-gold);
-  background: none;
+  flex: none;
+  min-height: 36px;
+  padding: 0 12px;
+  border: 1px solid var(--cv-onyx);
+  background: var(--cv-onyx);
   font: 700 12px/1 var(--cv-font-ui);
-  color: #7c6230;
+  color: var(--cv-gold-bright);
+  white-space: nowrap;
   cursor: pointer;
 }
+.cv-rank-line__open:active { background: #2a241d; }
 .cv-lb { z-index: 50; }
 .cv-lb__panel { text-align: left; }
 .cv-lb__panel .cv-eyebrow { text-align: center; }
