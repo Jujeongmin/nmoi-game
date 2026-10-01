@@ -52,7 +52,6 @@
     panel.appendChild(els.gate);
     panel.appendChild(els.body);
     panel.appendChild(close);
-    if (NS.brand) NS.brand.badge(panel);
     overlay.appendChild(panel);
     overlay.addEventListener('click', function (e) { if (e.target === overlay) api.close(); });
     document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && overlay.classList.contains('is-open')) api.close(); });
@@ -512,7 +511,6 @@
       if (nudge) box.appendChild(nudge);
       if (NS.leaderboard) NS.leaderboard.renderResult(box, gameId);
       box.appendChild(shareButton(gameId));
-      if (NS.brand) NS.brand.badge(panel);
     }
   };
 

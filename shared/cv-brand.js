@@ -6,7 +6,8 @@
 
    CAVIAR.brand.splash()          official Verse8 splash (shared/verse8-splash, unmodified
                                   vendor module) — shown once when the site is opened.
-   CAVIAR.brand.badge(panel)      "POWERED BY Verse8" line at the bottom of a result card.
+   CAVIAR.brand.footer()          KREATORS. × VERSE8 strip fixed to the bottom of every page
+                                  (added by this file on load).
 
    Files (paths from the site root) are in BRAND below. */
 (function (NS) {
@@ -16,7 +17,9 @@
     module: 'shared/verse8-splash/VerseSplash.js',   // Verse8 Splash Module (ESM, default export)
     logoSvg: 'assets/brand/verse8_logo_light.svg',   // animated wordmark + "8"
     logo: 'assets/brand/verse8_logo_light.png',      // white logo: used on a dark chip
-    sound: 'assets/brand/splash.mp3'
+    sound: 'assets/brand/splash.mp3',
+    kreators: 'assets/brand/kreators-white.png',     // partner logo, white (footer strip)
+    verse8: 'assets/brand/verse8-white.png'          // Verse8 wordmark, white (footer strip)
   };
 
   function el(tag, cls, text) {
@@ -65,16 +68,27 @@
     },
 
     /** "POWERED BY [Verse8]" under a result card or the bingo board. */
-    badge: function (panel) {
-      if (!panel || panel.querySelector('.cv-brand-badge')) return;
-      var row = el('div', 'cv-brand-badge');
-      row.appendChild(el('span', 'cv-brand-badge__label', 'POWERED BY'));
-      var chip = el('span', 'cv-brand-badge__chip');
-      chip.appendChild(NS.assetSlot({ src: BRAND.logo, className: 'cv-brand-badge__logo', alt: 'Verse8' }));
-      row.appendChild(chip);
-      panel.appendChild(row);
+    /* The partner strip: on every page, always at the bottom (the pages leave its height free). */
+    footer: function () {
+      if (document.querySelector('.cv-footer')) return;
+      var bar = el('div', 'cv-footer');
+      bar.setAttribute('role', 'contentinfo');
+      var k = el('img', 'cv-footer__logo cv-footer__logo--kreators');
+      k.src = NS.url(BRAND.kreators);
+      k.alt = 'KREATORS.';
+      var v = el('img', 'cv-footer__logo cv-footer__logo--verse8');
+      v.src = NS.url(BRAND.verse8);
+      v.alt = 'Verse8';
+      bar.appendChild(k);
+      bar.appendChild(el('span', 'cv-footer__x', '×'));
+      bar.appendChild(v);
+      document.body.appendChild(bar);
+      document.documentElement.classList.add('cv-has-footer');
     }
   };
+
+  if (document.body) NS.brand.footer();
+  else document.addEventListener('DOMContentLoaded', function () { NS.brand.footer(); });
 
   // Verse8 splash once per visit: on the first page opened (normally the landing, or a
   // game opened by a direct link), never again when moving between pages of the site.

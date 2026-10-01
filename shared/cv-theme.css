@@ -724,3 +724,34 @@ html[data-splash-active="true"] #app { visibility: hidden; }
 .cv-admin__acc { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--cv-ink-soft); user-select: all; }
 .cv-admin__add { display: grid; gap: 6px; }
 .cv-admin-entry__field { width: 100%; margin: 6px 0 4px; font-family: ui-monospace, monospace; font-size: 12px; }
+
+/* ---------- Partner strip: KREATORS. × VERSE8, fixed at the bottom of every page ----------
+   White logos on onyx with a gold hairline: readable over the ivory landing and the dark games
+   alike. The page columns (.cv-app, .lp-app, .pg-app) end above it. */
+:root { --cv-footer-h: 0px; }
+html.cv-has-footer { --cv-footer-h: calc(30px + env(safe-area-inset-bottom, 0px)); }
+.cv-footer {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 90;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  height: var(--cv-footer-h);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  border-top: 1px solid rgba(201, 174, 120, 0.45);
+  background: #0b0a08;
+  pointer-events: none;
+}
+.cv-footer__logo { display: block; height: 11px; width: auto; opacity: 0.9; }
+.cv-footer__logo--verse8 { height: 10px; }
+.cv-footer__x { font: 400 11px/1 var(--cv-font-ui); color: rgba(239, 232, 216, 0.55); }
+html.cv-has-footer .cv-app, html.cv-has-footer .lp-app, html.cv-has-footer .pg-app {
+  height: calc(100vh - var(--cv-footer-h));
+  height: calc(100dvh - var(--cv-footer-h));
+}
+html.cv-has-footer .cv-app { padding-bottom: 10px; }
+html.cv-has-footer .lp-app { padding-bottom: 0; }
