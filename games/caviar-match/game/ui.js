@@ -41,13 +41,10 @@ CM.UI = (function () {
         title: $('screen-title'),
         titleBest: $('title-best'),
         result: $('screen-result'),
-        resultEyebrow: $('result-eyebrow'),
         resultTitle: $('result-title'),
         resultScore: $('result-score'),
         resultBest: $('result-best'),
         resultNew: $('result-new'),
-        resultCombo: $('result-combo'),
-        resultTypes: $('result-types'),
       };
       this.cache = {};
       this.counts = cfg.types.map(() => 0);
@@ -148,27 +145,11 @@ CM.UI = (function () {
 
     showResult(d) {
       const e = this.el;
-      e.resultEyebrow.textContent = '스테이지 ' + pad(d.stage, 2) + ' 결과';
       e.resultTitle.textContent = d.reason === 'overflow' ? '게임 오버' : '시간 종료';
       e.resultScore.textContent = pad(d.score, 5);   // same format as the other games
       e.resultBest.textContent = pad(d.best, 5);
       e.resultNew.hidden = !d.newBest;
-      e.resultCombo.textContent = String(d.maxCombo);
 
-      const list = e.resultTypes;
-      list.innerHTML = '';
-      this.cfg.types.forEach((t, i) => {
-        const li = el('li');
-        li.append(
-          pearl(t, this.cfg.assetRoot),
-          el('span', 'cm-result-types__name', t.name),
-          el('span', 'cm-result-types__count', String(d.collected[i]))
-        );
-        list.append(li);
-      });
-      list.classList.remove('is-aligning');
-      void list.offsetWidth;
-      list.classList.add('is-aligning');
 
       this.setBest(d.best);
       this.show('result');

@@ -38,7 +38,6 @@
       resultScore: $('result-score'),
       resultBest: $('result-best'),
       resultNew: $('result-new'),
-      resultDetail: $('result-detail'),
       picker: $('member-picker'),
       memberName: $('member-name'),
       btnStart: $('btn-start'),
@@ -167,10 +166,6 @@
     el.resultScore.textContent = pad(d.score, 5);
     el.resultBest.textContent = pad(d.best, 5);
     el.resultNew.hidden = !d.isNewBest;
-
-    var parts = ['생존 ' + d.survived.toFixed(1) + '초', '아슬아슬 ' + d.closeCalls + '회'];
-    if (success) parts.push('라이프 보너스 +' + d.lifeBonus);
-    el.resultDetail.textContent = parts.join('  ·  ');
 
     el.title.classList.remove('is-open');
     el.result.classList.add('is-open');

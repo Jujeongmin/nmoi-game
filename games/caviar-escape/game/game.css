@@ -162,4 +162,3 @@
 
 /* Result card fits a phone screen without scrolling */
 #screen-result .ce-card__title--result { margin-bottom: 10px; font-size: 28px; }
-#screen-result .ce-card__detail { margin: -8px 0 8px; }

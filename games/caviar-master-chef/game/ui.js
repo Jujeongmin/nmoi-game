@@ -69,9 +69,6 @@
       titleBest: $('title-best'),
       result: $('screen-result'),
       resultScore: $('result-score'),
-      resultOrders: $('result-orders'),
-      resultPerfect: $('result-perfect'),
-      resultCombo: $('result-combo'),
       resultBest: $('result-best'),
       resultNew: $('result-new')
     };
@@ -132,9 +129,6 @@
   P.showResult = function (d) {
     var el = this.el;
     el.resultScore.textContent = pad(d.score, 5);
-    el.resultOrders.textContent = d.ordersCompleted;
-    el.resultPerfect.textContent = d.perfectOrders;
-    el.resultCombo.textContent = d.maxCombo;
     el.resultBest.textContent = pad(d.best, 5);
     el.resultNew.hidden = !d.isNewBest;
     el.title.classList.remove('is-open');

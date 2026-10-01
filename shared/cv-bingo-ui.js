@@ -339,60 +339,16 @@
     function say(k) { said.nodeValue = NS.talk ? NS.talk.line(k) : ''; }
     say(key);
 
-    // The guest answers; the member replies, then the answer happens (overview S4: 다시 하기 ·
-    // 빙고 · 프리세이브).
-    if (NS.talk) {
-      var retry = document.getElementById('btn-retry');
-      var acts = {
-        again: retry ? function () { retry.click(); } : null,
-        bingo: function () { api.open(); },
-        presave: !A.presaved() && !NS.campaign.isReleased() && NS.presave ? function () { if (!NS.presave.open()) NS.presave.interstitial(); } : null
-      };
-      var replies = el('div', 'cv-result-member__replies');
-      Object.keys(acts).forEach(function (k) {
-        if (!acts[k]) return;
-        var r = el('button', 'cv-result-member__reply', NS.talk.reply(k));
-        r.type = 'button';
-        r.addEventListener('click', function () {
-          say(k);
-          chibi.play(k === 'bingo' ? 'idle' : 'dance', 1400);
-          replies.remove();
-          NS.track('talk_reply', { game: gameId, reply: k });
-          setTimeout(acts[k], 900);
-        });
-        replies.appendChild(r);
-      });
-      talkBox.appendChild(replies);
-    }
     setTimeout(function () { chibi.play(anim); }, 0);   // once it is in the card and has a size
     return wrap;
   }
 
-  /* S4 nudge (overview §5): the real score x booster — never a made-up number — and what it
-     would have meant for the score mission. Pre-saved guests get their invite link here. */
-  function boosterNudge(gameId) {
-    var run = B.lastRun(gameId);
-    if (!run || !NS.presave) return null;
-    var need = run.need && run.need.need;
-    var wrap = el('div', 'cv-nudge');
-    if (NS.campaign.isReleased()) {
-      wrap.appendChild(ctaButton('n Moi 신곡 Spotify에서 듣기 →'));
-      return wrap;
-    }
-    if (A.presaved()) {
-      var mine = Math.floor(run.score * CFG.booster);
-      if (need && mine < need) wrap.appendChild(el('p', 'cv-nudge__text', '부스터 x' + CFG.booster + ' 적용 ' + fmt(mine) + '점 · 미션(' + fmt(need) + '점)까지 ' + fmt(need - mine) + '점'));
-      var link = A.inviteLink();
-      if (link) wrap.appendChild(copyButton(link));
-      return wrap.childNodes.length ? wrap : null;
-    }
-    var boosted = Math.floor(run.score * CFG.booster);
-    var text = '부스터였으면 ' + fmt(boosted) + '점';
-    if (need && run.score < need && boosted >= need) text += ' → 미션 달성이었어요';
-    else if (need && boosted < need) text += ' · 미션(' + fmt(need) + '점)까지 ' + fmt(need - boosted) + '점';
-    wrap.appendChild(el('p', 'cv-nudge__text', text));
-    wrap.appendChild(ctaButton('Spotify · 다음 판부터 x' + CFG.booster + ' →'));   // the PRE-SAVE tag says the rest
-    return wrap;
+  /* One call to action under the progress bar: pre-save while the guest has not (the booster
+     is the pitch), share for a ticket once they have, Spotify after release. */
+  function nextAction(gameId) {
+    if (NS.campaign.isReleased()) return NS.presave ? ctaButton('n Moi 신곡 Spotify에서 듣기 →') : null;
+    if (A.presaved()) return shareButton(gameId);
+    return NS.presave ? ctaButton('Spotify · 다음 판부터 x' + CFG.booster + ' →') : null;   // the PRE-SAVE tag says the rest
   }
 
   function ctaButton(label) {
@@ -402,21 +358,6 @@
     ps.appendChild(el('span', '', label));
     ps.addEventListener('click', function () { if (!NS.presave.open()) NS.presave.interstitial(); });
     return ps;
-  }
-
-  function copyButton(link) {
-    var b = el('button', 'cv-presave-cta', '');
-    b.type = 'button';
-    b.appendChild(el('span', 'cv-presave-cta__tag', 'INVITE'));
-    var label = el('span', '', '내 초대 링크 복사 · 친구가 첫 판을 하면 미션 +1');
-    b.appendChild(label);
-    b.addEventListener('click', function () {
-      var got = A.sendInvite();
-      var msg = '초대 링크를 복사했어요' + (got ? ' · 응모권 +' + got : '');
-      if (navigator.clipboard) navigator.clipboard.writeText(link).then(function () { label.textContent = msg; }, function () { label.textContent = msg; });
-      else label.textContent = msg;
-    });
-    return b;
   }
 
   /* Share: +1 ticket once per game per day (overview §3). */
@@ -487,7 +428,7 @@
       A.attachGame(gameId);
     },
 
-    /** Result card: new missions, run tickets, booster nudge (S4), rank, share. */
+    /** Result card: rank, member line, new missions, progress, one call to action. */
     showRun: function (gameId, fresh) {
       refreshLinks();
       var panel = document.querySelector('#screen-result .cv-panel');
@@ -498,7 +439,7 @@
       if (fresh && fresh.length) {
         box.classList.add('is-new');
         box.appendChild(el('p', 'cv-quest-result__head', '미션 달성 · B컷 카드가 열렸어요'));
-        fresh.forEach(function (q) { box.appendChild(el('p', 'cv-quest-result__item', q.title + ' — ' + q.desc)); });
+        fresh.forEach(function (q) { box.appendChild(el('p', 'cv-quest-result__item', q.title)); });
       } else {
         box.classList.remove('is-new');
       }
@@ -507,10 +448,9 @@
 
       var member = memberLine(gameId, fresh);
       if (member) box.insertBefore(member, box.firstChild);
-      var nudge = boosterNudge(gameId);
-      if (nudge) box.appendChild(nudge);
-      if (NS.leaderboard) NS.leaderboard.renderResult(box, gameId);
-      box.appendChild(shareButton(gameId));
+      var next = nextAction(gameId);
+      if (next) box.appendChild(next);
+      if (NS.leaderboard) NS.leaderboard.renderResult(box, gameId);   // goes first, under the score
     }
   };
 

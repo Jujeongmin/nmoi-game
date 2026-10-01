@@ -128,45 +128,6 @@
   color: var(--cv-ink-soft);
 }
 
-/* Result: caviar settle into a row, one per kind, with counts */
-.cm-result-types {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 4px;
-  margin: 0 0 10px;
-  padding: 0;
-  list-style: none;
-}
-.cm-result-types li {
-  display: grid;
-  grid-template-columns: auto auto;   /* pearl + name, the count under them */
-  justify-content: center;
-  align-items: center;
-  gap: 3px 4px;
-}
-.cm-result-types__count { grid-column: 1 / -1; text-align: center; }
-.cm-result-types .cv-pearl { --size: 16px; }
-.cm-result-types.is-aligning .cv-pearl { animation: cm-align 0.9s cubic-bezier(.2,.7,.2,1) backwards; }
-.cm-result-types li:nth-child(1) .cv-pearl { --fx: -22px; --fy: 12px;  animation-delay: 0.10s; }
-.cm-result-types li:nth-child(2) .cv-pearl { --fx: -8px;  --fy: -16px; animation-delay: 0.18s; }
-.cm-result-types li:nth-child(3) .cv-pearl { --fx: 10px;  --fy: 14px;  animation-delay: 0.26s; }
-.cm-result-types li:nth-child(4) .cv-pearl { --fx: 24px;  --fy: -10px; animation-delay: 0.34s; }
-.cm-result-types__name {
-  font: 600 9px/1 var(--cv-font-ui);
-  letter-spacing: 0.06em;
-  color: var(--cv-ink-soft);
-}
-.cm-result-types__count {
-  font: 400 18px/1 var(--cv-font-num);
-  font-variant-numeric: lining-nums tabular-nums;
-  color: var(--cv-ink);
-}
-
-@keyframes cm-align {
-  0% { opacity: 0; transform: translate(var(--fx), var(--fy)) scale(0.6); }
-  100% { opacity: 1; transform: none; }
-}
-
 /* ---------- Small / short screens ---------- */
 @media (max-width: 380px) {
   :root { --cv-gutter: 10px; }
