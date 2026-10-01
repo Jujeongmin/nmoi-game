@@ -1,4 +1,4 @@
-/* RECIPE BOOK — B-cut polaroid browser, canapé recipe, member notes.
+/* RECIPE BOOK — the B-cut card collection (polaroid browser + full-size viewer and save).
    B-cut n is the reward card of bingo mission n (shared/cv-bingo.js): locked until done. */
 (function (NS) {
   'use strict';
@@ -149,30 +149,4 @@
   });
 
   showBcut(0);
-
-  // Recipe
-  var r = C.recipe;
-  $('recipe-chef').textContent = r.chef + '  ★★★';
-  $('recipe-title').textContent = r.title;
-  $('recipe-sub').textContent = r.sub;
-  $('recipe-dish').appendChild(NS.assetSlot({ name: '카나페 이미지', src: r.image, className: 'pg-recipe__img' }));
-  r.parts.forEach(function (p) {
-    var li = el('li');
-    li.appendChild(el('b', 'pg-hand', p.name));
-    li.appendChild(el('span', '', p.text));
-    $('recipe-parts').appendChild(li);
-  });
-  r.ingredients.forEach(function (t) { $('recipe-ing').appendChild(el('li', '', t)); });
-
-  // Notes (handwriting scan replaces the typed sample when provided)
-  C.notes.forEach(function (n, i) {
-    var card = el('div', 'pg-note' + (i % 2 ? ' is-tilt-r' : ' is-tilt-l'));
-    card.appendChild(el('p', 'pg-hand pg-note__title', n.title));
-    if (n.image) card.appendChild(NS.assetSlot({ src: n.image, className: 'pg-note__img' }));
-    else {
-      card.appendChild(el('p', 'pg-hand pg-note__text', n.text));
-      card.appendChild(el('p', 'pg-note__slot', '멤버 손글씨 이미지로 교체 예정'));
-    }
-    $('notes').appendChild(card);
-  });
 })(window.CAVIAR = window.CAVIAR || {});

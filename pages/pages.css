@@ -69,7 +69,7 @@
 
 .pg-hand { font-family: var(--pg-hand); }
 
-/* ---------- Recipe book ---------- */
+/* ---------- Recipe book: the B-cut cards ---------- */
 .pg-book {
   padding: 22px 18px 26px;
   background: url("../assets/landing/paper.webp") center / cover, var(--pg-paper);
@@ -136,65 +136,6 @@
 }
 .pg-polaroid__msg .pg-hand { font-size: 20px; font-weight: 400; color: #8a3f4a; }
 
-.pg-recipe { margin-top: 26px; padding-top: 22px; border-top: 1px solid var(--pg-line-faint); text-align: center; }
-.pg-recipe__chef { margin: 0; font: 600 10px/1 var(--cv-font-ui); letter-spacing: 0.2em; color: var(--pg-gold-ink); }
-.pg-recipe__title { margin: 10px 0 0; font: 500 30px/1.1 var(--cv-font-display); letter-spacing: 0.04em; }
-.pg-recipe__sub { margin: 2px 0 0; font-size: 26px; color: #5c5046; }
-.pg-recipe__dish { display: flex; justify-content: center; margin: 8px 0 4px; }
-.pg-recipe__img { width: min(78%, 260px); height: auto; }
-.pg-recipe__parts {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px 14px;
-  margin: 6px 0 22px;
-  padding: 0;
-  list-style: none;
-  text-align: left;
-}
-.pg-recipe__parts b { display: block; font-size: 21px; font-weight: 400; line-height: 1; text-decoration: underline; text-decoration-color: var(--pg-line); text-underline-offset: 3px; }
-.pg-recipe__parts span { font: 400 12px/1.45 var(--cv-font-ui); word-break: keep-all; color: var(--cv-ink-soft); }
-.pg-recipe__h { margin: 0 0 8px; font: 500 16px/1 var(--cv-font-display); letter-spacing: 0.1em; text-align: left; }
-.pg-recipe__ing {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 6px 14px;
-  margin: 0;
-  padding: 10px 0 0;
-  border-top: 1px solid var(--pg-line);
-  list-style: none;
-  text-align: left;
-  font: 400 13px/1.4 var(--cv-font-ui);
-}
-.pg-recipe__ing li::before { content: "– "; color: var(--pg-gold-ink); }
-
-.pg-notes {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 14px 12px;
-  margin-top: 28px;
-}
-.pg-note {
-  position: relative;
-  padding: 18px 12px 12px;
-  background: #fffdf7;
-  box-shadow: 0 8px 16px -10px rgba(40, 28, 12, 0.4);
-}
-.pg-note::before {   /* tape */
-  content: "";
-  position: absolute;
-  top: -8px;
-  left: 50%;
-  width: 56px;
-  height: 16px;
-  transform: translateX(-50%) rotate(-3deg);
-  background: rgba(214, 196, 150, 0.6);
-}
-.pg-note.is-tilt-l { transform: rotate(-1.2deg); }
-.pg-note.is-tilt-r { transform: rotate(1.4deg); }
-.pg-note__title { margin: 0 0 6px; font-size: 21px; line-height: 1; text-align: center; text-decoration: underline; text-decoration-color: var(--pg-line); text-underline-offset: 3px; }
-.pg-note__text { margin: 0; font-size: 19px; line-height: 1.25; word-break: keep-all; color: #3b332b; }
-.pg-note__slot { margin: 10px 0 0; padding-top: 6px; border-top: 1px dashed var(--pg-line); font: 500 10px/1.3 var(--cv-font-ui); color: #7d6436; text-align: center; }
-.pg-note__img { width: 100%; }
 
 /* ---------- Trailer basket ---------- */
 .pg-lede { margin: 2px 0 14px; font: 500 14px/1.4 var(--cv-font-heading); text-align: center; word-break: keep-all; color: var(--cv-ink-soft); }
@@ -318,11 +259,10 @@
 .pg-polaroid__open { min-height: 36px; }
 
 /* One-line labels: header buttons, basket spots and note titles never break inside a word. */
-.pg-bar__back, .pg-bar__bingo, .pg-bar__title, .cv-host__back, .cv-host__bingo, .pg-spot__label, .pg-note__title { white-space: nowrap; }
+.pg-bar__back, .pg-bar__bingo, .pg-bar__title, .cv-host__back, .cv-host__bingo, .pg-spot__label { white-space: nowrap; }
 @media (max-width: 360px) {
   .pg-bar { padding-left: 12px; padding-right: 12px; }
   .pg-bar__title { font-size: 15px; letter-spacing: 0.08em; text-indent: 0.08em; }
   .pg-bar__bingo { padding: 0 9px; }
-  .pg-recipe__title { font-size: 26px; }
 }
 .cv-host__title { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
