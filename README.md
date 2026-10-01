@@ -55,7 +55,7 @@ shared/                     used by every page
   cv-presave.js             pre-save chip (home, cans, HUD), panel after each run, D-day switch
   cv-sound.js               synthesized effects, BGM loops, sound switch
   cv-i18n.js / -dict.js     languages ko · en · ja · zh-Hant · zh-Hans (Korean text = key)
-  cv-settings.js            settings panel: language, volumes, reduce motion, my info
+  cv-settings.js            settings panel: language, volumes, my info
   cv-frame.js               reports page size to the Verse8 parent frame
 assets/
   brand/                    Verse8 logo (svg/png) + splash sting (from the Verse8 Splash Module)
@@ -234,7 +234,7 @@ The icon is drawn for the campaign (gold line gear around a caviar pearl on onyx
 - **Language**: 한국어 · English · 日本語 · 繁體中文 · 简体中文. `?lang=en` also works; otherwise the
   saved choice, then the browser language, then English. Switching reloads the page.
 - **Sound**: on/off, music volume, effects volume (remembered).
-- **Display**: reduce motion (follows the system setting until changed).
+- **Motion**: follows the phone's reduce-motion setting (no switch in the panel).
 - **My info**: nickname / e-mail of the order sheet, a link back to it, the privacy notice.
 - **Account**: V8 login state.
 

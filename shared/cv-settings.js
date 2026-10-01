@@ -1,7 +1,6 @@
 /* Settings — one panel on every page (landing menu, game title cards, page headers).
      언어         ko · en · ja · 繁中 · 简中 (cv-i18n.js; the page reloads in the new language)
      사운드       on/off, BGM volume, effects volume (cv-sound.js, remembered)
-     화면         reduce motion (follows the system setting until changed)
      내 정보      nickname / e-mail of the entry sheet, edit on the landing, privacy notice
      계정         V8 login state (placeholder until the Verse8 login is wired)
    CAVIAR.settings.open() / button(extraClass)
@@ -20,9 +19,9 @@
 
   /* ---------- reduce motion ---------- */
 
+  // Follows the system setting ("동작 줄이기" on the phone); the panel no longer has a switch.
+  store.set('motion', '');   // drop a choice saved by the old switch
   function reduceMotion() {
-    var v = store.get('motion', '');
-    if (v) return v === 'reduce';
     return !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
   }
   function applyMotion() { document.documentElement.classList.toggle('cv-reduce-motion', reduceMotion()); }
@@ -110,10 +109,6 @@
       snd.appendChild(slider('배경음악', 'bgm'));
       snd.appendChild(slider('효과음', 'sfx'));
     }
-
-    // Screen
-    var scr = section(panel, '화면');
-    scr.appendChild(toggleRow('모션 줄이기', reduceMotion(), function (on) { store.set('motion', on ? 'reduce' : 'full'); applyMotion(); }));
 
     // My info
     var info = section(panel, '내 정보');

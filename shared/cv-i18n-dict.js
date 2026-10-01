@@ -125,7 +125,7 @@
     "n Moi Spotify 프리세이브": ["n Moi Spotify pre-save", "n Moi Spotify プリセーブ", "n Moi Spotify 預存", "n Moi Spotify 预存"],
     "친구 초대 링크 · 주간 순위": ["Invite link · weekly ranking", "招待リンク · 週間ランキング", "邀請連結 · 每週排名", "邀请链接 · 每周排名"],
     "레스토랑 입장부터 다시": ["Start over from the entrance", "レストランの入口からやり直す", "從進入餐廳重新開始", "从进入餐厅重新开始"],
-    "언어 · 음량 · 화면 · 내 정보": ["Language · volume · display · my info", "言語 · 音量 · 画面 · マイ情報", "語言 · 音量 · 畫面 · 我的資料", "语言 · 音量 · 画面 · 我的信息"],
+    "언어 · 음량 · 내 정보": ["Language · volume · my info", "言語 · 音量 · マイ情報", "語言 · 音量 · 我的資料", "语言 · 音量 · 我的信息"],
     "빙고 미션 · 더 큰 보상": ["Bingo missions · bigger rewards", "ビンゴミッション · さらに大きな報酬", "賓果任務 · 更大獎勵", "宾果任务 · 更大奖励"],
     "시연용 · 기록 초기화": ["Demo · reset progress", "デモ用 · 記録をリセット", "示範用 · 重設紀錄", "演示用 · 重置记录"],
     "시연용 초기화: 빙고·응모권·오늘 판수·데모 로그인을 지울까요?": ["Demo reset: clear bingo, tickets, today's runs and the demo login?", "デモ用リセット: ビンゴ・応募券・今日の回数・デモログインを消去しますか?", "示範重設：要清除賓果、抽獎券、今日次數與示範登入嗎?", "演示重置：要清除宾果、抽奖券、今日次数与演示登录吗?"],
