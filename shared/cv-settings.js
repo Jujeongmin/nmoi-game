@@ -140,6 +140,13 @@
     }
 
     var actions = el('div', 'cv-actions');
+    // In a game: leave for the main menu (the can selection). A run in progress is dropped.
+    if (document.querySelector('.cv-hud') && NS.hub && NS.hub.exit) {
+      var leave = el('button', 'cv-btn', '나가기');
+      leave.type = 'button';
+      leave.addEventListener('click', function () { NS.hub.exit(); });
+      actions.appendChild(leave);
+    }
     var done = el('button', 'cv-btn cv-btn--primary', '닫기');
     done.type = 'button';
     done.addEventListener('click', close);

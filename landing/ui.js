@@ -63,7 +63,7 @@
       serveCaviar: $('serve-caviar'),
       serveDrink: $('serve-drink'),
       serveDrinkName: $('serve-drink-name'),
-      cans: $('cans'),
+      cans: $('can-row'),   // not id="cans": #cans in the URL would scroll the page to it
     };
 
     // copy from config

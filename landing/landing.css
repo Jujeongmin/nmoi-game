@@ -156,6 +156,11 @@
 
 /* ---------- 01 · Table ---------- */
 .lp-screen[data-screen="table"] { padding: 0; overflow: hidden; }
+/* Content taller than the screen (cans after a game: + mission bar; short phones): start at the
+   top and scroll, instead of centring and clipping the title and the bottom. Auto margins
+   still centre it when it fits. */
+.lp-screen:not([data-screen="table"]) { align-items: flex-start; justify-content: flex-start; overflow-y: auto; overscroll-behavior: contain; }
+.lp-screen:not([data-screen="table"]) > * { margin: auto; flex-shrink: 0; }
 
 .lp-scene {
   appearance: none;
