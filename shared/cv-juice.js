@@ -44,17 +44,27 @@
     var dur = calm() ? 0 : Math.min(1400, 500 + value / 12);
     if (!dur) { el.textContent = pad(value, digits); return Promise.resolve(); }
     return new Promise(function (resolve) {
-      var start = 0, ticked = 0;
+      var start = 0, ticked = 0, done = false;
       el.textContent = pad(0, digits);
+      function finish() {
+        if (done) return;
+        done = true;
+        cancelAnimationFrame(el._countRaf);
+        el._countRaf = 0;
+        el.textContent = pad(value, digits);
+        resolve();
+      }
       function step(now) {
+        if (done) return;
         if (!start) start = now;
         var q = Math.min(1, (now - start) / dur), e = 1 - Math.pow(1 - q, 3);
         el.textContent = pad(value * e, digits);
         if (now - ticked > 70 && q < 1) { ticked = now; play('tap'); }
-        if (q < 1) el._countRaf = requestAnimationFrame(step);
-        else { el._countRaf = 0; resolve(); }
+        if (q < 1) el._countRaf = requestAnimationFrame(step); else finish();
       }
       el._countRaf = requestAnimationFrame(step);
+      // Frames stop in a hidden tab: the real score is there anyway shortly after.
+      setTimeout(finish, dur + 400);
     });
   }
 
