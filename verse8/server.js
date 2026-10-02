@@ -64,7 +64,8 @@ const REF_DAILY_CAP = 5;
 // could have reached: a run must be opened with startRun, and a score may grow at most
 // maxScore / duration per second since then (countdown and result delay only add slack).
 //   caviar-master-chef: 60 s, orders 3,4,5,6,6... steps at best ~15,300 with instant picks.
-//   caviar-escape: 30 s, 3,000 survival + 1,500 lives + close calls.
+//   caviar-escape: 30 s, 3,000 survival + 1,500 lives + pearls and close calls x combo (up to x5);
+//                  the page caps the score at 19,990.
 //   caviar-match: a greedy bot aiming instantly, 1,200 runs: median ~20,000, best 49,950.
 const GAMES = {
   'caviar-escape': { maxScore: 20000, duration: 30, lives: true },   // lives: takes +1 life boosters

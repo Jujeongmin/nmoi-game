@@ -51,6 +51,11 @@
         <canvas id="stage-canvas" class="ce-stage__canvas"></canvas>
       </div>
       <div class="ce-callout" id="callout" aria-live="polite"></div>
+      <div class="ce-banner" id="banner" aria-live="polite">
+        <span class="ce-banner__line" aria-hidden="true"></span>
+        <strong class="ce-banner__label" id="banner-label"></strong>
+        <span class="ce-banner__sub" id="banner-sub"></span>
+      </div>
     </section>
 
     <!-- Guide -->
@@ -59,6 +64,8 @@
       <span class="ce-guide__keys">WASD · 방향키로 이동</span>
       <span class="ce-guide__sep" aria-hidden="true"></span>
       <span>상어를 아슬아슬하게 피하면 보너스</span>
+      <span class="ce-guide__sep" aria-hidden="true"></span>
+      <span>진주를 이어 주우면 콤보</span>
     </footer>
 
     <!-- Title card -->
@@ -77,6 +84,7 @@
         <dl class="cv-menu ce-card__menu">
           <div class="cv-menu__row"><dt>이동</dt><dd>드래그 · WASD · 방향키</dd></div>
           <div class="cv-menu__row"><dt>라이프</dt><dd>3개, 상어에 닿으면 1개 감소</dd></div>
+          <div class="cv-menu__row"><dt>아이템</dt><dd>진주를 주우면 점수 · 이어 주우면 콤보</dd></div>
           <div class="cv-menu__row"><dt>최고 점수</dt><dd class="ce-num" id="title-best">00000</dd></div>
         </dl>
         <div class="cv-actions">
@@ -121,6 +129,7 @@
   <script src="game/config.js"></script>
   <script src="game/logic.js"></script>
   <script src="game/input.js"></script>
+  <script src="game/fx.js"></script>
   <script src="game/renderer.js"></script>
   <script src="game/ui.js"></script>
   <script src="game/main.js"></script>

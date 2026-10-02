@@ -28,4 +28,12 @@ shark — it has to look like it came from the same game.
 - Through Codex with the ChatGPT plan (no API key): `codex exec -i <style refs> -i <old picture> -- "<prompt>"`,
   or `python tools/gen-art.py` with `OPENAI_API_KEY`. Prompts use the `CUTE` style string there.
 - Raw PNGs are kept in `assets/source/gen/`; the game uses trimmed WebPs.
+- Scenes, layers and effect sheets (Caviar Escape, 2026-10-02): `codex exec -s workspace-write -i <refs> - < prompt.txt`
+  with "use your image generation tool … save to assets/source/gen/…". Ask for a **transparent background** for
+  sprite sheets (it works); several items go on one sheet in a fixed grid, then a script cuts them
+  (`tools/make-escape-art.py`: drops faint alpha specks, trims, resizes, writes WebP).
+- Nothing in play may look like a pickup: a background must not contain pearls, coins or anything round and
+  ivory. Backgrounds keep the middle plain and dark so sharks, pearls and members read on top.
+- **Never draw pictures in code** (no canvas shapes, no CSS colour boxes for panels or buttons). Code only moves
+  generated art. Show candidates (an HTML page) before committing new art; commit only the chosen ones.
 - Check every image: transparent edges without halos, no stray text, no second object.

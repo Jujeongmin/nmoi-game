@@ -49,6 +49,7 @@
   fit();
 
   function startRun() {
+    slowmo = 0;
     ui.hideScreens();
     renderer.clearEffects();
     renderer.playAnim('idle');
@@ -93,6 +94,7 @@
 
   var talk = NS.talk ? NS.talk.bubble(stageEl, { anchor: 'top' }) : null;
   var warned = false;
+  var slowmo = 0;   // seconds of slow motion left (close call)
   function handle(ev) {
     NS.sound.event(cfg.gameId, ev.type, ev);
     if (talk) {
@@ -101,24 +103,25 @@
       else if (ev.type === 'nearMiss') talk.say('good');
       else if (ev.type === 'end') talk.hide();
     }
+    renderer.event(ev, game);
     switch (ev.type) {
       case 'hit':
-        ui.hitFeedback();
-        renderer.pulse(ev.x, ev.y, 'alert');
         renderer.playAnim('frown');
         break;
       case 'nearMiss':
         ui.bonusFeedback();
-        renderer.pulse(ev.x, ev.y, 'gold');
-        renderer.float(ev.x, ev.y - 34, NS.t('아슬아슬 +{n}', { n: ev.amount }));
+        slowmo = cfg.slowmo.time;
+        break;
+      case 'pickup':
+      case 'combo':
+        ui.bonusFeedback();
+        break;
+      case 'wave':
+        ui.banner(ev.label, NS.t(ev.sub));
         break;
       case 'end':
-        if (ev.result === 'clear') {
-          renderer.pulse(game.player.x, game.player.y, 'gold');
-          renderer.playAnim('dance');
-        } else {
-          renderer.playAnim('frown', true);
-        }
+        slowmo = 0;
+        renderer.playAnim(ev.result === 'clear' ? 'dance' : 'frown', ev.result !== 'clear');
         break;
     }
   }
@@ -137,14 +140,17 @@
   window.addEventListener('cv-settings', syncPause);
 
   function tick(dt) {
-    game.update(dt, input.enabled ? input.vector() : null);
+    // A close call slows the game for a moment; the scene keeps its own pace.
+    var gdt = dt;
+    if (slowmo > 0) { slowmo = Math.max(0, slowmo - dt); gdt = dt * cfg.slowmo.factor; }
+    game.update(gdt, input.enabled ? input.vector() : null);
     if (talk && !warned && game.phase === 'play' && game.timeLeft <= 10) { warned = true; talk.say('last10'); }
     var events = game.drainEvents();
     for (var i = 0; i < events.length; i++) handle(events[i]);
 
     if (!resultShown && game.isOver() && game.phaseTime >= cfg.resultDelay) showResult();
 
-    renderer.render(game, input, dt);
+    renderer.render(game, input, slowmo > 0 ? dt * 0.6 : dt);
     ui.update(game, best);
   }
 

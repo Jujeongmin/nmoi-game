@@ -31,6 +31,9 @@
       best: $('hud-best'),
       lives: Array.prototype.slice.call(document.querySelectorAll('#hud-lives .cv-pearl')),
       callout: $('callout'),
+      banner: $('banner'),
+      bannerLabel: $('banner-label'),
+      bannerSub: $('banner-sub'),
       title: $('screen-title'),
       titleBest: $('title-best'),
       result: $('screen-result'),
@@ -47,6 +50,8 @@
 
     var self = this;
     this.el.stageNum.textContent = pad(config.stage, 2);
+    // Preload the countdown numerals so 3-2-1 never pops in late.
+    ['n3', 'n2', 'n1', 'go'].forEach(function (n) { new Image().src = assetRoot + 'assets/escape/fx/' + n + '.webp'; });
     this.el.btnStart.addEventListener('click', function () { self._fire('start'); });
     this.el.btnRetry.addEventListener('click', function () { self._fire('retry'); });
     this.el.btnBack.addEventListener('click', function () { self._fire('back'); });
@@ -123,30 +128,57 @@
     this._updateCallout(game);
   };
 
+  /* 3-2-1 and GO! are generated gold numerals (assets/escape/fx); success / game over are text. */
   P._updateCallout = function (game) {
     var text = '', kind = 'word';
     if (game.phase === 'countdown') {
       text = String(Math.max(1, Math.ceil(game.countdownLeft() / (this.cfg.countdown / 3))));
       kind = 'number';
     } else if (game.phase === 'play' && game.phaseTime < 0.8) {
-      text = '출발';
+      text = 'go';
+      kind = 'number';
     } else if (game.isOver() && !this.el.result.classList.contains('is-open')) {
       text = game.phase === 'clear' ? '성공' : '게임 오버';
     }
     if (this.cache.callout === text) return;
     this.cache.callout = text;
     var c = this.el.callout;
-    c.textContent = text;
+    if (kind === 'number') {
+      c.innerHTML = '<img alt="' + (text === 'go' ? NS.t('출발') : text) + '" src="' + assetRoot + 'assets/escape/fx/' + (text === 'go' ? 'go' : 'n' + text) + '.webp">';
+    } else {
+      c.textContent = text;
+    }
     c.dataset.kind = kind;
     if (text) restartClass(c, 'is-shown'); else c.classList.remove('is-shown');
   };
 
   /* ---------- feedback ---------- */
-  P.hitFeedback = function () { restartClass(this.el.stage, 'is-hit'); };
-  P.bonusFeedback = function () { restartClass(this.el.scoreItem, 'is-flash'); };
+  P.bonusFeedback = function () {
+    restartClass(this.el.scoreItem, 'is-flash');
+    restartClass(this.el.score, 'is-pop');
+  };
+
+  /* Wave banner: a gold line sweeps across, the label and line under it slide in and out. */
+  P.banner = function (label, sub) {
+    var el = this.el, b = el.banner, self = this;
+    this.hideBanner();
+    el.bannerLabel.textContent = label;
+    el.bannerSub.textContent = sub || '';
+    restartClass(b, 'is-shown');
+    this.bannerTimers = [
+      setTimeout(function () { b.classList.add('is-leaving'); }, 1800),
+      setTimeout(function () { self.hideBanner(); }, 2200)
+    ];
+  };
+  P.hideBanner = function () {
+    (this.bannerTimers || []).forEach(clearTimeout);
+    this.bannerTimers = null;
+    this.el.banner.classList.remove('is-shown', 'is-leaving');
+  };
 
   /* ---------- screens ---------- */
   P.showTitle = function (best) {
+    this.hideBanner();
     this.el.titleBest.textContent = pad(best, 5);
     this.el.result.classList.remove('is-open');
     this.el.title.classList.add('is-open');
@@ -154,6 +186,7 @@
   };
 
   P.hideScreens = function () {
+    this.hideBanner();
     this.el.title.classList.remove('is-open');
     this.el.result.classList.remove('is-open');
     if (document.activeElement && document.activeElement.blur) document.activeElement.blur();

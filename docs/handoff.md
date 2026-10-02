@@ -11,7 +11,7 @@ cd web && git checkout develop && npm install
 - 두 폴더를 같은 상위 폴더에 둔다 (`nmoi-game-src/`, `web/` 나란히). 동기화 스크립트가 `../web`을 쓴다.
 - `nmoi-game-src/verse8/admins.local.json`은 git에 없다 (공개 저장소라 제외). 직접 만든다:
   `["0x내Verse8계정ID"]` — 없이 동기화하면 고정 관리자가 비어서 배포된다.
-- Python 3, Node 18+ 필요.
+- Python 3 (+ Pillow, numpy), Node 18+ 필요. 그림 생성은 Codex CLI (`npm i -g @openai/codex`, `codex login` = ChatGPT 요금제).
 
 ## 2. 배포 순서
 
@@ -30,7 +30,12 @@ cd web && git checkout develop && npm install
 
 ## 4. 남은 일
 
-- **다음 작업: 이스케이프 업그레이드** — 크리에이터스 피드백 (더 게임 같게, 모션그래픽으로 화려하게, 이스케이프 퀄리티). 계획·결정·튜닝값: `docs/escape-upgrade.md`. 이스케이프 확인받은 뒤 매치·셰프·메인 화면
+- 이스케이프 업그레이드 완료 (`docs/escape-upgrade.md` 진행 결과)
+- **다음 작업: 전체를 게임답게** — 고객 요청 "UI와 다른 게임들도 더 게임같이". 지금은 메뉴판·웹페이지처럼 보임.
+  순서 (사용자 결정): ① 공통 UI 키트 (금색 광택 버튼, 검정·금 패널 틀, HUD 판·아이콘, 게임 로고 3종, 결과 화면 장식)
+  → 타이틀 화면 (로고 + 멤버 크게 + 움직이는 배경 + 큰 PLAY, 규칙은 아이콘) → 결과 화면 (점수 카운트업·별·신기록)
+  ② 매치 (배경·터짐·콤보 연출) ③ 셰프 (주방 배경·주문서·재료 타일·PERFECT 연출) ④ 랜딩 상단 바·버튼.
+  그림은 전부 GPT 생성 (`docs/art-style.md`), 단계마다 후보 HTML을 보여 주고 고른 것만 적용
 - 남는 B컷을 게임 화면 연출(타이틀·결과 배경, 멤버 컷)에 쓰기: B컷 이미지가 오면 작업. 보상 아님
 - B컷 장수가 확정되면 `shared/cv-campaign.js` 의 `bingo.bcuts` 만 바꾸면 됨 (지금 10)
 - 확정 대사 적용 (게임 내 4줄 고정) + 녹음 파일 재생 훅

@@ -2,7 +2,7 @@
    Needs cv-storage.js. Audio starts on the first tap/click (browser autoplay rules).
 
    CAVIAR.sound.event(gameId, type, data)  map a game event to an effect (see MAP)
-   CAVIAR.sound.play(name)                 tap | shoot | collect | combo | success | fail | hit | near | wrong | order | drop
+   CAVIAR.sound.play(name)                 tap | shoot | collect | combo | success | fail | hit | near | wrong | order | drop | alarm | wave
    CAVIAR.sound.bgm(key) / stopBgm()       key = gameId or 'landing'
    CAVIAR.sound.toggle() / muted()
    CAVIAR.sound.volume('bgm' | 'sfx') / setVolume(kind, 0..1)   (settings sliders, remembered)
@@ -26,6 +26,8 @@
   var MAP = {
     'caviar-escape': {
       go: 'start', hit: 'hit', nearMiss: 'near',
+      pickup: 'collect', combo: 'combo',
+      dashAim: 'alarm', wave: 'wave',
       end: function (d) { return d && d.result === 'clear' ? 'success' : 'fail'; }
     },
     'caviar-match': {
@@ -105,7 +107,11 @@
     near: function (t) { tone(1568, t, 0.08, 'triangle', 0.06); },
     wrong: function (t) { tone(220, t, 0.16, 'square', 0.06); tone(208, t + 0.08, 0.16, 'square', 0.05); },
     order: function (t) { bell(1319, t, 0.3, 0.09); },
-    drop: function (t) { tone(330, t, 0.25, 'sine', 0.09, 196); }
+    drop: function (t) { tone(330, t, 0.25, 'sine', 0.09, 196); },
+    // Low two-beat warning (dash shark aiming).
+    alarm: function (t) { tone(220, t, 0.14, 'sawtooth', 0.05, 196); tone(220, t + 0.2, 0.14, 'sawtooth', 0.05, 196); },
+    // Wave banner: a rising horn-like fifth.
+    wave: function (t) { tone(294, t, 0.3, 'triangle', 0.1, 440); tone(440, t + 0.16, 0.45, 'triangle', 0.09, 587); }
   };
 
   function play(name) {
