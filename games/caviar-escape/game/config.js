@@ -67,8 +67,7 @@
       perSecond: 100,
       nearMiss: 150,
       nearMissDist: 20,    // gap (units) that counts as a close call
-      clearPerLife: 500,
-      max: 19990           // stays under the server cap (verse8/server.js GAMES, 20,000)
+      clearPerLife: 500
     },
 
     // Pickups. Points are multiplied by the combo multiplier.

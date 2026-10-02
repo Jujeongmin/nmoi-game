@@ -38,7 +38,7 @@
 - 웨이브 배너: 10초 "WAVE 2 · 돌진 상어 등장", 20초 "FINAL WAVE · 상어 떼가 몰려와요"
 - 새 이벤트: pickup, combo, shield, shieldBreak, wave, dashAim, dash (main.js → 사운드·이펙트)
 - 상어마다 크기 배율 (size): 판정 L·r 에 곱함 (돌진 1.15, 떼 0.62)
-- 서버 점수 상한 20,000 (verse8/server.js GAMES) 안에 들어가게 조정. 빙고 점수 칸 2,000 / 4,000
+- 서버 점수 상한 (verse8/server.js GAMES) — 2026-10-02 부정 방지용으로만 두고 50,000 으로 올림 (게임 안 19,990 멈춤은 뺌). 빙고 점수 칸 2,000 / 4,000
 
 초안 튜닝값 (config.js 에 넣을 것):
 

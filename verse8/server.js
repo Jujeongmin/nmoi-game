@@ -63,14 +63,17 @@ const REF_DAILY_CAP = 5;
 // Score checks. The page reports the score, so the server only accepts one that the run
 // could have reached: a run must be opened with startRun, and a score may grow at most
 // maxScore / duration per second since then (countdown and result delay only add slack).
-//   caviar-master-chef: 60 s, orders 3,4,5,6,6... steps at best ~15,300 with instant picks.
-//   caviar-escape: 30 s, 3,000 survival + 1,500 lives + pearls and close calls x combo (up to x5);
-//                  the page caps the score at 19,990.
+// This only stops forged scores (a console call with any number); the caps sit well above
+// anything real play reaches, so no real record is ever turned away (raised 2026-10-02).
+//   caviar-master-chef: 60 s, orders 3,4,5,6,6... skipping the memorize time and tapping every
+//                       0.3 s reaches ~24,000; a bot tapping every 0.13 s made 21,100.
+//   caviar-escape: 30 s, 3,000 survival + 2,000 lives + pearls and close calls x combo (up to x5);
+//                  a near-perfect run stays under ~30,000.
 //   caviar-match: a greedy bot aiming instantly, 1,200 runs: median ~20,000, best 49,950.
 const GAMES = {
-  'caviar-escape': { maxScore: 20000, duration: 30, lives: true },   // lives: takes +1 life boosters
-  'caviar-match': { maxScore: 80000, duration: 60 },
-  'caviar-master-chef': { maxScore: 20000, duration: 60 },
+  'caviar-escape': { maxScore: 50000, duration: 30, lives: true },   // lives: takes +1 life boosters
+  'caviar-match': { maxScore: 150000, duration: 60 },
+  'caviar-master-chef': { maxScore: 50000, duration: 60 },
 };
 const MIN_RUN_MS = 3000;
 const DAILY_PLAYS = 3;

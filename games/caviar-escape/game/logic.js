@@ -88,9 +88,7 @@
 
   /* ---------- read-only helpers for UI ---------- */
 
-  P.getScore = function () {
-    return Math.min(this.cfg.score.max, Math.floor(this.survival) + this.bonus + this.lifeBonus);
-  };
+  P.getScore = function () { return Math.floor(this.survival) + this.bonus + this.lifeBonus; };
   P.difficulty = function () { return clamp(this.elapsed / this.cfg.duration, 0, 1); };
   P.countdownLeft = function () { return Math.max(0, this.cfg.countdown - this.phaseTime); };
   P.isOver = function () { return this.phase === 'clear' || this.phase === 'over'; };
