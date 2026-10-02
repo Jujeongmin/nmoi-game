@@ -44,8 +44,8 @@ const WEEKS = [
 // week has ended (the final weekly board).
 // Numbers are provisional until the alpha data (10/13) — keep shared/cv-campaign.js in step.
 const BINGO = {
-  scoreEasy: { 'caviar-match': 2500, 'caviar-escape': 2000, 'caviar-master-chef': 2500 },  // score I (booster score)
-  score: { 'caviar-match': 5000, 'caviar-escape': 4000, 'caviar-master-chef': 5000 },      // score II
+  scoreEasy: { 'caviar-match': 2500, 'caviar-escape': 2500, 'caviar-master-chef': 2500 },  // score I (booster score)
+  score: { 'caviar-match': 5000, 'caviar-escape': 5000, 'caviar-master-chef': 5000 },      // score II (escape: tools/sim-escape.js)
   rankTopPct: 10,          // game rank cell: weekly top 10 %
   refRankTop: 10,          // referral rank cell: weekly top 10
   refNeed: [3, 5, 10],     // referral count cells (cumulative)

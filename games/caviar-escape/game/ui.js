@@ -126,7 +126,18 @@
         el.lives[0].parentNode.appendChild(pearl);
         el.lives.push(pearl);
       }
-      for (var i = 0; i < el.lives.length; i++) el.lives[i].classList.toggle('is-empty', i >= game.lives);
+      for (var i = 0; i < el.lives.length; i++) {
+        var pearl = el.lives[i], lost = i >= game.lives;
+        clearTimeout(pearl._lostTimer);
+        if (lost && !pearl.classList.contains('is-empty') && game.phase === 'play') {
+          // the pearl drops and dims first, then its place is left empty
+          NS.juice.restart(pearl, 'cv-lost');
+          pearl._lostTimer = setTimeout(function (p) { p.classList.add('is-empty'); p.classList.remove('cv-lost'); }.bind(null, pearl), 560);
+        } else {
+          pearl.classList.remove('cv-lost');
+          pearl.classList.toggle('is-empty', lost);
+        }
+      }
     }
 
     this._updateCallout(game);

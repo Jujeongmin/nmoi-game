@@ -110,9 +110,6 @@
 
 
 
-/* Last 5 seconds: the time blinks. */
-.cv-hud__item.is-alert .cv-value { animation: ce-blink 0.5s steps(2) infinite; }
-@keyframes ce-blink { 50% { opacity: 0.35; } }
 
 /* ---------- Guide ---------- */
 .ce-guide {

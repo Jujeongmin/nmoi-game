@@ -40,8 +40,8 @@
     // Bingo numbers (5x5: 24 missions + pre-save in the centre) — provisional until the alpha
     // data (10/13). verse8/server.js keeps the same numbers in BINGO and judges every cell.
     bingo: {
-      scoreEasy: { 'caviar-match': 2500, 'caviar-escape': 2000, 'caviar-master-chef': 2500 },  // score cell I (booster score)
-      score: { 'caviar-match': 5000, 'caviar-escape': 4000, 'caviar-master-chef': 5000 },      // score cell II
+      scoreEasy: { 'caviar-match': 2500, 'caviar-escape': 2500, 'caviar-master-chef': 2500 },  // score cell I (booster score)
+      score: { 'caviar-match': 5000, 'caviar-escape': 5000, 'caviar-master-chef': 5000 },      // score cell II (escape: tools/sim-escape.js, 2026-10-02)
       rankTopPct: 10,               // game rank cell: weekly top 10 %
       refRankTop: 10,               // referral rank cell: weekly top 10
       refNeed: [3, 5, 10],          // referral count cells (cumulative)

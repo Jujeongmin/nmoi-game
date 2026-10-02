@@ -883,3 +883,19 @@ html.cv-has-footer .lp-app { padding-bottom: 0; }
   0%, 100% { box-shadow: inset 0 0 0 1px var(--cv-line); }
   50% { box-shadow: inset 0 0 0 1px var(--cv-garnet), inset 0 0 24px rgba(154, 65, 54, 0.45); }
 }
+
+/* HUD: in the last seconds the time beats once a second (all games). */
+.cv-hud__item.is-alert .cv-value { display: inline-block; animation: cv-tick 1s ease-out infinite; }
+@keyframes cv-tick {
+  0% { transform: scale(1.22); color: #f3d9a0; text-shadow: 0 0 10px rgba(226, 204, 152, 0.7); }
+  35% { transform: scale(1); }
+  100% { transform: scale(1); }
+}
+
+/* HUD: a life is lost — the pearl drops a little and dims (it is not broken). */
+.cv-pearl.cv-lost { animation: cv-lost 0.56s cubic-bezier(0.3, 0.6, 0.4, 1) forwards; }
+@keyframes cv-lost {
+  0% { transform: scale(1.35); filter: brightness(1.6); }
+  45% { transform: translateY(4px) scale(0.95); opacity: 0.8; }
+  100% { transform: translateY(7px) scale(0.85); opacity: 0.25; }
+}
