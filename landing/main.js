@@ -54,7 +54,7 @@
     NS.hub.setOrder(order);
     NS.track('entry', {});
     NS.account.profile(order);   // TIER 0 entry: nickname + email on the Verse8 server
-    go('serve');
+    ui.stampOrder(function () { go('serve'); });   // the order is sealed, then served
   });
   ui.on('secret', function () { go('cans'); });
 

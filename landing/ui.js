@@ -78,6 +78,7 @@
       this.el.sceneImg.hidden = false;
       this.el.menu.classList.add('has-image');
       this.el.backdrop.style.backgroundImage = 'url("' + url + '")';
+      NS.landingMotion.ambience(this.el.menu, this.el.sceneImg);   // glints, candle, a light over the cover
     }
     if (cfg.images.paper) {
       document.body.style.setProperty('--lp-paper-img', 'url("' + assetUrl(cfg.images.paper) + '")');
@@ -89,6 +90,8 @@
     this._buildOptions('opts-drink', 'drink', cfg.drinks, false);
     this._buildCans();
     this._bind();
+    // Lines of the order sheet and the cans come in one after another (landing.css "Motion").
+    Array.prototype.forEach.call(this.el.form.children, function (n, i) { n.style.setProperty('--i', i); });
   }
 
   var P = UI.prototype;
@@ -122,9 +125,13 @@
       var b = el('button', 'lp-can');
       b.type = 'button';
       b.dataset.id = can.id;
+      b.style.setProperty('--i', host.children.length);
       b.setAttribute('aria-label', can.label + ' — ' + can.gameName + ' 시작');
       var tin = el('span', 'lp-tin');
       fillTin(tin, can.color, can.latin, can.image);
+      var halo = el('span', 'lp-can__halo');   // this week's can: a thin gold ring breathes behind it
+      halo.setAttribute('aria-hidden', 'true');
+      b.appendChild(halo);
       b.appendChild(tin);
       b.appendChild(el('span', 'lp-can__name', can.label));
       b.appendChild(el('span', 'lp-can__sub', '(' + can.sub + ')'));
@@ -157,6 +164,7 @@
       if (t.type === 'checkbox' && t.name === 'consent') { self._fire('answer', { key: 'consent', value: t.checked }); return; }
       if (t.type !== 'radio') return;
       self._syncChecked(t.name);
+      self._picked(t.parentNode);
       self._fire('answer', { key: t.name, value: t.value });
     });
     e.form.addEventListener('submit', function (ev) {
@@ -169,6 +177,19 @@
     Array.prototype.forEach.call(this.el.form.querySelectorAll('input[name="' + name + '"]'), function (i) {
       i.parentNode.classList.toggle('is-checked', i.checked);
     });
+  };
+
+  /** A choice on the sheet: the option pops and a few flakes of gold leaf drift off it. */
+  P._picked = function (label) {
+    NS.juice.restart(label, 'is-picked');
+    var r = label.getBoundingClientRect(), f = this.el.form.getBoundingClientRect();
+    NS.landingMotion.leaf(this.el.form, r.right - f.left - 18 + this.el.form.scrollLeft, r.top - f.top + r.height / 2 + this.el.form.scrollTop, 3);
+  };
+
+  /** 02 → 03: the order is pressed with the house wax seal, then `done` runs. */
+  P.stampOrder = function (done) {
+    NS.juice.seal(this.el.form);
+    setTimeout(done, NS.settings && NS.settings.reduceMotion() ? 0 : 750);
   };
 
   /** Put stored answers back into the form (returning guest). */
@@ -202,6 +223,7 @@
     Array.prototype.forEach.call(this.el.cans.children, function (b) {
       var info = fn(b.dataset.id);
       b.classList.toggle('is-locked', !info.open);
+      b.classList.toggle('is-now', !!info.now && info.open);
       b.setAttribute('aria-disabled', info.open ? 'false' : 'true');
       var badge = b.querySelector('.lp-can__week');
       if (!badge) { badge = el('span', 'lp-can__week'); b.insertBefore(badge, b.firstChild); }
@@ -211,7 +233,11 @@
   };
 
   P.setBingo = function (filled, total, lines) {
-    $('bingo-count').textContent = lines ? lines + '줄' : filled + '/' + total;
+    var n = $('bingo-count'), text = lines ? lines + '줄' : filled + '/' + total;
+    if (n.textContent === text) return;
+    var grew = !!n.textContent;
+    n.textContent = text;
+    if (grew) NS.juice.restart(n, 'cv-pop');
   };
 
   P.show = function (step, index, total) {
@@ -316,9 +342,15 @@
     var row = this.el.cans;
     if (row.classList.contains('has-choice')) return;
     row.classList.add('has-choice');
+    var self = this;
     Array.prototype.forEach.call(row.children, function (b) {
-      b.classList.toggle('is-chosen', b.dataset.id === id);
+      var on = b.dataset.id === id;
+      b.classList.toggle('is-chosen', on);
+      if (!on) return;
+      var t = b.querySelector('.lp-tin').getBoundingClientRect(), h = row.getBoundingClientRect();
+      NS.landingMotion.leaf(row, t.left - h.left + t.width / 2, t.top - h.top + t.height * 0.3, 6);
     });
+    setTimeout(function () { self.el.app.classList.add('is-leaving'); }, 350);   // the room dims before the game
     setTimeout(done, 650);
   };
 
@@ -335,6 +367,7 @@
   P.resetCans = function () {
     var row = this.el.cans;
     row.classList.remove('has-choice');
+    this.el.app.classList.remove('is-leaving');
     Array.prototype.forEach.call(row.children, function (b) { b.classList.remove('is-chosen'); });
   };
 

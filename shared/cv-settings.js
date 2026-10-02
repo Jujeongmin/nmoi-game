@@ -22,11 +22,14 @@
 
   // Follows the system setting ("동작 줄이기" on the phone); the panel no longer has a switch.
   store.set('motion', '');   // drop a choice saved by the old switch
-  function reduceMotion() {
-    return !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
-  }
+  // ?motion=1 plays the motion anyway for this tab (previewing on a PC whose system setting is on).
+  var mq = window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : null;
+  try { if (/[?&]motion=1(?:&|$)/.test(window.location.search)) sessionStorage.setItem('cv-motion', '1'); } catch (e) {}
+  function forcedMotion() { try { return sessionStorage.getItem('cv-motion') === '1'; } catch (e) { return false; } }
+  function reduceMotion() { return !!(mq && mq.matches) && !forcedMotion(); }
   function applyMotion() { document.documentElement.classList.toggle('cv-reduce-motion', reduceMotion()); }
   applyMotion();
+  if (mq && mq.addEventListener) mq.addEventListener('change', applyMotion);
 
   /* ---------- panel ---------- */
 
