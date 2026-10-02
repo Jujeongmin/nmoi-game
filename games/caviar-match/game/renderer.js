@@ -101,9 +101,11 @@ CM.BoardView = (function () {
       ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
       ctx.setTransform(k, 0, 0, k, this.ox * this.dpr, this.oy * this.dpr);
 
-      // Table surface + frame
+      // Table surface + frame: a veil over the tablecloth picture (game.css), so the column reads
+      ctx.globalAlpha = 0.35;
       ctx.fillStyle = col.table;
       ctx.fillRect(0, 0, W, H);
+      ctx.globalAlpha = 1;
       ctx.strokeStyle = col.goldA(0.28);
       ctx.lineWidth = hair;
       ctx.beginPath();

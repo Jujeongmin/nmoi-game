@@ -40,6 +40,8 @@ cd web && git checkout develop && npm install
   랜딩도 완료 (`landing/motion.js` + landing.css "Motion"): 테이블 반짝임·촛불·메뉴판 빛 스침, 주문서 줄 단위 등장·
   선택 시 금박·제출 시 왁스 도장, 서빙 카드 차례로 내려놓기, 캔 차례 등장·이번 주 캔 금색 고리·선택 시 금박과 어두워짐.
   새 그림은 메뉴판·테이블 그림체로만 생성, 후보를 보여 주고 고른 것만 적용 (`docs/art-style.md`).
+  플레이 화면 배경: 매치 = 검정 벨벳 테이블보(`assets/match/table.webp`), 셰프 = 월넛 카운터(`assets/chef/counter.webp`),
+  후보 3개씩 중 사용자 선택, `tools/make-stage-art.py`. 이스케이프 = 한밤 심해.
 - 미리보기: 이 PC는 Windows "애니메이션 효과"가 꺼져 있어 움직임이 안 보임 → 주소에 `?motion=1` (탭 하나 동안 움직임 켬,
   `shared/cv-settings.js`). 캠페인 주차는 `?date=2026-10-27` 처럼 날짜를 줘서 확인
 - 남는 B컷을 게임 화면 연출(타이틀·결과 배경, 멤버 컷)에 쓰기: B컷 이미지가 오면 작업. 보상 아님

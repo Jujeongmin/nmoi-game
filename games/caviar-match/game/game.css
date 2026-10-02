@@ -44,7 +44,12 @@
   flex: 1 1 auto;
   min-height: 0;
   border: 1px solid var(--cv-line);
-  background: var(--cv-espresso);
+  /* The onyx velvet tablecloth (assets/match/table.webp, tools/make-stage-art.py) under a dark veil;
+     the board canvas lays a lighter veil of its own over the playing column. */
+  background:
+    linear-gradient(rgba(11, 10, 8, 0.3), rgba(11, 10, 8, 0.3)),
+    url("../../../assets/match/table.webp") center / cover no-repeat,
+    var(--cv-espresso);
   touch-action: none;
   cursor: crosshair;
   overflow: hidden;
