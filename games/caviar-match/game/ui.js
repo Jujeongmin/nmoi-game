@@ -47,10 +47,10 @@ CM.UI = (function () {
         resultScore: $('result-score'),
         resultBest: $('result-best'),
         resultNew: $('result-new'),
-        stage: $('stage'),
+        table: $('stage'),   // the play area (stage: the HUD's stage number)
       };
       this.scoreRoll = CAVIAR.juice.roller(this.el.score, 5);
-      this.tableBanner = CAVIAR.juice.banner(this.el.stage);
+      this.tableBanner = CAVIAR.juice.banner(this.el.table);
       this.cache = {};
       this.counts = cfg.types.map(() => 0);
       this.slots = [];
@@ -92,14 +92,14 @@ CM.UI = (function () {
       this.el.title.classList.toggle('is-open', name === 'title');
       this.el.result.classList.toggle('is-open', name === 'result');
       if (name === 'title') CAVIAR.juice.enter(this.el.title);
-      if (name !== 'game') { this.tableBanner.hide(); this.el.stage.classList.remove('cv-hurry'); }
+      if (name !== 'game') { this.tableBanner.hide(); this.el.table.classList.remove('cv-hurry'); }
     }
 
     /** A gold-ruled band across the table (table cleared, big combos). */
     banner(label, sub) { this.tableBanner.show(label, sub, 1500); }
 
     /** The table takes a knock (the board stepped down). */
-    knock() { CAVIAR.juice.restart(this.el.stage, 'cv-knock'); }
+    knock() { CAVIAR.juice.restart(this.el.table, 'cv-knock'); }
 
     setBest(best) {
       this.el.titleBest.textContent = pad(best, 5);
@@ -128,7 +128,7 @@ CM.UI = (function () {
       if (this.cache.alert !== h.alert) {
         this.cache.alert = h.alert;
         this.el.timeItem.classList.toggle('is-alert', h.alert);
-        this.el.stage.classList.toggle('cv-hurry', h.alert);   // the table frame breathes garnet
+        this.el.table.classList.toggle('cv-hurry', h.alert);   // the table frame breathes garnet
       }
     }
 
