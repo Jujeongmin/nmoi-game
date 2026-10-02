@@ -1,5 +1,7 @@
 /* CAVIAR MATCH — DOM UI: HUD, collection strip, title and result cards.
-   Knows nothing about rules — it is handed plain values. */
+   Knows nothing about rules — it is handed plain values.
+   Game feel comes from shared/cv-juice.js: cards unfold, the score rolls, the result counts up,
+   a new record is sealed, banners cross the table, the table takes a knock. */
 window.CM = window.CM || {};
 
 CM.UI = (function () {
@@ -45,7 +47,10 @@ CM.UI = (function () {
         resultScore: $('result-score'),
         resultBest: $('result-best'),
         resultNew: $('result-new'),
+        stage: $('stage'),
       };
+      this.scoreRoll = CAVIAR.juice.roller(this.el.score, 5);
+      this.tableBanner = CAVIAR.juice.banner(this.el.stage);
       this.cache = {};
       this.counts = cfg.types.map(() => 0);
       this.slots = [];
@@ -86,7 +91,15 @@ CM.UI = (function () {
     show(name) {
       this.el.title.classList.toggle('is-open', name === 'title');
       this.el.result.classList.toggle('is-open', name === 'result');
+      if (name === 'title') CAVIAR.juice.enter(this.el.title);
+      if (name !== 'game') { this.tableBanner.hide(); this.el.stage.classList.remove('cv-hurry'); }
     }
+
+    /** A gold-ruled band across the table (table cleared, big combos). */
+    banner(label, sub) { this.tableBanner.show(label, sub, 1500); }
+
+    /** The table takes a knock (the board stepped down). */
+    knock() { CAVIAR.juice.restart(this.el.stage, 'cv-knock'); }
 
     setBest(best) {
       this.el.titleBest.textContent = pad(best, 5);
@@ -103,19 +116,19 @@ CM.UI = (function () {
     setHud(h) {
       this._set('stage', this.el.stage, pad(h.stage, 2));
       this._set('time', this.el.time, pad(Math.ceil(h.time), 2));
-      this._set('score', this.el.score, pad(h.score, 5));
+      this.scoreRoll.set(h.score, h.live);   // rolls toward the score instead of jumping
       if (this.cache.combo !== h.combo) {
         const up = h.combo > (this.cache.combo || 0);
         this._set('combo', this.el.combo, String(h.combo));
         if (up && h.combo >= 2) {
-          this.el.comboItem.classList.remove('is-flash');
-          void this.el.comboItem.offsetWidth;
-          this.el.comboItem.classList.add('is-flash');
+          CAVIAR.juice.restart(this.el.comboItem, 'is-flash');
+          CAVIAR.juice.restart(this.el.combo, 'cv-pop');
         }
       }
       if (this.cache.alert !== h.alert) {
         this.cache.alert = h.alert;
         this.el.timeItem.classList.toggle('is-alert', h.alert);
+        this.el.stage.classList.toggle('cv-hurry', h.alert);   // the table frame breathes garnet
       }
     }
 
@@ -132,6 +145,7 @@ CM.UI = (function () {
       s.slot.classList.remove('is-bump');
       void s.slot.offsetWidth; // restart transition
       s.slot.classList.add('is-bump');
+      CAVIAR.juice.restart(s.count, 'cv-pop');
       clearTimeout(s.timer);
       s.timer = setTimeout(() => s.slot.classList.remove('is-bump'), 260);
     }
@@ -143,16 +157,20 @@ CM.UI = (function () {
       return { x: r.left + r.width / 2 - a.left, y: r.top + r.height / 2 - a.top, r: r.width / 2 };
     }
 
+    /** The score counts up from zero (same format as the other games); a new record is sealed. */
     showResult(d) {
       const e = this.el;
       e.resultTitle.textContent = d.reason === 'overflow' ? '게임 오버' : '시간 종료';
-      e.resultScore.textContent = pad(d.score, 5);   // same format as the other games
       e.resultBest.textContent = pad(d.best, 5);
-      e.resultNew.hidden = !d.newBest;
-
-
+      e.resultNew.hidden = true;
       this.setBest(d.best);
       this.show('result');
+      CAVIAR.juice.enter(e.result);
+      CAVIAR.juice.countUp(e.resultScore, d.score, 5).then(() => {
+        if (!d.newBest || !e.result.classList.contains('is-open')) return;
+        e.resultNew.hidden = false;
+        CAVIAR.juice.seal(e.result.querySelector('.cv-panel'));
+      });
     }
   }
 

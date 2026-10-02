@@ -1,6 +1,8 @@
 /* CAVIAR MATCH — collection effects on a canvas covering the whole app.
    Matched caviar glow softly in place, then glide along an arc into their
-   Collection slot. Nothing bursts, breaks or disappears. */
+   Collection slot. Nothing bursts, breaks or disappears: the caviar sheds a few
+   flakes of gold leaf as it glides, and a thin gold ring opens where it lands
+   (assets/menu, the campaign's menu ornaments). */
 window.CM = window.CM || {};
 
 CM.FxLayer = (function () {
@@ -11,6 +13,11 @@ CM.FxLayer = (function () {
   const FLY = 0.62;    // seconds gliding to the slot
 
   const easeInOut = (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
+  const art = (path) => { const i = new Image(); i.src = CAVIAR.url(path); return i; };
+  const LEAF = art('assets/menu/gold-leaf.webp');
+  const RING = art('assets/menu/ring.webp');
+  const ready = (img) => img.complete && img.naturalWidth > 0;
+  const MAX_BITS = 140;
   const easeOut = (t) => 1 - Math.pow(1 - t, 3);
 
   class FxLayer {
@@ -20,6 +27,7 @@ CM.FxLayer = (function () {
       this.ctx = canvas.getContext('2d');
       this.movers = [];
       this.texts = [];
+      this.bits = [];   // gold leaf and landing rings
       this.onArrive = null;
       this.dpr = 1;
       new ResizeObserver(() => this.resize()).observe(host);
@@ -39,6 +47,7 @@ CM.FxLayer = (function () {
     clear() {
       this.movers.length = 0;
       this.texts.length = 0;
+      this.bits.length = 0;
     }
 
     /** items: { type, sx, sy, tx, ty, r, tr, delay } in host CSS px. */
@@ -64,7 +73,12 @@ CM.FxLayer = (function () {
         m.t += dt;
         if (m.t >= GLOW + FLY) {
           this.movers.splice(i, 1);
+          this.bit({ kind: 'ring', x: m.tx, y: m.ty, size: m.tr * 2, grow: 2.2, life: 0.45 });
           if (this.onArrive) this.onArrive(m.type);
+        } else if (m.t > GLOW && Math.random() < dt * 16) {
+          const p = this.pos(m);
+          this.bit({ kind: 'leaf', x: p.x, y: p.y, vx: (Math.random() - 0.5) * 30, vy: 10 + Math.random() * 20,
+            size: 5 + Math.random() * 5, rot: Math.random() * TAU, vr: (Math.random() - 0.5) * 6, life: 0.7 + Math.random() * 0.4 });
         }
       }
       for (let i = this.texts.length - 1; i >= 0; i--) {
@@ -72,6 +86,27 @@ CM.FxLayer = (function () {
         t.t += dt;
         if (t.t >= t.dur) this.texts.splice(i, 1);
       }
+      for (let i = this.bits.length - 1; i >= 0; i--) {
+        const b = this.bits[i];
+        b.t += dt;
+        if (b.t >= b.life) { this.bits.splice(i, 1); continue; }
+        b.x += (b.vx || 0) * dt;
+        b.y += (b.vy || 0) * dt;
+        b.rot = (b.rot || 0) + (b.vr || 0) * dt;
+      }
+    }
+
+    bit(b) {
+      if (this.bits.length >= MAX_BITS) this.bits.shift();
+      b.t = 0;
+      this.bits.push(b);
+    }
+
+    /** Where a gliding mover is now (same curve as render). */
+    pos(m) {
+      const p = easeInOut(Math.min(1, (m.t - GLOW) / FLY));
+      const u = 1 - p;
+      return { x: u * u * m.sx + 2 * u * p * m.cx + p * p * m.tx, y: u * u * m.sy + 2 * u * p * m.cy + p * p * m.ty };
     }
 
     render() {
@@ -101,7 +136,25 @@ CM.FxLayer = (function () {
         CM.CaviarArt.draw(ctx, m.type, x, y, r, d);
       }
 
+      this.drawBits();
       for (const t of this.texts) this.drawText(t);
+    }
+
+    drawBits() {
+      const ctx = this.ctx;
+      for (const b of this.bits) {
+        const q = b.t / b.life;
+        const img = b.kind === 'ring' ? RING : LEAF;
+        if (!ready(img)) continue;
+        const s = b.kind === 'ring' ? b.size * (1 + (b.grow - 1) * easeOut(q)) : b.size;
+        const w = s, h = s * img.naturalHeight / img.naturalWidth;
+        ctx.save();
+        ctx.globalAlpha = b.kind === 'ring' ? 1 - q : (q > 0.6 ? (1 - q) / 0.4 : 1);
+        ctx.translate(b.x, b.y);
+        if (b.rot) ctx.rotate(b.rot);
+        ctx.drawImage(img, -w / 2, -h / 2, w, h);
+        ctx.restore();
+      }
     }
 
     drawHalo(x, y, r, k) {

@@ -755,3 +755,134 @@ html.cv-has-footer .cv-app, html.cv-has-footer .lp-app, html.cv-has-footer .pg-a
 }
 html.cv-has-footer .cv-app { padding-bottom: 10px; }
 html.cv-has-footer .lp-app { padding-bottom: 0; }
+
+/* ---------- Juice (cv-juice.js): motion inside the menu-card look ---------- */
+
+/* Cards: the menu card unfolds, then its lines rise one after another. */
+.cv-panel.is-entering { animation: cv-unfold 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+.cv-panel.is-entering > * { animation: cv-rise 0.45s cubic-bezier(0.2, 0.8, 0.2, 1) both; animation-delay: calc(0.18s + var(--i, 0) * 0.06s); }
+.cv-panel.is-entering > .cv-seal { animation: none; }
+@keyframes cv-unfold {
+  0% { clip-path: inset(49% 0 49% 0); transform: scale(0.96); }
+  60% { clip-path: inset(0 0 0 0); }
+  100% { clip-path: inset(0 0 0 0); transform: none; }
+}
+@keyframes cv-rise {
+  0% { opacity: 0; transform: translateY(10px); }
+  100% { opacity: 1; transform: none; }
+}
+
+/* The primary button on a card: a light passes over the plate now and then. */
+.cv-overlay .cv-btn--primary { position: relative; overflow: hidden; }
+.cv-overlay .cv-btn--primary::after {
+  content: "";
+  position: absolute;
+  top: 0; bottom: 0;
+  left: -60%;
+  width: 45%;
+  background: linear-gradient(100deg, transparent, rgba(255, 236, 190, 0.35), transparent);
+  animation: cv-sheen 3.2s ease-in-out 1s infinite;
+  pointer-events: none;
+}
+@keyframes cv-sheen {
+  0%, 55% { left: -60%; }
+  85%, 100% { left: 120%; }
+}
+
+/* A new record: the wax seal (assets/menu/seal.webp) is pressed onto the card, which gives a thud. */
+.cv-seal {
+  position: absolute;
+  right: 10px;
+  top: 8px;
+  width: 62px;
+  height: auto;
+  pointer-events: none;
+  filter: drop-shadow(0 3px 4px rgba(60, 20, 10, 0.35));
+}
+.cv-seal.is-stamped { animation: cv-stamp 0.42s cubic-bezier(0.3, 1.4, 0.5, 1) both; }
+@keyframes cv-stamp {
+  0% { opacity: 0; transform: scale(2.6) rotate(-24deg); }
+  60% { opacity: 1; transform: scale(0.92) rotate(-8deg); }
+  100% { opacity: 1; transform: scale(1) rotate(-10deg); }
+}
+.is-thud { animation: cv-thud 0.35s ease-out 0.22s; }
+@keyframes cv-thud {
+  0% { transform: none; }
+  30% { transform: translateY(3px) scale(0.995); }
+  100% { transform: none; }
+}
+
+/* A number that just went up (HUD score, combo, a collection count). */
+.cv-pop { display: inline-block; animation: cv-pop 0.35s cubic-bezier(0.2, 1.6, 0.4, 1); }
+@keyframes cv-pop {
+  0% { transform: scale(1); }
+  40% { transform: scale(1.28); color: var(--cv-gold-bright); }
+  100% { transform: scale(1); }
+}
+
+/* Banner across a stage: an onyx band, gold hairlines, Cinzel label, the menu divider under it.
+   Every animation ends visible (reduce motion skips to the end); cv-juice.js folds it away. */
+.cv-banner {
+  position: absolute;
+  left: 0; right: 0;
+  top: 24%;
+  z-index: 5;
+  padding: 14px 0 12px;
+  text-align: center;
+  pointer-events: none;
+  opacity: 0;
+  background: linear-gradient(90deg, transparent, rgba(8, 8, 8, 0.82) 16%, rgba(8, 8, 8, 0.82) 84%, transparent);
+  border-top: 1px solid var(--cv-line);
+  border-bottom: 1px solid var(--cv-line);
+  overflow: hidden;
+}
+.cv-banner__label {
+  display: block;
+  font: 400 30px/1.05 var(--cv-font-display);
+  letter-spacing: 0.16em;
+  text-indent: 0.16em;
+  color: var(--cv-gold-bright);
+  text-shadow: 0 0 16px rgba(226, 204, 152, 0.5);
+}
+.cv-banner__rule { display: block; width: 150px; height: auto; margin: 6px auto 4px; }
+.cv-banner__sub {
+  display: block;
+  font: 500 13px/1.3 var(--cv-font-ui);
+  letter-spacing: 0.06em;
+  color: var(--cv-ivory);
+}
+.cv-banner__line {
+  position: absolute;
+  top: 0; bottom: 0;
+  left: -40%;
+  width: 40%;
+  background: linear-gradient(90deg, transparent, rgba(255, 236, 190, 0.28), transparent);
+}
+.cv-banner.is-shown { opacity: 1; animation: cv-banner 0.3s ease-out; }
+.cv-banner.is-shown .cv-banner__label { animation: cv-banner-in 0.5s cubic-bezier(0.2, 0.9, 0.3, 1) backwards; }
+.cv-banner.is-shown .cv-banner__rule { animation: cv-rule-in 0.6s ease-out 0.05s backwards; }
+.cv-banner.is-shown .cv-banner__sub { animation: cv-banner-in 0.5s cubic-bezier(0.2, 0.9, 0.3, 1) 0.1s backwards; }
+.cv-banner.is-shown .cv-banner__line { animation: cv-banner-sweep 0.9s ease-in-out 0.1s; }
+.cv-banner.is-leaving { opacity: 0; transform: scaleY(0.6); transition: opacity 0.35s ease, transform 0.35s ease; }
+.cv-banner.is-leaving .cv-banner__label, .cv-banner.is-leaving .cv-banner__sub { transform: translateX(60px); transition: transform 0.35s ease-in; }
+@keyframes cv-banner { 0% { opacity: 0; transform: scaleY(0.1); } 100% { opacity: 1; transform: none; } }
+@keyframes cv-banner-in { 0% { opacity: 0; transform: translateX(-60px); } 100% { opacity: 1; transform: none; } }
+@keyframes cv-rule-in { 0% { opacity: 0; transform: scaleX(0.1); } 100% { opacity: 1; transform: none; } }
+@keyframes cv-banner-sweep { 0% { left: -40%; } 100% { left: 100%; } }
+
+/* A stage that takes a knock (a wrong pick, the board stepping down). */
+.cv-knock { animation: cv-knock 0.32s linear; }
+@keyframes cv-knock {
+  0%, 100% { transform: none; }
+  20% { transform: translate(-4px, 1px); }
+  40% { transform: translate(3px, -2px); }
+  60% { transform: translate(-2px, 1px); }
+  80% { transform: translate(1px, 0); }
+}
+
+/* The last seconds: the stage frame breathes garnet. */
+.cv-hurry { animation: cv-hurry 0.9s ease-in-out infinite; }
+@keyframes cv-hurry {
+  0%, 100% { box-shadow: inset 0 0 0 1px var(--cv-line); }
+  50% { box-shadow: inset 0 0 0 1px var(--cv-garnet), inset 0 0 24px rgba(154, 65, 54, 0.45); }
+}

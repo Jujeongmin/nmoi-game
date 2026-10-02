@@ -21,6 +21,7 @@ ROOT = Path(__file__).resolve().parent.parent
 GEN = ROOT / "assets" / "source" / "gen"
 OUT_BG = ROOT / "assets" / "escape" / "bg"
 OUT_FX = ROOT / "assets" / "escape" / "fx"
+OUT_MENU = ROOT / "assets" / "menu"     # menu-card ornaments shared by all games
 
 # Faint alpha noise around glows (the generator leaves coloured specks) is cut below this.
 ALPHA_FLOOR = 28
@@ -103,7 +104,8 @@ def _menu():
     cw, ch = sheet.width // 4, sheet.height // 2
     for i, name in enumerate(MENU_GRID):
         cell = sheet.crop(((i % 4) * cw, (i // 4) * ch, (i % 4 + 1) * cw, (i // 4 + 1) * ch))
-        save(fit(trim(cell), MENU_SIZE.get(name, 128)), OUT_FX / f"{name}.webp")
+        out = OUT_MENU if name in ("seal", "divider", "gold-leaf", "ring") else OUT_FX   # shared by every game
+        save(fit(trim(cell), MENU_SIZE.get(name, 128)), out / f"{name}.webp")
 
 
 if __name__ == "__main__":

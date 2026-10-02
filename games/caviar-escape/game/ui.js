@@ -1,8 +1,8 @@
 /* CAVIAR ESCAPE — DOM UI: HUD, callouts, title card, result card.
    Only reads game state; user actions are reported through on(name, fn).
-   The look is the campaign's menu card (cv-theme.css); what makes it feel like a game is motion:
-   cards unfold and their lines rise in turn, the score rolls, the result counts up and a new
-   record is sealed with a wax stamp. */
+   The look is the campaign's menu card (cv-theme.css); what makes it feel like a game is motion
+   (shared/cv-juice.js): cards unfold and their lines rise in turn, the score rolls, the result
+   counts up and a new record is sealed with a wax stamp. */
 (function (NS) {
   'use strict';
 
@@ -34,9 +34,6 @@
       best: $('hud-best'),
       lives: Array.prototype.slice.call(document.querySelectorAll('#hud-lives .cv-pearl')),
       callout: $('callout'),
-      banner: $('banner'),
-      bannerLabel: $('banner-label'),
-      bannerSub: $('banner-sub'),
       combo: $('combo'),
       comboMult: $('combo-mult'),
       comboBar: $('combo-bar'),
@@ -56,12 +53,8 @@
 
     var self = this;
     this.el.stageNum.textContent = pad(config.stage, 2);
-    this.shownScore = 0;
-    this.lastFrame = 0;
-    this.seal = new Image();   // the wax seal for a new record (preloaded, stamped on the result card)
-    this.seal.className = 'ce-seal';
-    this.seal.alt = '';
-    this.seal.src = assetRoot + 'assets/escape/fx/seal.webp';
+    this.scoreRoll = NS.juice.roller(this.el.score, 5);
+    this.waveBanner = NS.juice.banner(this.el.stage);
     this.el.btnStart.addEventListener('click', function () { self._fire('start'); });
     this.el.btnRetry.addEventListener('click', function () { self._fire('retry'); });
     this.el.btnBack.addEventListener('click', function () { self._fire('back'); });
@@ -118,13 +111,7 @@
 
     this._set('time', el.time, pad(t, 2));
 
-    // The score rolls toward its value instead of jumping.
-    var now = performance.now(), dt = Math.min(0.1, (now - (this.lastFrame || now)) / 1000);
-    this.lastFrame = now;
-    var target = game.getScore();
-    if (target < this.shownScore || !playing) this.shownScore = target;
-    else this.shownScore = Math.min(target, this.shownScore + (target - this.shownScore) * Math.min(1, dt * 9) + 0.5);
-    this._set('score', el.score, pad(this.shownScore, 5));
+    this.scoreRoll.set(game.getScore(), playing);   // rolls toward the score instead of jumping
     this._set('best', el.best, pad(best, 5));
 
     var low = playing && t <= 5;
@@ -187,27 +174,12 @@
   /* ---------- feedback ---------- */
   P.bonusFeedback = function () {
     restartClass(this.el.scoreItem, 'is-flash');
-    restartClass(this.el.score, 'is-pop');
+    restartClass(this.el.score, 'cv-pop');
   };
 
-  /* Wave banner: a band across the stage with gold hairlines above and below; a light sweeps
-     across it and the label and the line under it slide in and out. */
-  P.banner = function (label, sub) {
-    var el = this.el, b = el.banner, self = this;
-    this.hideBanner();
-    el.bannerLabel.textContent = label;
-    el.bannerSub.textContent = sub || '';
-    restartClass(b, 'is-shown');
-    this.bannerTimers = [
-      setTimeout(function () { b.classList.add('is-leaving'); }, 1800),
-      setTimeout(function () { self.hideBanner(); }, 2200)
-    ];
-  };
-  P.hideBanner = function () {
-    (this.bannerTimers || []).forEach(clearTimeout);
-    this.bannerTimers = null;
-    this.el.banner.classList.remove('is-shown', 'is-leaving');
-  };
+  /* Wave banner (shared): a gold-ruled band across the stage. */
+  P.banner = function (label, sub) { this.waveBanner.show(label, sub, 1800); };
+  P.hideBanner = function () { this.waveBanner.hide(); };
 
   /* ---------- screens ---------- */
   P.showTitle = function (best) {
@@ -215,17 +187,8 @@
     this.el.titleBest.textContent = pad(best, 5);
     this.el.result.classList.remove('is-open');
     this.el.title.classList.add('is-open');
-    this._enter(this.el.title);
+    NS.juice.enter(this.el.title);
     this._focusLater(this.el.btnStart);
-  };
-
-  /* A card unfolds like a menu being opened, then its lines rise one after another. */
-  P._enter = function (overlay) {
-    var panel = overlay.querySelector('.cv-panel');
-    if (!panel) return;
-    var kids = panel.children;
-    for (var i = 0; i < kids.length; i++) kids[i].style.setProperty('--i', i);
-    restartClass(panel, 'is-entering');
   };
 
   P.hideScreens = function () {
@@ -238,40 +201,20 @@
   /* data: { result, score, best, isNewBest, survived, closeCalls, lifeBonus }
      The score counts up from zero; a new record is then sealed with the wax stamp. */
   P.showResult = function (d) {
-    var el = this.el, success = d.result === 'clear', self = this;
-    el.resultTitle.textContent = success ? '성공' : '게임 오버';
+    var el = this.el;
+    el.resultTitle.textContent = d.result === 'clear' ? '성공' : '게임 오버';
     el.resultBest.textContent = pad(d.best, 5);
     el.resultNew.hidden = true;
-    if (this.seal.parentNode) this.seal.parentNode.removeChild(this.seal);
 
     el.title.classList.remove('is-open');
     el.result.classList.add('is-open');
-    this._enter(el.result);
+    NS.juice.enter(el.result);
     this._focusLater(el.btnRetry);
-
-    var calm = NS.settings && NS.settings.reduceMotion && NS.settings.reduceMotion();
-    var dur = calm ? 0 : Math.min(1400, 500 + d.score / 12), start = 0, ticked = 0;
-    cancelAnimationFrame(this.countRaf);
-    function done() {
-      el.resultScore.textContent = pad(d.score, 5);
-      if (!d.isNewBest) return;
+    NS.juice.countUp(el.resultScore, d.score, 5).then(function () {
+      if (!d.isNewBest || !el.result.classList.contains('is-open')) return;
       el.resultNew.hidden = false;
-      var panel = el.result.querySelector('.cv-panel');
-      panel.appendChild(self.seal);
-      restartClass(self.seal, 'is-stamped');
-      restartClass(panel, 'is-thud');
-      if (NS.sound) NS.sound.play('drop');
-    }
-    if (!dur) { done(); return; }
-    function step(now) {
-      if (!start) start = now;
-      var q = Math.min(1, (now - start) / dur), e = 1 - Math.pow(1 - q, 3);
-      el.resultScore.textContent = pad(d.score * e, 5);
-      if (NS.sound && now - ticked > 70 && q < 1) { ticked = now; NS.sound.play('tap'); }
-      if (q < 1) self.countRaf = requestAnimationFrame(step); else done();
-    }
-    el.resultScore.textContent = pad(0, 5);
-    this.countRaf = requestAnimationFrame(step);
+      NS.juice.seal(el.result.querySelector('.cv-panel'));
+    });
   };
 
   // Focus for keyboard players (Enter / Space) without flashing a ring on touch.

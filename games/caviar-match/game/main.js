@@ -50,11 +50,12 @@
       }));
       const o = view.worldToHost(d.x, d.y, app);
       fx.text('+' + d.points, o.x, o.y - 8, 'score');
-      if (d.combo >= 2) fx.text('콤보 ' + d.combo, o.x, o.y - 34, 'label');
+      if (d.combo >= 2) fx.text(CAVIAR.t('콤보 {n}', { n: d.combo }), o.x, o.y - 34, 'label');
+      if (d.combo >= 3 && d.combo % 2 === 1) ui.banner('COMBO \u00d7' + d.combo, '+' + d.points);   // 3, 5, 7 ...
     } else if (type === 'stageClear') {
-      const o = view.worldToHost(game.W / 2, game.deathY * 0.6, app);
-      fx.text('테이블 클리어', o.x, o.y - 26, 'label');
-      fx.text('+' + d.bonus, o.x, o.y, 'score');
+      ui.banner('TABLE CLEARED', CAVIAR.t('테이블 클리어') + ' · +' + d.bonus);
+    } else if (type === 'drop') {
+      ui.knock();
     } else if (type === 'end') {
       aim.down = false;
       scheduleResult(d);
@@ -169,6 +170,7 @@
     fx.render();
 
     ui.setHud({
+      live: game.state === 'playing',
       stage: game.stage,
       time: game.time,
       score: game.score,

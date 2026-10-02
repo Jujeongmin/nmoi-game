@@ -1,5 +1,8 @@
 /* CAVIAR MASTER CHEF — DOM UI: HUD, order ticket, plate, controls, title/result cards.
-   Only reads game state and events; user actions are reported through on(name, fn). */
+   Only reads game state and events; user actions are reported through on(name, fn).
+   Game feel comes from shared/cv-juice.js: cards unfold, the score rolls, every ingredient lands
+   with a few flakes of gold leaf, a perfect order is pressed with the chef's wax seal, a wrong pick
+   knocks the pass, the result counts up. */
 (function (NS) {
   'use strict';
 
@@ -60,7 +63,7 @@
       plateItems: $('plate-items'),
       signature: $('signature'),
       sigDish: $('sig-dish'),
-      banner: $('banner'),
+      stage: $('stage'),
       fx: $('fx'),
       callout: $('callout'),
       ingredientRow: $('ingredient-row'),
@@ -72,6 +75,10 @@
       resultBest: $('result-best'),
       resultNew: $('result-new')
     };
+
+    this.scoreRoll = NS.juice.roller(this.el.score, 5);
+    this.orderBanner = NS.juice.banner(this.el.stage);
+    this.leaf = NS.url('assets/menu/gold-leaf.webp');
 
     var self = this;
     config.ingredients.forEach(function (item) {
@@ -117,6 +124,7 @@
     this.el.titleBest.textContent = pad(best, 5);
     this.el.result.classList.remove('is-open');
     this.el.title.classList.add('is-open');
+    NS.juice.enter(this.el.title);
     this.setLocked(true);
   };
 
@@ -124,15 +132,23 @@
     this.el.title.classList.remove('is-open');
     this.el.result.classList.remove('is-open');
     this.el.callout.classList.remove('is-shown');
+    this.el.stage.classList.remove('cv-hurry');
+    this.orderBanner.hide();
   };
 
+  /* The score counts up from zero; a new record is sealed. */
   P.showResult = function (d) {
     var el = this.el;
-    el.resultScore.textContent = pad(d.score, 5);
     el.resultBest.textContent = pad(d.best, 5);
-    el.resultNew.hidden = !d.isNewBest;
+    el.resultNew.hidden = true;
     el.title.classList.remove('is-open');
     el.result.classList.add('is-open');
+    NS.juice.enter(el.result);
+    NS.juice.countUp(el.resultScore, d.score, 5).then(function () {
+      if (!d.isNewBest || !el.result.classList.contains('is-open')) return;
+      el.resultNew.hidden = false;
+      NS.juice.seal(el.result.querySelector('.cv-panel'));
+    });
   };
 
   P.setLocked = function (locked) { this.el.app.classList.toggle('is-locked', locked); };
@@ -144,11 +160,17 @@
     if (c.time !== t) {
       c.time = t;
       el.time.textContent = pad(t, 2);
-      el.timeItem.classList.toggle('is-alert', t <= 10 && game.phase !== 'idle');
+      var hurry = t <= 10 && game.phase !== 'idle' && game.phase !== 'over';
+      el.timeItem.classList.toggle('is-alert', hurry);
+      el.stage.classList.toggle('cv-hurry', hurry);   // the pass frame breathes garnet
     }
-    if (c.score !== game.score) { c.score = game.score; el.score.textContent = pad(game.score, 5); }
+    this.scoreRoll.set(game.score, game.phase !== 'idle' && game.phase !== 'over');
     if (c.order !== game.orderNo) { c.order = game.orderNo; el.order.textContent = pad(Math.max(1, game.orderNo), 2); }
-    if (c.combo !== game.combo) { c.combo = game.combo; el.combo.textContent = game.combo; }
+    if (c.combo !== game.combo) {
+      if (game.combo > (c.combo || 0) && game.combo >= 2) NS.juice.restart(el.combo, 'cv-pop');
+      c.combo = game.combo;
+      el.combo.textContent = game.combo;
+    }
     if (c.best !== best) { c.best = best; el.best.textContent = pad(best, 5); }
   };
 
@@ -159,6 +181,24 @@
     btn.classList.add(cls);
     clearTimeout(btn._t);
     btn._t = setTimeout(function () { btn.classList.remove(cls); }, 320);
+  };
+
+  /* A few flakes of gold leaf drift off the plate where something landed (x, y in % of the plate). */
+  P._leaf = function (x, y, n) {
+    for (var i = 0; i < n; i++) {
+      var f = document.createElement('img');
+      f.className = 'cm-leaf';
+      f.src = this.leaf;
+      f.alt = '';
+      f.style.left = x + '%';
+      f.style.top = y + '%';
+      f.style.setProperty('--dx', (Math.random() * 60 - 30) + 'px');
+      f.style.setProperty('--dy', (Math.random() * 30 + 18) + 'px');
+      f.style.setProperty('--r', (Math.random() * 300 - 150) + 'deg');
+      f.style.animationDelay = (i * 40) + 'ms';
+      this.el.plate.appendChild(f);
+      setTimeout(function (node) { node.remove(); }.bind(null, f), 1000 + i * 40);
+    }
   };
 
   P._float = function (text, bad) {
@@ -210,8 +250,10 @@
     el.plateItems.replaceChildren();
     el.sigDish.replaceChildren();
     el.signature.classList.remove('is-set');
-    el.plate.classList.remove('is-complete');
-    el.banner.classList.remove('is-shown');
+    el.plate.classList.remove('is-complete', 'is-thud');
+    var seal = el.plate.querySelector('.cv-seal');
+    if (seal) seal.remove();
+    this.orderBanner.hide();
   };
 
   P._placeCaviar = function (cav) {
@@ -265,24 +307,26 @@
           f.style.setProperty('--y', slot[1] + '%');
           f.style.zIndex = ev.index + 1;
           el.plateItems.appendChild(f);
+          this._leaf(slot[0], slot[1], 3);
         } else {
           this._placeCaviar(this.byId.caviar[ev.id]);
+          this._leaf(78, 74, 4);
         }
         break;
 
       case 'wrong':
         this._flashButton(this.buttons[ev.kind][ev.id], 'is-bad');
         restartClass(el.ticket, 'is-shake');
+        NS.juice.restart(el.stage, 'cv-knock');
         this._float('−' + ev.penalty + '초', true);
         break;
 
       case 'complete':
         el.ticketStatus.textContent = '서빙 완료';
         restartClass(el.plate, 'is-complete');
-        el.banner.innerHTML = ev.perfect
-          ? '<strong>Perfect <em>Order</em></strong><span>+' + ev.gained + (ev.combo > 1 ? ' · 콤보 ' + ev.combo : '') + '</span>'
-          : '<strong>Order <em>Complete</em></strong><span>+' + ev.gained + '</span>';
-        restartClass(el.banner, 'is-shown');
+        this.orderBanner.show(ev.perfect ? 'PERFECT ORDER' : 'ORDER COMPLETE',
+          '+' + ev.gained + (ev.combo > 1 ? ' · ' + NS.t('콤보 {n}', { n: ev.combo }) : ''), 1100);
+        if (ev.perfect) NS.juice.seal(el.plate);   // the chef's seal on a perfect plate
         var items = el.plateItems;
         this.serveTimer = setTimeout(function () { items.classList.add('is-serving'); }, 650);
         break;

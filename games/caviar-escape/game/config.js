@@ -91,7 +91,7 @@
       pearl: '../../assets/escape/fx/pearl.webp',
       twinkle: '../../assets/escape/fx/twinkle.webp',
       bubble: '../../assets/escape/fx/bubble.webp',
-      ring: '../../assets/escape/fx/ring.webp',
+      ring: '../../assets/menu/ring.webp',
       glow: '../../assets/escape/fx/glow.webp',
       warn: '../../assets/escape/fx/warn.webp',
       reticle: '../../assets/escape/fx/reticle.webp',
@@ -99,7 +99,7 @@
       confetti: '../../assets/escape/fx/confetti.webp',
       'pearl-burst': '../../assets/escape/fx/pearl-burst.webp',
       sparks: '../../assets/escape/fx/sparks.webp',
-      'gold-leaf': '../../assets/escape/fx/gold-leaf.webp'
+      'gold-leaf': '../../assets/menu/gold-leaf.webp'
     }
   };
 })(window.CAVIAR = window.CAVIAR || {});
