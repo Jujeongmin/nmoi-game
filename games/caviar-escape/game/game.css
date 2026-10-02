@@ -83,6 +83,9 @@
   transition: opacity 0.25s ease;
 }
 .ce-combo.is-on { opacity: 1; }
+/* The member's bubble also sits at the top centre: while it is up, the combo steps below it. */
+.ce-combo { transition: opacity 0.25s ease, top 0.25s ease; }
+.ce-stage:has(.cv-talk.is-on) .ce-combo { top: 78px; }
 .ce-combo__mult {
   font: 400 26px/1 var(--cv-font-display);
   color: var(--cv-ivory);
