@@ -34,6 +34,7 @@
     shark: {
       length: 58,
       radius: 11,
+      size: 0.82,          // the hunting shark (length and radius x size; dash and pack have their own size)
       baseSpeed: 86,
       speedGain: 2.7,      // + units/s per second elapsed
       turnRate: 1.75,      // rad/s — limited turning is what makes dodging possible
@@ -91,14 +92,14 @@
       twinkle: '../../assets/escape/fx/twinkle.webp',
       bubble: '../../assets/escape/fx/bubble.webp',
       ring: '../../assets/escape/fx/ring.webp',
-      impact: '../../assets/escape/fx/impact.webp',
       glow: '../../assets/escape/fx/glow.webp',
       warn: '../../assets/escape/fx/warn.webp',
       reticle: '../../assets/escape/fx/reticle.webp',
       chevron: '../../assets/escape/fx/chevron.webp',
       confetti: '../../assets/escape/fx/confetti.webp',
       'pearl-burst': '../../assets/escape/fx/pearl-burst.webp',
-      badge: '../../assets/escape/fx/badge.webp'
+      sparks: '../../assets/escape/fx/sparks.webp',
+      'gold-leaf': '../../assets/escape/fx/gold-leaf.webp'
     }
   };
 })(window.CAVIAR = window.CAVIAR || {});

@@ -32,7 +32,6 @@
     this.time = 0;
     this.motes = [];
     this.deco = [];
-    this.comboPop = 0;
     this.tints = {};
 
     this.col = {
@@ -154,7 +153,7 @@
 
   /* ---------- effects requested by main.js ---------- */
 
-  P.clearEffects = function () { this.fx.clear(); this.comboPop = 0; };
+  P.clearEffects = function () { this.fx.clear(); };
 
   /* One place that turns game events into motion. */
   P.event = function (ev, game) {
@@ -166,7 +165,7 @@
         fx.punch(0.05);
         break;
       case 'hit':
-        fx.pop(ev.x, ev.y, 'impact', 64, 0.4);
+        fx.pop(ev.x, ev.y, 'sparks', 74, 0.45);
         fx.sparks(ev.x, ev.y, 6, 150);
         fx.shake(7, 0.38);
         fx.flash('#ff3b2a', 0.32, 0.28);
@@ -180,11 +179,11 @@
         break;
       case 'pickup':
         fx.pop(ev.x, ev.y, 'pearl-burst', 46, 0.45);
+        fx.sparks(ev.x, ev.y, 3, 90, 'gold-leaf');
         fx.sparks(ev.x, ev.y, 5, 100);
         fx.text(ev.x, ev.y - 20, '+' + ev.amount + (ev.mult > 1 ? ' x' + ev.mult : ''), col.goldBright, 13, 0.9);
         break;
       case 'combo':
-        this.comboPop = 1;
         fx.ring(p.x, p.y, 64, 0.5);
         fx.pop(p.x, p.y, 'glow', 90, 0.45);
         fx.punch(0.04);
@@ -217,7 +216,6 @@
     var ctx = this.ctx, dpr = this.dpr, s = this.scale;
     this.time += dt;
     this.fx.update(dt);
-    if (this.comboPop > 0) this.comboPop = Math.max(0, this.comboPop - dt * 3);
 
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     if (this.base) ctx.drawImage(this.base, 0, 0);
@@ -243,7 +241,6 @@
     fx.drawFlash(ctx, this.canvas.width, this.canvas.height);
 
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    this._drawCombo(game);
     this._drawStick(input);
   };
 
@@ -365,12 +362,12 @@
     var blink = locked ? (Math.floor(t * 20) % 2 ? 1 : 0.6) : 0.7 + 0.3 * Math.sin(t * 18);
     var cx = Math.cos(s.heading), cy = Math.sin(s.heading);
     var gap = 24, shift = (t * 90) % gap;
-    var chev = this._sprite('chevron');
+    var chev = this._tinted('chevron', '#ff6a55');   // the gold line-art arrow in danger red
     for (var d = 26 + shift; d < len; d += gap) {
       this._spr(chev, s.x + cx * d, s.y + cy * d, locked ? 19 : 14, s.heading, blink * (locked ? 0.95 : 0.7));
     }
     var r = 44 - (1 - Math.min(1, s.t / this.cfg.dash.aimTime)) * 16;   // closes in as the charge nears
-    this._spr(this._sprite('reticle'), s.tx, s.ty, r, t * 2.5, blink);
+    this._spr(this._tinted('reticle', '#ff6a55'), s.tx, s.ty, r, t * 2.5, blink);
     this._edgeMarker(clamp(s.x, 16, this.W - 16), clamp(s.y, 16, this.H - 16), s.heading, '');
     this.ctx.globalAlpha = 1;
   };
@@ -550,29 +547,6 @@
       ctx.fillRect(0, 0, w, h);
     }
     ctx.globalAlpha = 1;
-  };
-
-  /* "x3 COMBO" on the gold badge at the top of the stage; the badge blinks as the chain runs out. */
-  P._drawCombo = function (game) {
-    if (game.phase !== 'play' || game.combo < 2) return;
-    var ctx = this.ctx, x = this.cssW / 2, y = 32;
-    if (game.comboLeft() < 0.3 && Math.floor(this.time * 10) % 2) return;
-    var big = game.mult >= 2;
-    var pop = 1 + this.comboPop * this.comboPop * 0.6;
-    var badge = this._sprite('badge');
-    ctx.save();
-    ctx.translate(x, y);
-    ctx.scale(pop, pop);
-    if (badge) {
-      var bw = big ? 150 : 112, bh = bw * badge.naturalHeight / badge.naturalWidth;
-      ctx.drawImage(badge, -bw / 2, -bh / 2, bw, bh);
-    }
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.font = '800 ' + (big ? 19 : 13) + 'px ' + this.uiFont;
-    ctx.fillStyle = big ? '#ffe7a8' : this.col.goldBright;
-    ctx.fillText(big ? 'x' + game.mult + ' COMBO' : game.combo + ' COMBO', 0, 1);
-    ctx.restore();
   };
 
   /* Drag stick feedback, drawn in CSS pixels at the touch origin: the gold ring and a pearl knob. */

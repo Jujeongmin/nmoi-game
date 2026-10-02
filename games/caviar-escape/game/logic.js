@@ -253,7 +253,7 @@
   P._spawnShark = function () {
     var c = this.cfg.shark, p = this.player;
     var e = this._edgePoint(c.length * 0.6, Math.min(this.W, this.H) * 0.5);
-    var s = this._newShark('hunt', e.x, e.y, Math.atan2(p.y - e.y, p.x - e.x), 1);
+    var s = this._newShark('hunt', e.x, e.y, Math.atan2(p.y - e.y, p.x - e.x), c.size);
     s.t = c.warnTime;
     s.track = rand(c.trackTime[0], c.trackTime[1]);
     this.sharks.push(s);
@@ -414,7 +414,7 @@
     }
 
     // Light separation between hunting sharks so stacked sharks don't read as one.
-    var minD = c.radius * 2.4;
+    var minD = c.radius * c.size * 2.4;
     for (var a = 0; a < list.length; a++) {
       if (list[a].kind !== 'hunt' || list[a].mode === 'warn') continue;
       for (var b = a + 1; b < list.length; b++) {

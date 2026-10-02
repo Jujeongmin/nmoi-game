@@ -68,7 +68,7 @@
     this._add({ key: key || 'ring', x: x, y: y, life: life || 0.55, size: 14, grow: (radius || 40) * 2 / 14, ring: true });
   };
 
-  /* One sprite that pops in (overshoot), holds, and fades: impact, pearl burst, glow ... */
+  /* One sprite that pops in (overshoot), holds, and fades: sparks, pearl burst, glow ... */
   P.pop = function (x, y, key, size, life, opts) {
     var p = { key: key, x: x, y: y, life: life || 0.45, size: size || 48, grow: 1.15, pop: true, rot: rand(-0.3, 0.3) };
     if (opts) for (var k in opts) p[k] = opts[k];

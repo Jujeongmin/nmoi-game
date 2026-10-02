@@ -1,12 +1,13 @@
 """Cut the generated Caviar Escape art (assets/source/gen/escape-*) into game WebPs.
 
-    python tools/make-escape-art.py [bg] [fx] [ui]     (default: all)
+    python tools/make-escape-art.py [bg] [fx] [menu]     (default: all)
 
 The raw sheets come from GPT image generation (codex exec, see docs/art-style.md):
   escape-bg/base.png     the background without kelp, rays or bubbles
   escape-bg/layers.png   3 columns: left kelp · light rays · right kelp (transparent)
   escape-fx/sheet-fx.png 4 x 3 grid of effect sprites (transparent)
-  escape-fx/sheet-ui.png banner / badge / medallion / 3 2 1 GO! (transparent, free layout)
+  escape-fx/sheet-menu.png 4 x 2 grid of menu-card ornaments in the campaign's look (thin gold line
+                         art, garnet, wax seal) — they replace the glossy pieces of the first sheet
 
 Writes assets/escape/bg/*.webp and assets/escape/fx/*.webp. Needs Pillow and numpy.
 """
@@ -24,22 +25,16 @@ OUT_FX = ROOT / "assets" / "escape" / "fx"
 # Faint alpha noise around glows (the generator leaves coloured specks) is cut below this.
 ALPHA_FLOOR = 28
 
-FX_GRID = ["pearl", "twinkle", "bubble", "ring",
-           "impact", None, "glow", "warn",          # None: drawn but not used (the shield was cut)
-           "reticle", "chevron", "confetti", "pearl-burst"]
-FX_SIZE = {"ring": 256, "glow": 192, "impact": 192}   # longest side; default 128
+# None: on the sheet but not used (glossy casual-game pieces replaced by sheet-menu, the shield was cut).
+FX_GRID = ["pearl", "twinkle", "bubble", None,
+           None, None, "glow", None,
+           None, None, "confetti", "pearl-burst"]
+FX_SIZE = {"glow": 192}   # longest side; default 128
 
-# sheet-ui.png pieces (left, top, right, bottom) — the generated layout is fixed, the islands touch.
-UI_BOXES = {
-    "banner": (20, 10, 1004, 232),
-    "badge": (70, 250, 650, 456),
-    "medallion": (652, 210, 956, 520),
-    "n3": (236, 508, 448, 756),
-    "n2": (572, 508, 796, 756),
-    "n1": (186, 764, 384, 1004),
-    "go": (416, 764, 912, 1004),
-}
-UI_SIZE = {"banner": 720, "badge": 360, "medallion": 192, "go": 360}   # default 240
+MENU_GRID = ["warn", "chevron", "reticle", "seal",
+             "sparks", "gold-leaf", "divider", "ring"]
+MENU_SIZE = {"seal": 192, "divider": 360, "ring": 256, "sparks": 192}
+
 
 
 def clean(im):
@@ -77,8 +72,8 @@ def main(parts):
         _bg()
     if "fx" in parts:
         _fx()
-    if "ui" in parts:
-        _ui()
+    if "menu" in parts:
+        _menu()
 
 
 def _bg():
@@ -103,13 +98,13 @@ def _fx():
         save(fit(trim(cell), FX_SIZE.get(name, 128)), OUT_FX / f"{name}.webp")
 
 
-def _ui():
-    ui_path = GEN / "escape-fx" / "sheet-ui.png"
-    if ui_path.exists():
-        ui = clean(Image.open(ui_path))
-        for name, box in UI_BOXES.items():
-            save(fit(trim(ui.crop(box)), UI_SIZE.get(name, 240)), OUT_FX / f"{name}.webp")
+def _menu():
+    sheet = clean(Image.open(GEN / "escape-fx" / "sheet-menu.png"))
+    cw, ch = sheet.width // 4, sheet.height // 2
+    for i, name in enumerate(MENU_GRID):
+        cell = sheet.crop(((i % 4) * cw, (i // 4) * ch, (i % 4 + 1) * cw, (i // 4 + 1) * ch))
+        save(fit(trim(cell), MENU_SIZE.get(name, 128)), OUT_FX / f"{name}.webp")
 
 
 if __name__ == "__main__":
-    main(sys.argv[1:] or ["bg", "fx", "ui"])
+    main(sys.argv[1:] or ["bg", "fx", "menu"])

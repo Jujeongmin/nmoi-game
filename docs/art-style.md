@@ -36,4 +36,8 @@ shark — it has to look like it came from the same game.
   ivory. Backgrounds keep the middle plain and dark so sharks, pearls and members read on top.
 - **Never draw pictures in code** (no canvas shapes, no CSS colour boxes for panels or buttons). Code only moves
   generated art. Show candidates (an HTML page) before committing new art; commit only the chosen ones.
+- **Keep the concept.** The UI is the restaurant menu card (ivory card, onyx and champagne gold, Cinzel / Noto Serif,
+  gold hairlines). New UI art is menu ornament: thin engraved gold line art, garnet, wax seal, gold leaf — never a
+  glossy casual-game kit (thick outlines, bevelled gold buttons, cartoon logos, three stars, medals). "More like a
+  game" is done with motion inside the concept: cards unfold, lines rise in turn, numbers roll and count up, stamps.
 - Check every image: transparent edges without halos, no stray text, no second object.

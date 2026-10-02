@@ -16,105 +16,137 @@
 .ce-stage__inner { position: absolute; inset: 0; }
 .ce-stage__canvas { display: block; width: 100%; height: 100%; }
 
-/* ---------- Callout (3-2-1 and GO! are generated numerals; success / game over are text) ---------- */
+/* ---------- Callout: 3-2-1 in Roman capitals, then 출발; success / game over ---------- */
 .ce-callout {
   position: absolute;
   left: 0; right: 0;
   top: 36%;
   text-align: center;
-  font: 700 30px/1 var(--cv-font-heading);
-  letter-spacing: 0;
+  font: 700 34px/1 var(--cv-font-heading);
+  letter-spacing: 0.08em;
+  text-indent: 0.08em;
   color: var(--cv-ivory);
   text-shadow: 0 0 18px rgba(226, 204, 152, 0.55), 0 2px 0 rgba(0, 0, 0, 0.6);
   pointer-events: none;
   opacity: 0;
 }
 .ce-callout.is-shown { animation: ce-callout 0.6s cubic-bezier(0.2, 1.4, 0.4, 1) forwards; }
-.ce-callout[data-kind="word"] { font-size: 40px; }
+.ce-callout[data-kind="go"] { font-size: 44px; color: var(--cv-gold-bright); letter-spacing: 0.3em; text-indent: 0.3em; }
 
-/* The numeral lands big and settles; the gold shockwave ring spreads behind it. */
-.ce-callout[data-kind="number"] img {
-  position: relative;
-  z-index: 1;
-  height: 112px;
-  width: auto;
-  filter: drop-shadow(0 0 18px rgba(255, 214, 130, 0.7));
+/* The numeral lands big and settles inside a thin gold ring that spreads out. */
+.ce-callout[data-kind="number"] {
+  font: 400 104px/1 var(--cv-font-display);
+  color: var(--cv-gold-bright);
+  text-shadow: 0 0 26px rgba(226, 204, 152, 0.8), 0 3px 0 rgba(0, 0, 0, 0.55);
 }
 .ce-callout[data-kind="number"].is-shown { animation: ce-count 0.8s cubic-bezier(0.2, 1.2, 0.3, 1) forwards; }
 .ce-callout[data-kind="number"]::after {
   content: "";
   position: absolute;
   left: 50%; top: 50%;
-  width: 150px; height: 150px;
-  margin: -75px 0 0 -75px;
+  width: 170px; height: 170px;
+  margin: -85px 0 0 -85px;
   background: url("../../../assets/escape/fx/ring.webp") center / contain no-repeat;
   opacity: 0;
 }
 .ce-callout[data-kind="number"].is-shown::after { animation: ce-count-ring 0.8s ease-out forwards; }
 
 @keyframes ce-callout {
-  0% { opacity: 0; transform: scale(0.4); filter: blur(6px); }
-  60% { opacity: 1; transform: scale(1.12); filter: none; }
+  0% { opacity: 0; transform: scale(0.6); filter: blur(6px); letter-spacing: 0.6em; }
+  60% { opacity: 1; transform: scale(1.06); filter: none; }
   100% { opacity: 1; transform: none; }
 }
 @keyframes ce-count {
-  0% { opacity: 0; transform: scale(2.4); filter: blur(10px); }
-  30% { opacity: 1; transform: scale(0.92); filter: none; }
-  45% { transform: scale(1.04); }
+  0% { opacity: 0; transform: scale(2.2); filter: blur(10px); }
+  30% { opacity: 1; transform: scale(0.94); filter: none; }
+  45% { transform: scale(1.03); }
   100% { opacity: 1; transform: scale(1); }
 }
 @keyframes ce-count-ring {
-  0% { opacity: 0; transform: scale(0.3); }
+  0% { opacity: 0; transform: scale(0.35); }
   25% { opacity: 1; }
-  100% { opacity: 0; transform: scale(1.9); }
+  100% { opacity: 0; transform: scale(1.7); }
 }
 
-/* ---------- Wave banner: the generated art-deco plate; a twinkle sweeps across it ---------- */
-.ce-banner {
+/* ---------- Combo: Roman numeral weight, a gold hairline that runs out with the chain ---------- */
+.ce-combo {
   position: absolute;
   left: 50%;
-  top: 22%;
-  width: min(94%, 380px);
-  aspect-ratio: 720 / 161;
-  margin-left: calc(min(94%, 380px) / -2);
+  top: 12px;
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  align-items: center;
+  min-width: 96px;
+  transform: translateX(-50%);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+.ce-combo.is-on { opacity: 1; }
+.ce-combo__mult {
+  font: 400 26px/1 var(--cv-font-display);
+  color: var(--cv-ivory);
+  text-shadow: 0 0 12px rgba(0, 0, 0, 0.9), 0 2px 0 rgba(0, 0, 0, 0.6);
+}
+.ce-combo.is-mult .ce-combo__mult { font-size: 34px; color: var(--cv-gold-bright); text-shadow: 0 0 16px rgba(226, 204, 152, 0.7), 0 2px 0 rgba(0, 0, 0, 0.6); }
+.ce-combo__label {
+  margin-top: 2px;
+  font: 600 10px/1 var(--cv-font-display);
+  letter-spacing: 0.32em;
+  text-indent: 0.32em;
+  color: var(--cv-gold);
+}
+.ce-combo__bar { position: relative; width: 84px; height: 1px; margin-top: 6px; background: var(--cv-line-faint); }
+.ce-combo__bar i { position: absolute; inset: 0; background: var(--cv-gold-bright); transform-origin: center; }
+.ce-combo.is-pop .ce-combo__mult { animation: ce-combo-pop 0.45s cubic-bezier(0.2, 1.6, 0.4, 1); }
+@keyframes ce-combo-pop {
+  0% { transform: scale(1); }
+  35% { transform: scale(1.5); }
+  100% { transform: scale(1); }
+}
+
+/* ---------- Wave banner: an onyx band with gold hairlines, the menu divider under the label ---------- */
+.ce-banner {
+  position: absolute;
+  left: 0; right: 0;
+  top: 24%;
+  padding: 14px 0 12px;
   text-align: center;
   pointer-events: none;
   opacity: 0;
-  background: url("../../../assets/escape/fx/banner.webp") center / 100% 100% no-repeat;
-  filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.6));
+  background: linear-gradient(90deg, transparent, rgba(8, 8, 8, 0.82) 16%, rgba(8, 8, 8, 0.82) 84%, transparent);
+  border-top: 1px solid var(--cv-line);
+  border-bottom: 1px solid var(--cv-line);
+  overflow: hidden;
 }
 .ce-banner__label {
   display: block;
-  font: 700 22px/1.05 "Cinzel", var(--cv-font-heading);
-  letter-spacing: 0.12em;
-  text-indent: 0.12em;
+  font: 400 30px/1.05 var(--cv-font-display);
+  letter-spacing: 0.16em;
+  text-indent: 0.16em;
   color: var(--cv-gold-bright);
-  text-shadow: 0 0 12px rgba(226, 204, 152, 0.6);
+  text-shadow: 0 0 16px rgba(226, 204, 152, 0.5);
 }
+.ce-banner__rule { display: block; width: 150px; height: auto; margin: 6px auto 4px; }
 .ce-banner__sub {
   display: block;
-  margin-top: 3px;
-  font: 600 11px/1.2 var(--cv-font-ui);
-  letter-spacing: 0.04em;
+  font: 500 13px/1.3 var(--cv-font-ui);
+  letter-spacing: 0.06em;
   color: var(--cv-ivory);
 }
 .ce-banner__line {
   position: absolute;
-  top: 50%;
-  left: 8%;
-  width: 34px; height: 34px;
-  margin-top: -17px;
-  background: url("../../../assets/escape/fx/twinkle.webp") center / contain no-repeat;
-  opacity: 0;
+  top: 0; bottom: 0;
+  left: -40%;
+  width: 40%;
+  background: linear-gradient(90deg, transparent, rgba(255, 236, 190, 0.28), transparent);
 }
 /* Shown by ui.banner(); every animation ends visible (reduce motion skips straight to the end),
    and ui.js takes the banner away with .is-leaving. */
 .ce-banner.is-shown { opacity: 1; animation: ce-banner 0.3s ease-out; }
 .ce-banner.is-shown .ce-banner__label { animation: ce-banner-in 0.5s cubic-bezier(0.2, 0.9, 0.3, 1) backwards; }
-.ce-banner.is-shown .ce-banner__sub { animation: ce-banner-in 0.5s cubic-bezier(0.2, 0.9, 0.3, 1) 0.08s backwards; }
+.ce-banner.is-shown .ce-banner__rule { animation: ce-rule-in 0.6s ease-out 0.05s backwards; }
+.ce-banner.is-shown .ce-banner__sub { animation: ce-banner-in 0.5s cubic-bezier(0.2, 0.9, 0.3, 1) 0.1s backwards; }
 .ce-banner.is-shown .ce-banner__line { animation: ce-banner-sweep 0.9s ease-in-out 0.1s; }
 .ce-banner.is-leaving { opacity: 0; transform: scaleY(0.6); transition: opacity 0.35s ease, transform 0.35s ease; }
 .ce-banner.is-leaving .ce-banner__label, .ce-banner.is-leaving .ce-banner__sub { transform: translateX(60px); transition: transform 0.35s ease-in; }
@@ -127,12 +159,68 @@
   0% { opacity: 0; transform: translateX(-60px); }
   100% { opacity: 1; transform: none; }
 }
-@keyframes ce-banner-sweep {
-  0% { left: 8%; opacity: 0; transform: rotate(0); }
-  20% { opacity: 1; }
-  80% { opacity: 1; }
-  100% { left: 84%; opacity: 0; transform: rotate(180deg); }
+@keyframes ce-rule-in {
+  0% { opacity: 0; transform: scaleX(0.1); }
+  100% { opacity: 1; transform: none; }
 }
+@keyframes ce-banner-sweep {
+  0% { left: -40%; }
+  100% { left: 100%; }
+}
+
+/* ---------- Cards: the menu card unfolds, then its lines rise one after another ---------- */
+.cv-panel.is-entering { animation: ce-unfold 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+.cv-panel.is-entering > * { animation: ce-rise 0.45s cubic-bezier(0.2, 0.8, 0.2, 1) both; animation-delay: calc(0.18s + var(--i, 0) * 0.06s); }
+@keyframes ce-unfold {
+  0% { clip-path: inset(49% 0 49% 0); transform: scale(0.96); }
+  60% { clip-path: inset(0 0 0 0); }
+  100% { clip-path: inset(0 0 0 0); transform: none; }
+}
+@keyframes ce-rise {
+  0% { opacity: 0; transform: translateY(10px); }
+  100% { opacity: 1; transform: none; }
+}
+
+/* The start / retry button: a light passes over the plate now and then. */
+.ce-card .cv-btn--primary { position: relative; overflow: hidden; }
+.ce-card .cv-btn--primary::after {
+  content: "";
+  position: absolute;
+  top: 0; bottom: 0;
+  left: -60%;
+  width: 45%;
+  background: linear-gradient(100deg, transparent, rgba(255, 236, 190, 0.35), transparent);
+  animation: ce-sheen 3.2s ease-in-out 1s infinite;
+  pointer-events: none;
+}
+@keyframes ce-sheen {
+  0%, 55% { left: -60%; }
+  85%, 100% { left: 120%; }
+}
+
+/* A new record: the wax seal is pressed onto the result card, which gives a small thud. */
+.ce-seal {
+  position: absolute;
+  right: 10px;
+  top: 8px;
+  width: 62px;
+  height: auto;
+  pointer-events: none;
+  filter: drop-shadow(0 3px 4px rgba(60, 20, 10, 0.35));
+}
+.ce-seal.is-stamped { animation: ce-stamp 0.42s cubic-bezier(0.3, 1.4, 0.5, 1) both; }
+@keyframes ce-stamp {
+  0% { opacity: 0; transform: scale(2.6) rotate(-24deg); }
+  60% { opacity: 1; transform: scale(0.92) rotate(-8deg); }
+  100% { opacity: 1; transform: scale(1) rotate(-10deg); }
+}
+.cv-panel.is-thud { animation: ce-thud 0.35s ease-out 0.22s; }
+@keyframes ce-thud {
+  0% { transform: none; }
+  30% { transform: translateY(3px) scale(0.995); }
+  100% { transform: none; }
+}
+#screen-result .cv-menu dd { transition: color 0.3s; }
 
 /* Score bumps on a bonus. */
 .cv-hud .cv-value.is-pop { display: inline-block; animation: ce-pop 0.35s cubic-bezier(0.2, 1.6, 0.4, 1); }

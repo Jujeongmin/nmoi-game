@@ -1,5 +1,8 @@
 /* CAVIAR ESCAPE — DOM UI: HUD, callouts, title card, result card.
-   Only reads game state; user actions are reported through on(name, fn). */
+   Only reads game state; user actions are reported through on(name, fn).
+   The look is the campaign's menu card (cv-theme.css); what makes it feel like a game is motion:
+   cards unfold and their lines rise in turn, the score rolls, the result counts up and a new
+   record is sealed with a wax stamp. */
 (function (NS) {
   'use strict';
 
@@ -34,6 +37,9 @@
       banner: $('banner'),
       bannerLabel: $('banner-label'),
       bannerSub: $('banner-sub'),
+      combo: $('combo'),
+      comboMult: $('combo-mult'),
+      comboBar: $('combo-bar'),
       title: $('screen-title'),
       titleBest: $('title-best'),
       result: $('screen-result'),
@@ -50,8 +56,12 @@
 
     var self = this;
     this.el.stageNum.textContent = pad(config.stage, 2);
-    // Preload the countdown numerals so 3-2-1 never pops in late.
-    ['n3', 'n2', 'n1', 'go'].forEach(function (n) { new Image().src = assetRoot + 'assets/escape/fx/' + n + '.webp'; });
+    this.shownScore = 0;
+    this.lastFrame = 0;
+    this.seal = new Image();   // the wax seal for a new record (preloaded, stamped on the result card)
+    this.seal.className = 'ce-seal';
+    this.seal.alt = '';
+    this.seal.src = assetRoot + 'assets/escape/fx/seal.webp';
     this.el.btnStart.addEventListener('click', function () { self._fire('start'); });
     this.el.btnRetry.addEventListener('click', function () { self._fire('retry'); });
     this.el.btnBack.addEventListener('click', function () { self._fire('back'); });
@@ -107,7 +117,14 @@
     var t = game.phase === 'idle' || game.phase === 'countdown' ? this.cfg.duration : Math.ceil(game.timeLeft);
 
     this._set('time', el.time, pad(t, 2));
-    this._set('score', el.score, pad(game.getScore(), 5));
+
+    // The score rolls toward its value instead of jumping.
+    var now = performance.now(), dt = Math.min(0.1, (now - (this.lastFrame || now)) / 1000);
+    this.lastFrame = now;
+    var target = game.getScore();
+    if (target < this.shownScore || !playing) this.shownScore = target;
+    else this.shownScore = Math.min(target, this.shownScore + (target - this.shownScore) * Math.min(1, dt * 9) + 0.5);
+    this._set('score', el.score, pad(this.shownScore, 5));
     this._set('best', el.best, pad(best, 5));
 
     var low = playing && t <= 5;
@@ -126,28 +143,43 @@
     }
 
     this._updateCallout(game);
+    this._updateCombo(game);
   };
 
-  /* 3-2-1 and GO! are generated gold numerals (assets/escape/fx); success / game over are text. */
+  /* "×3 COMBO" under the HUD; the gold hairline under it is the time left in the chain. */
+  P._updateCombo = function (game) {
+    var el = this.el, on = game.phase === 'play' && game.combo >= 2;
+    if (this.cache.comboOn !== on) { this.cache.comboOn = on; el.combo.classList.toggle('is-on', on); }
+    if (!on) { this.cache.mult = 0; return; }
+    var label = game.mult >= 2 ? '\u00d7' + game.mult : String(game.combo);
+    if (this.cache.comboLabel !== label) {
+      this.cache.comboLabel = label;
+      el.comboMult.textContent = label;
+      el.combo.classList.toggle('is-mult', game.mult >= 2);
+    }
+    if (this.cache.mult !== game.mult) {
+      if (this.cache.mult && game.mult > this.cache.mult) restartClass(el.combo, 'is-pop');
+      this.cache.mult = game.mult;
+    }
+    el.comboBar.style.transform = 'scaleX(' + game.comboLeft().toFixed(3) + ')';
+  };
+
+  /* 3-2-1 in the campaign's Roman capitals, then 출발; success / game over when the run ends. */
   P._updateCallout = function (game) {
     var text = '', kind = 'word';
     if (game.phase === 'countdown') {
       text = String(Math.max(1, Math.ceil(game.countdownLeft() / (this.cfg.countdown / 3))));
       kind = 'number';
     } else if (game.phase === 'play' && game.phaseTime < 0.8) {
-      text = 'go';
-      kind = 'number';
+      text = '출발';
+      kind = 'go';
     } else if (game.isOver() && !this.el.result.classList.contains('is-open')) {
       text = game.phase === 'clear' ? '성공' : '게임 오버';
     }
     if (this.cache.callout === text) return;
     this.cache.callout = text;
     var c = this.el.callout;
-    if (kind === 'number') {
-      c.innerHTML = '<img alt="' + (text === 'go' ? NS.t('출발') : text) + '" src="' + assetRoot + 'assets/escape/fx/' + (text === 'go' ? 'go' : 'n' + text) + '.webp">';
-    } else {
-      c.textContent = text;
-    }
+    c.textContent = text;
     c.dataset.kind = kind;
     if (text) restartClass(c, 'is-shown'); else c.classList.remove('is-shown');
   };
@@ -158,7 +190,8 @@
     restartClass(this.el.score, 'is-pop');
   };
 
-  /* Wave banner: a gold line sweeps across, the label and line under it slide in and out. */
+  /* Wave banner: a band across the stage with gold hairlines above and below; a light sweeps
+     across it and the label and the line under it slide in and out. */
   P.banner = function (label, sub) {
     var el = this.el, b = el.banner, self = this;
     this.hideBanner();
@@ -182,7 +215,17 @@
     this.el.titleBest.textContent = pad(best, 5);
     this.el.result.classList.remove('is-open');
     this.el.title.classList.add('is-open');
+    this._enter(this.el.title);
     this._focusLater(this.el.btnStart);
+  };
+
+  /* A card unfolds like a menu being opened, then its lines rise one after another. */
+  P._enter = function (overlay) {
+    var panel = overlay.querySelector('.cv-panel');
+    if (!panel) return;
+    var kids = panel.children;
+    for (var i = 0; i < kids.length; i++) kids[i].style.setProperty('--i', i);
+    restartClass(panel, 'is-entering');
   };
 
   P.hideScreens = function () {
@@ -192,17 +235,43 @@
     if (document.activeElement && document.activeElement.blur) document.activeElement.blur();
   };
 
-  /* data: { result, score, best, isNewBest, survived, closeCalls, lifeBonus } */
+  /* data: { result, score, best, isNewBest, survived, closeCalls, lifeBonus }
+     The score counts up from zero; a new record is then sealed with the wax stamp. */
   P.showResult = function (d) {
-    var el = this.el, success = d.result === 'clear';
+    var el = this.el, success = d.result === 'clear', self = this;
     el.resultTitle.textContent = success ? '성공' : '게임 오버';
-    el.resultScore.textContent = pad(d.score, 5);
     el.resultBest.textContent = pad(d.best, 5);
-    el.resultNew.hidden = !d.isNewBest;
+    el.resultNew.hidden = true;
+    if (this.seal.parentNode) this.seal.parentNode.removeChild(this.seal);
 
     el.title.classList.remove('is-open');
     el.result.classList.add('is-open');
+    this._enter(el.result);
     this._focusLater(el.btnRetry);
+
+    var calm = NS.settings && NS.settings.reduceMotion && NS.settings.reduceMotion();
+    var dur = calm ? 0 : Math.min(1400, 500 + d.score / 12), start = 0, ticked = 0;
+    cancelAnimationFrame(this.countRaf);
+    function done() {
+      el.resultScore.textContent = pad(d.score, 5);
+      if (!d.isNewBest) return;
+      el.resultNew.hidden = false;
+      var panel = el.result.querySelector('.cv-panel');
+      panel.appendChild(self.seal);
+      restartClass(self.seal, 'is-stamped');
+      restartClass(panel, 'is-thud');
+      if (NS.sound) NS.sound.play('drop');
+    }
+    if (!dur) { done(); return; }
+    function step(now) {
+      if (!start) start = now;
+      var q = Math.min(1, (now - start) / dur), e = 1 - Math.pow(1 - q, 3);
+      el.resultScore.textContent = pad(d.score * e, 5);
+      if (NS.sound && now - ticked > 70 && q < 1) { ticked = now; NS.sound.play('tap'); }
+      if (q < 1) self.countRaf = requestAnimationFrame(step); else done();
+    }
+    el.resultScore.textContent = pad(0, 5);
+    this.countRaf = requestAnimationFrame(step);
   };
 
   // Focus for keyboard players (Enter / Space) without flashing a ring on touch.

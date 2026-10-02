@@ -18,7 +18,7 @@ cd web && git checkout develop && npm install
 1. `nmoi-game-src`에서 수정 → commit → `git push origin main` (GitHub)
 2. `cd web && git fetch && git rebase origin/develop` (Verse8가 넣는 "The user changed the files" 커밋 먼저 받기)
 3. `cd ../nmoi-game-src && python tools/sync-verse8.py ../web`
-4. `cd ../web && npx vite build` → commit "Sync GitHub main <sha>: …" → `git push origin develop` (= Verse8 배포)
+4. `cd ../web && npx vite build` (package-lock.json 은 커밋하지 않음) → commit "Sync GitHub main <sha>: …" → `git push origin develop` (= Verse8 배포)
 
 로컬 확인: `nmoi-game-src`를 정적 서버로 띄워 `index.html` (서버 기능은 Verse8에서만 동작).
 
@@ -31,11 +31,10 @@ cd web && git checkout develop && npm install
 ## 4. 남은 일
 
 - 이스케이프 업그레이드 완료 (`docs/escape-upgrade.md` 진행 결과)
-- **다음 작업: 전체를 게임답게** — 고객 요청 "UI와 다른 게임들도 더 게임같이". 지금은 메뉴판·웹페이지처럼 보임.
-  순서 (사용자 결정): ① 공통 UI 키트 (금색 광택 버튼, 검정·금 패널 틀, HUD 판·아이콘, 게임 로고 3종, 결과 화면 장식)
-  → 타이틀 화면 (로고 + 멤버 크게 + 움직이는 배경 + 큰 PLAY, 규칙은 아이콘) → 결과 화면 (점수 카운트업·별·신기록)
-  ② 매치 (배경·터짐·콤보 연출) ③ 셰프 (주방 배경·주문서·재료 타일·PERFECT 연출) ④ 랜딩 상단 바·버튼.
-  그림은 전부 GPT 생성 (`docs/art-style.md`), 단계마다 후보 HTML을 보여 주고 고른 것만 적용
+- **다음 작업: 전체를 게임답게** — 고객 요청 "UI와 다른 게임들도 더 게임같이".
+  **메뉴판 디자인 콘셉트는 그대로** 두고 연출로 해결 (광택 게임 UI 키트는 거절됨, `docs/art-style.md` Keep the concept).
+  이스케이프가 기준: 카드 펼침·줄 단위 등장, 버튼 빛 스침, 점수 롤링, 결과 카운트업, 신기록 왁스 도장, Cinzel 콤보.
+  다음: 매치 → 셰프 → 랜딩. 새 그림은 메뉴판·테이블 그림체로만 생성, 후보를 보여 주고 고른 것만 적용
 - 남는 B컷을 게임 화면 연출(타이틀·결과 배경, 멤버 컷)에 쓰기: B컷 이미지가 오면 작업. 보상 아님
 - B컷 장수가 확정되면 `shared/cv-campaign.js` 의 `bingo.bcuts` 만 바꾸면 됨 (지금 10)
 - 확정 대사 적용 (게임 내 4줄 고정) + 녹음 파일 재생 훅
