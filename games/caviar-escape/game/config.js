@@ -26,7 +26,9 @@
       hitRadius: 9,        // hitbox = vertical capsule, a bit inside the visual
       hitSpan: 12,         // capsule half-length (head to knees)
       maxSpeed: 190,
-      response: 0,         // 0 = the member moves the moment the stick does (no drift, no glide)
+      response: 20,        // keyboard: how quickly velocity follows input (high = immediate)
+      dragGain: 1.15,      // finger drag: member moves 1.15x the finger distance
+      dragMax: 2400,       // ... at most this many units/s; a faster flick catches up over the next frames
       knockback: 230,
       pickRadius: 22       // reach for pearls (from the capsule axis)
     },
