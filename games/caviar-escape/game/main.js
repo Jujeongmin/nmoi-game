@@ -49,7 +49,6 @@
   fit();
 
   function startRun() {
-    slowmo = 0;
     ui.hideScreens();
     renderer.clearEffects();
     renderer.playAnim('idle');
@@ -94,7 +93,6 @@
 
   var talk = NS.talk ? NS.talk.bubble(stageEl, { anchor: 'top' }) : null;
   var warned = false;
-  var slowmo = 0;   // seconds of slow motion left (close call)
   function handle(ev) {
     NS.sound.event(cfg.gameId, ev.type, ev);
     if (talk) {
@@ -110,7 +108,6 @@
         break;
       case 'nearMiss':
         ui.bonusFeedback();
-        slowmo = cfg.slowmo.time;
         break;
       case 'pickup':
       case 'combo':
@@ -120,7 +117,6 @@
         ui.banner(ev.label, NS.t(ev.sub));
         break;
       case 'end':
-        slowmo = 0;
         renderer.playAnim(ev.result === 'clear' ? 'dance' : 'frown', ev.result !== 'clear');
         break;
     }
@@ -140,22 +136,19 @@
   window.addEventListener('cv-settings', syncPause);
 
   function tick(dt) {
-    // A close call slows the game for a moment; the scene keeps its own pace.
-    var gdt = dt;
-    if (slowmo > 0) { slowmo = Math.max(0, slowmo - dt); gdt = dt * cfg.slowmo.factor; }
     var move = null;
     if (input.enabled) {
       move = input.take();
       move.dx /= renderer.scale; move.dy /= renderer.scale;   // CSS px → world units
     }
-    game.update(gdt, move);
+    game.update(dt, move);
     if (talk && !warned && game.phase === 'play' && game.timeLeft <= 10) { warned = true; talk.say('last10'); }
     var events = game.drainEvents();
     for (var i = 0; i < events.length; i++) handle(events[i]);
 
     if (!resultShown && game.isOver() && game.phaseTime >= cfg.resultDelay) showResult();
 
-    renderer.render(game, input, slowmo > 0 ? dt * 0.6 : dt);
+    renderer.render(game, input, dt);
     ui.update(game, best);
   }
 

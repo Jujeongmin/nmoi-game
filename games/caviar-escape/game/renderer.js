@@ -12,7 +12,7 @@
   var TAU = Math.PI * 2;
   var STRIPS = 10;         // shark sprite strips for the swimming wave
   var KELP_BANDS = 12;     // kelp sprite bands for the sway
-  var BG_ALPHA = 0.7;      // background picture and kelp opacity over deep navy
+  var BG_ALPHA = 0.42;     // background picture and kelp opacity over deep navy (low: the small sharks must read)
 
   function token(name, fallback) {
     var v = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
@@ -129,7 +129,7 @@
     var n = Math.round(this.W * this.H / 9000);
     this.motes = [];
     for (var i = 0; i < n; i++) {
-      this.motes.push({ x: rand(0, this.W), y: rand(0, this.H), r: rand(3, 8), v: rand(8, 22), a: rand(0.25, 0.55), ph: rand(0, TAU) });
+      this.motes.push({ x: rand(0, this.W), y: rand(0, this.H), r: rand(3, 8), v: rand(8, 22), a: rand(0.1, 0.25), ph: rand(0, TAU) });
     }
   };
 
@@ -381,10 +381,10 @@
       if (pe.life - pe.age < 1.5 && Math.floor(t * 10) % 2) continue;
       var sc = popIn(pe.age);
       var y = pe.y + Math.sin(t * 2.6 + pe.ph) * 2.5;
-      this._spr(glow, pe.x, y, 44 * sc, 0, 0.55 + 0.25 * Math.sin(t * 4 + pe.ph));
-      this._spr(pearl, pe.x, y, 22 * sc, 0, 1);
+      this._spr(glow, pe.x, y, 32 * sc, 0, 0.55 + 0.25 * Math.sin(t * 4 + pe.ph));
+      this._spr(pearl, pe.x, y, 15 * sc, 0, 1);
       var twk = Math.max(0, Math.sin(t * 3 + pe.ph * 3));
-      if (twk > 0.2) this._spr(tw, pe.x + 6, y - 7, 10 * twk, t, twk);
+      if (twk > 0.2) this._spr(tw, pe.x + 4, y - 5, 8 * twk, t, twk);
     }
 
     this.ctx.globalAlpha = 1;
@@ -398,15 +398,15 @@
     var baseAlpha = alpha == null ? 1 : alpha;
 
     // Tail bubbles (view-only, random so no state is kept on the shark).
-    if (s.kind !== 'deco' && Math.random() < dt * (dashing && s.mode === 'dash' ? 40 : 6)) {
+    if (s.kind !== 'deco' && Math.random() < dt * (dashing && s.mode === 'dash' ? 40 : s.kind === 'dart' ? 1.5 : 6)) {
       this.fx.bubbles(s.x - Math.cos(s.heading) * L * 0.5, s.y - Math.sin(s.heading) * L * 0.5, 1, 2);
     }
 
     // A soft light behind every shark so it reads on the dark water; red for a dash shark.
     if (s.kind !== 'deco') {
       var back = dashing ? this._tinted('glow', '#ff4a35') : this._sprite('glow');
-      var ga = dashing ? (s.mode === 'aim' ? 0.55 + 0.35 * Math.sin(this.time * 20) : 0.85) : 0.3;
-      this._spr(back, s.x, s.y, L * (dashing ? 1.7 : 1.35), 0, ga * baseAlpha);
+      var ga = dashing ? (s.mode === 'aim' ? 0.55 + 0.35 * Math.sin(this.time * 20) : 0.85) : 0.6;
+      this._spr(back, s.x, s.y, Math.max(L * (dashing ? 1.7 : 1.5), 34), 0, ga * baseAlpha);
     }
 
     ctx.save();
@@ -420,6 +420,11 @@
       var iw = img.naturalWidth, ih = img.naturalHeight;
       var sw = L * 1.1, sh = sw * ih / iw;
       var amp = sh * (dashing && s.mode === 'dash' ? 0.06 : 0.1);
+      // A light rim (the shark's silhouette, a little larger, behind it) so it stands off the water.
+      if (s.kind !== 'deco') {
+        var rim = this._tinted('shark', dashing ? '#ff7a62' : '#fff1d6');
+        if (rim) { ctx.globalAlpha = 0.9 * baseAlpha; ctx.drawImage(rim, -sw * 1.09 / 2, -sh * 1.2 / 2, sw * 1.09, sh * 1.2); ctx.globalAlpha = baseAlpha; }
+      }
       for (var i = 0; i < STRIPS; i++) {
         var q = i / (STRIPS - 1);                 // 0 = tail, 1 = head
         var tail = Math.pow(1 - q, 1.7);
@@ -457,13 +462,13 @@
     var frame = this._memberFrame(dt);
 
     // Warm light behind the member and a glow at the feet.
-    var glow = this._sprite('glow');
-    this._spr(glow, p.x, p.y, 76, 0, 0.32);
+    var glow = this._sprite('glow'), ps = pc.spriteHeight / 52;   // trims were drawn for a 52-unit member
+    this._spr(glow, p.x, p.y, 76 * ps, 0, 0.32);
     if (glow) {
       ctx.save();
       ctx.translate(p.x, p.y + pc.halfHeight - 1);
       ctx.scale(1, 0.3);
-      this._spr(glow, 0, 0, 64, 0, 0.75);
+      this._spr(glow, 0, 0, 64 * ps, 0, 0.75);
       ctx.restore();
     }
 
@@ -476,13 +481,14 @@
   };
 
   /* Success: pearls rise out of the tin and circle the player. Drawn in the player's local space. */
-  P._drawOrbit = function (game, rx, ry) {
+  P._drawOrbit = function (game, rx, ry, k) {
+    k = k || 1;
     var e = Math.min(1, game.phaseTime / 0.7);
     var ease = 1 - Math.pow(1 - e, 3);
     var pearl = this._sprite('pearl');
     for (var i = 0; i < 4; i++) {
       var a = this.time * 1.4 + i * TAU / 4;
-      this._spr(pearl, Math.cos(a) * rx * ease, Math.sin(a) * ry * ease, 11, 0, ease);
+      this._spr(pearl, Math.cos(a) * rx * ease, Math.sin(a) * ry * ease, 11 * k, 0, ease);
     }
     this.ctx.globalAlpha = 1;
   };
@@ -494,14 +500,15 @@
     var bcx = m.bounds.x + m.bounds.w / 2, bcy = m.bounds.y + m.bounds.h / 2;
     var idle = this.anim.name === 'idle';
     var speed = Math.min(1, Math.hypot(p.vx, p.vy) / pc.maxSpeed);
-    var bob = idle ? Math.sin(this.time * 11) * 1.6 * speed : 0;
+    var ps = pc.spriteHeight / 52;
+    var bob = idle ? Math.sin(this.time * 11) * 1.6 * ps * speed : 0;
     var lean = idle ? (p.vx / pc.maxSpeed) * 0.14 : 0;
     if (p.vx > 8) this._flip = 1; else if (p.vx < -8) this._flip = -1;
     var flip = this._flip || 1;
 
     ctx.save();
     ctx.translate(p.x, p.y);
-    if (game.phase === 'clear') this._drawOrbit(game, 26, pc.halfHeight + 4);
+    if (game.phase === 'clear') this._drawOrbit(game, 26 * ps, pc.halfHeight + 4 * ps, ps);
 
     ctx.translate(0, bob);
     ctx.rotate(lean);
@@ -520,8 +527,8 @@
 
     // The caviar tin: in the trailing hand while swimming, set down at the feet while dancing.
     var tin = this._sprite('tin');
-    if (this.anim.name === 'dance') this._spr(tin, flip * 17, pc.halfHeight - 6, 13, 0, 1);
-    else this._spr(tin, -flip * 13, 5, 13, 0, blink ? 0.35 : 1);
+    if (this.anim.name === 'dance') this._spr(tin, flip * 17 * ps, pc.halfHeight - 6 * ps, 13 * ps, 0, 1);
+    else this._spr(tin, -flip * 13 * ps, 5 * ps, 13 * ps, 0, blink ? 0.35 : 1);
     ctx.restore();
   };
 

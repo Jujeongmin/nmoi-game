@@ -55,6 +55,7 @@
     this.spawnTimer = c.spawn.first;
     this.dashTimer = 0;
     this.packTimer = 0;
+    this.dartTimer = c.dart.first;
     this.pearlTimer = c.pearls.first;
     this.events = [];
     var p = this.player;
@@ -230,6 +231,13 @@
       }
     }
 
+    // Darts: small sharks shot straight across from the edges, ever thicker (죽림고수 style).
+    this.dartTimer -= dt;
+    if (this.dartTimer <= 0) {
+      this._spawnDart();
+      this.dartTimer = lerp(c.dart.every[0], c.dart.every[1], Math.pow(t, c.dart.ease)) * rand(0.7, 1.3);
+    }
+
     if (this.wave >= 1) {
       this.dashTimer -= dt;
       if (this.dashTimer <= 0 && this.timeLeft > c.dash.aimTime + 0.4) {
@@ -291,6 +299,27 @@
     s.tx = p.x; s.ty = p.y;                  // aim point (follows the player until the lock)
     this.sharks.push(s);
     this._emit('dashAim', { x: e.x, y: e.y, heading: s.heading });
+  };
+
+  /* A dart from any edge, no warning. Some are aimed at where the player is now (a little
+     spread); most keep their own path across the screen — a straight line or a wave — so the
+     water is busy without everything coming for the player. */
+  P._spawnDart = function () {
+    var c = this.cfg, d = c.dart, p = this.player, W = this.W, H = this.H;
+    var e = this._edgePoint(c.shark.length * d.size * 0.6, Math.min(W, H) * 0.45);
+    var aimed = Math.random() < d.aimed;
+    var tx = aimed ? p.x : rand(W * 0.15, W * 0.85), ty = aimed ? p.y : rand(H * 0.15, H * 0.85);
+    var s = this._newShark('dart', e.x, e.y, Math.atan2(ty - e.y, tx - e.x) + (aimed ? rand(-d.spread, d.spread) : 0), d.size);
+    s.mode = 'swim';
+    s.speed = lerp(d.speed[0], d.speed[1], Math.pow(this.difficulty(), d.ease)) * rand(0.88, 1.12);
+    s.aimed = aimed;
+    if (!aimed && Math.random() < d.wavy) {
+      s.base = { x: e.x, y: e.y, h: s.heading };   // the line it travels; the wave rides on it
+      s.amp = rand(d.waveAmp[0], d.waveAmp[1]);
+      s.freq = rand(2.2, 3.6);
+      s.wt = 0;
+    }
+    this.sharks.push(s);
   };
 
   /* A column of small sharks along one line across the screen, aimed near the player. */
@@ -392,14 +421,24 @@
         continue;
       }
 
-      if (s.kind === 'pack') {
+      if (s.kind === 'pack' || s.kind === 'dart') {
         if (s.mode === 'warn') {
           s.t -= dt;
           if (s.t <= 0) { s.mode = 'swim'; s.speed = cfg.pack.speed; }
           continue;
         }
-        s.x += Math.cos(s.heading) * s.speed * dt;
-        s.y += Math.sin(s.heading) * s.speed * dt;
+        if (s.base) {
+          // Wavy path: along its line, swaying side to side; it faces the way it moves.
+          var b = s.base, bx = Math.cos(b.h), by = Math.sin(b.h);
+          s.wt += dt;
+          b.x += bx * s.speed * dt; b.y += by * s.speed * dt;
+          var off = Math.sin(s.wt * s.freq) * s.amp;
+          s.x = b.x - by * off; s.y = b.y + bx * off;
+          s.heading = b.h + Math.atan2(Math.cos(s.wt * s.freq) * s.amp * s.freq, s.speed);
+        } else {
+          s.x += Math.cos(s.heading) * s.speed * dt;
+          s.y += Math.sin(s.heading) * s.speed * dt;
+        }
         // The column has to clear the screen once before it may be removed.
         if (s.mode === 'swim' && !this._outside(s, 0)) s.mode = 'cross';
         if (s.mode === 'cross' && this._outside(s, margin)) list.splice(i, 1);
@@ -495,11 +534,11 @@
         // Shark passed by without touching: close call.
         if (!s.tainted && s.bonusCd <= 0) {
           var mult = this._chain(this.player.x, this.player.y);
-          var amount = sc.nearMiss * mult;
+          var amount = (s.kind === 'dart' ? sc.nearMissDart : sc.nearMiss) * mult;
           this.bonus += amount;
           this.closeCalls++;
           s.bonusCd = 0.8;
-          this._emit('nearMiss', { x: this.player.x, y: this.player.y, amount: amount, mult: mult });
+          this._emit('nearMiss', { x: this.player.x, y: this.player.y, amount: amount, mult: mult, kind: s.kind });
         }
         s.close = false; s.tainted = false;
       }

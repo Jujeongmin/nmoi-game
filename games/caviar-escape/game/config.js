@@ -12,7 +12,6 @@
     invulnTime: 1.0,       // seconds after a hit
     countdown: 2.4,        // 3-2-1 before play (0.8 s per number)
     resultDelay: 1.6,      // pause between end and result modal
-    slowmo: { time: 0.25, factor: 0.35 },   // close call: game runs at 35% for 0.25 s
 
     worldMin: 360,
 
@@ -20,23 +19,24 @@
     assetRoot: '../../',
 
     player: {
-      radius: 13,          // half width (edge clamp)
-      halfHeight: 26,      // half height of the standing chibi (edge clamp)
-      spriteHeight: 52,    // on-screen body height of the member sprite
-      hitRadius: 9,        // hitbox = vertical capsule, a bit inside the visual
-      hitSpan: 12,         // capsule half-length (head to knees)
+      // Small, like the hero of 죽림고수: lots of room between the sharks.
+      radius: 7,           // half width (edge clamp)
+      halfHeight: 15,      // half height of the standing chibi (edge clamp)
+      spriteHeight: 30,    // on-screen body height of the member sprite (renderer scales its trims by it)
+      hitRadius: 4.5,      // hitbox = vertical capsule, a bit inside the visual
+      hitSpan: 7,          // capsule half-length (head to knees)
       maxSpeed: 190,
       response: 20,        // keyboard: how quickly velocity follows input (high = immediate)
       dragGain: 1.15,      // finger drag: member moves 1.15x the finger distance
       dragMax: 2400,       // ... at most this many units/s; a faster flick catches up over the next frames
-      knockback: 230,
-      pickRadius: 22       // reach for pearls (from the capsule axis)
+      knockback: 170,
+      pickRadius: 15       // reach for pearls (from the capsule axis)
     },
 
     shark: {
       length: 58,
       radius: 11,
-      size: 0.82,          // the hunting shark (length and radius x size; dash and pack have their own size)
+      size: 0.48,          // the hunting shark (length and radius x size; dart, dash and pack have their own size)
       baseSpeed: 72,
       speedGain: 2.2,      // + units/s per second elapsed
       turnRate: 1.75,      // rad/s — limited turning is what makes dodging possible
@@ -45,11 +45,18 @@
       warnTime: 0.75       // edge marker before it enters
     },
 
+    // Darts: small sharks shot straight across from every edge at where the player is,
+    // from the start and ever thicker (one every `every[0]` s at first, `every[1]` s at the end).
+    // aimed: share shot at the player; the rest cross on their own line, `wavy` of them swaying.
+    // ease: the ramp is slow at first (a beginner gets well past 10 s) and steep at the end.
+    dart: { size: 0.34, first: 0.8, every: [0.8, 0.055], speed: [105, 235], ease: 2.2, spread: 0.16,
+            aimed: 0.35, wavy: 0.5, waveAmp: [14, 30] },
+
     // Dash shark (wave 2 on): aims from the edge, locks its line, then charges straight across.
-    dash: { size: 1.15, aimTime: 1.0, lockTime: 0.3, speed: 360, every: [3.6, 5.2] },
+    dash: { size: 0.62, aimTime: 1.0, lockTime: 0.3, speed: 360, every: [3.6, 5.2] },
 
     // Shark pack (final wave): small sharks in a column crossing the screen, no tracking.
-    pack: { size: 0.62, count: 3, gap: 34, speed: 140, warnTime: 0.9, every: [4.2, 6.0] },
+    pack: { size: 0.38, count: 5, gap: 20, speed: 140, warnTime: 0.9, every: [4.2, 6.0] },
 
     waves: [
       { at: 0 },
@@ -61,14 +68,15 @@
       first: 0.6,
       intervalStart: 2.4,
       intervalEnd: 1.05,
-      maxStart: 1,         // concurrent hunting sharks at t=0
-      maxEnd: 4            // ... at the end (dash sharks and the pack add to this)
+      maxStart: 0,         // concurrent hunting sharks at t=0 (none: the first one comes with wave 2)
+      maxEnd: 3            // ... at the end (darts, dash sharks and the pack add to this)
     },
 
     score: {
       perSecond: 100,
       nearMiss: 150,
-      nearMissDist: 20,    // gap (units) that counts as a close call
+      nearMissDart: 40,    // a dart brushing by (they come by the dozen)
+      nearMissDist: 11,    // gap (units) that counts as a close call
       clearPerLife: 500
     },
 
