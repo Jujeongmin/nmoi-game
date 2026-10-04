@@ -949,3 +949,63 @@ html.cv-has-footer .lp-app { padding-bottom: 0; }
   45% { transform: translateY(4px) scale(0.95); opacity: 0.8; }
   100% { transform: translateY(7px) scale(0.85); opacity: 0.25; }
 }
+
+/* ---------- Eggs (shared/cv-eggs.js): a member peeking from the edge of the screen ---------- */
+.cv-egg {
+  appearance: none;
+  position: fixed;
+  z-index: 85;
+  width: 108px;
+  height: 92px;            /* head and shoulders show; the rest stays behind the edge */
+  padding: 0;
+  border: 0;
+  background: none;
+  overflow: hidden;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.cv-egg__spr {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 108px;
+  height: 180px;
+  transform: translateY(96px);
+  transition: transform 0.45s cubic-bezier(.3, 1.5, .5, 1);
+  filter: drop-shadow(0 0 6px rgba(226, 204, 152, 0.75));
+}
+.cv-egg.is-in .cv-egg__spr { transform: translateY(0); animation: cv-egg-bob 1.6s ease-in-out 0.5s infinite; }
+@keyframes cv-egg-bob { 50% { transform: translateY(5px) rotate(-3deg); } }
+.cv-egg__spark {
+  position: absolute;
+  top: 6px;
+  right: 14px;
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--cv-gold-bright);
+  box-shadow: 0 0 10px rgba(226, 204, 152, 0.9);
+  font: 700 14px/1 var(--cv-font-ui);
+  color: var(--cv-onyx);
+  opacity: 0;
+  transform: scale(0.3);
+  transition: opacity 0.2s 0.35s, transform 0.3s 0.35s cubic-bezier(.3, 1.8, .5, 1);
+}
+.cv-egg.is-in .cv-egg__spark { opacity: 1; transform: none; animation: cv-egg-ping 1.2s ease-in-out 0.8s infinite; }
+@keyframes cv-egg-ping { 50% { transform: scale(1.18); } }
+.cv-egg.is-caught .cv-egg__spr { transform: translateY(-8px) scale(1.15); filter: drop-shadow(0 0 14px rgba(255, 236, 190, 1)); transition-duration: 0.25s; }
+.cv-egg.is-caught .cv-egg__spark { opacity: 0; }
+/* Sides: the box turns so the member leans in from the left or right edge. */
+.cv-egg--bottom { bottom: calc(var(--cv-footer-h, 0px) - 2px); margin-left: -54px; }
+.cv-egg--left { left: -8px; transform: rotate(90deg); transform-origin: 54px 46px; }
+.cv-egg--right { right: -8px; transform: rotate(-90deg); transform-origin: 54px 46px; }
+
+/* Found: the member dances on a small card. */
+.cv-egg-found { position: fixed; z-index: 95; }
+.cv-egg-found__panel { width: min(100%, 320px); }
+.cv-egg-found__spr { position: relative; width: 120px; height: 166px; margin: 4px auto 6px; }
+.cv-egg-found__title { margin: 0 0 6px; font: 700 19px/1.35 var(--cv-font-heading); color: var(--cv-ink); }
+.cv-egg-found__desc { margin: 0 0 18px; font: 500 13px/1.5 var(--cv-font-ui); color: var(--cv-ink-soft); }
+.cv-egg-found .cv-btn { flex: 1 1 0; min-width: 0; padding: 0 10px; white-space: nowrap; font-size: 13px; }

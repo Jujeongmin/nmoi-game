@@ -181,6 +181,16 @@
 .pg-trailers__row span { flex: 1; font: 600 14px/1.2 var(--cv-font-ui); }
 .pg-trailers__row small { font: 500 11px/1 var(--cv-font-ui); color: var(--cv-ink-soft); }
 .pg-trailers__row.is-locked { opacity: 0.55; }
+/* Hidden trailers (shared/cv-eggs.js): a gold ? until the member is found */
+.pg-count { margin: -8px 0 12px; font: 700 12px/1 var(--cv-font-ui); letter-spacing: 0.08em; text-align: center; color: var(--pg-gold-ink); }
+.pg-spot.is-hidden .pg-spot__no { color: var(--cv-gold-bright); text-shadow: 0 0 10px rgba(226, 204, 152, 0.9); animation: pg-hidden 1.8s ease-in-out infinite; }
+@keyframes pg-hidden { 50% { opacity: 0.55; } }
+.pg-trailers__row.is-hidden b { color: var(--cv-gold); }
+.pg-trailers__row.is-hidden small { color: var(--pg-gold-ink); font-weight: 700; }
+.pg-hint { display: grid; place-items: center; gap: 8px; min-height: 180px; padding: 18px 12px; text-align: center; }
+.pg-hint b { font: 400 54px/1 var(--cv-font-display); color: var(--cv-gold); }
+.pg-hint p { margin: 0; font: 600 14px/1.5 var(--cv-font-ui); word-break: keep-all; color: var(--cv-ivory); }
+.pg-hint small { font: 500 11px/1 var(--cv-font-ui); color: var(--cv-ivory-dim); }
 
 .pg-player { width: min(100%, 520px); padding: 24px 18px 18px; }
 .pg-player__title { margin: 8px 0 14px; font: 700 20px/1.2 var(--cv-font-heading); }
