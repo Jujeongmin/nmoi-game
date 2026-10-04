@@ -26,7 +26,9 @@
       hitRadius: 9,        // hitbox = vertical capsule, a bit inside the visual
       hitSpan: 12,         // capsule half-length (head to knees)
       maxSpeed: 190,
-      response: 9,         // how quickly velocity follows input
+      response: 20,        // keyboard: how quickly velocity follows input (high = immediate)
+      dragGain: 1.15,      // finger drag: member moves 1.15x the finger distance
+      dragMax: 2400,       // ... at most this many units/s; a faster flick catches up over the next frames
       knockback: 230,
       pickRadius: 22       // reach for pearls (from the capsule axis)
     },
@@ -35,8 +37,8 @@
       length: 58,
       radius: 11,
       size: 0.82,          // the hunting shark (length and radius x size; dash and pack have their own size)
-      baseSpeed: 86,
-      speedGain: 2.7,      // + units/s per second elapsed
+      baseSpeed: 72,
+      speedGain: 2.2,      // + units/s per second elapsed
       turnRate: 1.75,      // rad/s — limited turning is what makes dodging possible
       turnGain: 0.025,
       trackTime: [3.2, 4.8], // seconds a shark hunts before swimming off
@@ -44,10 +46,10 @@
     },
 
     // Dash shark (wave 2 on): aims from the edge, locks its line, then charges straight across.
-    dash: { size: 1.15, aimTime: 1.0, lockTime: 0.3, speed: 430, every: [3.6, 5.2] },
+    dash: { size: 1.15, aimTime: 1.0, lockTime: 0.3, speed: 360, every: [3.6, 5.2] },
 
     // Shark pack (final wave): small sharks in a column crossing the screen, no tracking.
-    pack: { size: 0.62, count: 3, gap: 34, speed: 165, warnTime: 0.9, every: [4.2, 6.0] },
+    pack: { size: 0.62, count: 3, gap: 34, speed: 140, warnTime: 0.9, every: [4.2, 6.0] },
 
     waves: [
       { at: 0 },

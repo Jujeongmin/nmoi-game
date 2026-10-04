@@ -61,6 +61,8 @@
     p.x = this.W / 2;
     p.y = this.H * 0.55;
     p.vx = p.vy = 0;
+    p.kbx = p.kby = 0;
+    p.cx = p.cy = 0;
     p.facing = -Math.PI / 2;
   };
 
@@ -168,15 +170,38 @@
 
   /* ---------- player ---------- */
 
+  /* input: { x, y } keyboard direction (0..1), or { drag: true, dx, dy } — a finger drag
+     in world units that moves the member right away. A flick faster than dragMax is spread
+     over the next frames (p.carry), so no distance is lost and nothing teleports. */
   P._updatePlayer = function (dt, input) {
     var c = this.cfg.player, p = this.player;
-    var tx = input ? input.x * c.maxSpeed : 0;
-    var ty = input ? input.y * c.maxSpeed : 0;
-    var k = 1 - Math.exp(-c.response * dt);
-    p.vx += (tx - p.vx) * k;
-    p.vy += (ty - p.vy) * k;
-    p.x += p.vx * dt;
-    p.y += p.vy * dt;
+    if (input && input.drag) {
+      var ax = p.cx + input.dx * c.dragGain, ay = p.cy + input.dy * c.dragGain;
+      var mx = ax, my = ay, ml = Math.hypot(mx, my), cap = c.dragMax * dt;
+      if (ml > cap) { mx *= cap / ml; my *= cap / ml; }
+      p.cx = ax - mx; p.cy = ay - my;
+      p.x += mx; p.y += my;
+      // Velocity only drives the look (lean, facing, bubbles) — smoothed so it doesn't flicker.
+      var kv = dt > 0 ? 1 - Math.exp(-18 * dt) : 0;
+      p.vx += ((dt > 0 ? mx / dt : 0) - p.vx) * kv;
+      p.vy += ((dt > 0 ? my / dt : 0) - p.vy) * kv;
+    } else {
+      p.cx = p.cy = 0;
+      var tx = input ? input.x * c.maxSpeed : 0;
+      var ty = input ? input.y * c.maxSpeed : 0;
+      var k = 1 - Math.exp(-c.response * dt);
+      p.vx += (tx - p.vx) * k;
+      p.vy += (ty - p.vy) * k;
+      p.x += p.vx * dt;
+      p.y += p.vy * dt;
+    }
+    // A hit pushes the member away, whatever the input.
+    if (p.kbx || p.kby) {
+      p.x += p.kbx * dt; p.y += p.kby * dt;
+      var kd = Math.exp(-7 * dt);
+      p.kbx *= kd; p.kby *= kd;
+      if (Math.abs(p.kbx) + Math.abs(p.kby) < 4) p.kbx = p.kby = 0;
+    }
     if (p.x < p.r) { p.x = p.r; p.vx = 0; }
     if (p.x > this.W - p.r) { p.x = this.W - p.r; p.vx = 0; }
     if (p.y < c.halfHeight) { p.y = c.halfHeight; p.vy = 0; }
@@ -484,8 +509,8 @@
   P._hit = function (s) {
     var p = this.player, c = this.cfg;
     var dx = p.x - s.x, dy = p.y - s.y, d = Math.hypot(dx, dy) || 1;
-    p.vx = dx / d * c.player.knockback;
-    p.vy = dy / d * c.player.knockback;
+    p.kbx = dx / d * c.player.knockback;
+    p.kby = dy / d * c.player.knockback;
     if (s.kind === 'hunt') s.mode = 'leave';
     this.invuln = c.invulnTime;
     this.lives--;

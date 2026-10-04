@@ -143,7 +143,12 @@
     // A close call slows the game for a moment; the scene keeps its own pace.
     var gdt = dt;
     if (slowmo > 0) { slowmo = Math.max(0, slowmo - dt); gdt = dt * cfg.slowmo.factor; }
-    game.update(gdt, input.enabled ? input.vector() : null);
+    var move = null;
+    if (input.enabled) {
+      move = input.take();
+      move.dx /= renderer.scale; move.dy /= renderer.scale;   // CSS px → world units
+    }
+    game.update(gdt, move);
     if (talk && !warned && game.phase === 'play' && game.timeLeft <= 10) { warned = true; talk.say('last10'); }
     var events = game.drainEvents();
     for (var i = 0; i < events.length; i++) handle(events[i]);
