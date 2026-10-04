@@ -26,33 +26,75 @@
 .cm-ticket__lines {
   list-style: none;
   margin: 0;
-  padding: 6px 2px 2px;
+  padding: 8px 0 4px;
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  column-gap: 14px;
+  grid-template-columns: repeat(var(--n, 4), minmax(0, 64px));
+  justify-content: center;
+  gap: 6px;
 }
-.cm-ticket__lines li {
-  display: flex;
-  align-items: baseline;
-  gap: 8px;
-  min-width: 0;
-  font: 600 13px/22px var(--cv-font-ui);
-  letter-spacing: 0.06em;
+.cm-ticket__lines li { position: relative; display: flex; flex-direction: column; align-items: center; gap: 3px; min-width: 0; }
+.cm-ticket__lines .pic {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 100%;
+  aspect-ratio: 1;
+  border: 1px solid var(--cv-line);
+  border-radius: 6px;
+  background: #fbf6ea;
+  overflow: hidden;
+}
+.cm-ticket__lines img { width: 84%; height: 84%; object-fit: contain; transition: opacity 0.2s, transform 0.25s; }
+.cm-ticket__lines .mask {
+  position: absolute; inset: 0;
+  display: grid; place-items: center;
+  background: #efe4cc;
+  font: 400 22px/1 var(--cv-font-display);
+  color: #b3a68b;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+.cm-ticket__lines .num {
+  position: absolute; top: -5px; left: -4px;
+  display: grid; place-items: center;
+  width: 17px; height: 17px;
+  border-radius: 50%;
+  background: var(--cv-ink);
+  font: 600 10px/1 var(--cv-font-num);
+  color: var(--cv-ivory);
+}
+.cm-ticket__lines .tick {
+  position: absolute; top: -5px; right: -4px;
+  display: grid; place-items: center;
+  width: 17px; height: 17px;
+  border-radius: 50%;
+  background: #8a7248;
+  font-size: 10px;
+  color: var(--cv-ivory);
+  opacity: 0;
+  transform: scale(0.4);
+  transition: opacity 0.2s, transform 0.25s cubic-bezier(.3, 1.6, .5, 1);
+}
+.cm-ticket__lines .name {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
   white-space: nowrap;
+  font: 600 10px/1.2 var(--cv-font-ui);
+  letter-spacing: 0.02em;
+  color: var(--cv-ink-soft);
 }
-.cm-ticket__lines li.is-signature { grid-column: 1 / -1; }
-.cm-ticket__lines .num { width: 12px; font: 400 15px/22px var(--cv-font-num); color: #8a7248; }
-.cm-ticket__lines .name { overflow: hidden; text-overflow: ellipsis; }
-.cm-ticket__lines .name em { font-style: normal; font-weight: 500; color: #8a7248; margin-right: 4px; }
-.cm-ticket__lines .mask { display: none; color: #b3a68b; letter-spacing: 0.2em; }
-.cm-ticket__lines .tick { margin-left: auto; color: #8a7248; opacity: 0; font-size: 12px; }
+/* Signature caviar: the gold-framed last card */
+.cm-ticket__lines li.is-signature .pic { border: 1px solid var(--cv-gold); box-shadow: inset 0 0 0 2px #fbf6ea, inset 0 0 0 3px rgba(201, 174, 120, 0.7); }
+.cm-ticket__lines li.is-signature .num { background: #8a7248; }
+.cm-ticket__lines li.is-signature .name { color: #8a7248; }
 
-.cm-ticket.is-hidden li:not(.is-done) .name { display: none; }
-.cm-ticket.is-hidden li:not(.is-done) .mask { display: inline; }
-.cm-ticket.is-hidden li.is-current .mask { color: #8a7248; }
-.cm-ticket.is-hidden li.is-current .num { color: var(--cv-ink); }
-.cm-ticket li.is-done .tick { opacity: 1; }
-.cm-ticket li.is-done .name { animation: cm-reveal 0.3s ease-out; }
+.cm-ticket.is-hidden li:not(.is-done) .mask { opacity: 1; }
+.cm-ticket.is-hidden li:not(.is-done) .name { visibility: hidden; }
+.cm-ticket.is-hidden li.is-current .pic { border-color: var(--cv-ink); box-shadow: 0 0 0 2px rgba(26, 22, 18, 0.15); }
+.cm-ticket.is-hidden li.is-current .mask { color: var(--cv-ink); }
+.cm-ticket li.is-done .tick { opacity: 1; transform: none; }
+.cm-ticket li.is-done img { animation: cm-reveal 0.3s ease-out; }
 @keyframes cm-reveal { from { opacity: 0; transform: translateY(3px); } to { opacity: 1; transform: none; } }
 
 .cm-ticket__foot { display: flex; align-items: center; gap: 12px; min-height: 34px; padding: 0 2px; }
@@ -344,7 +386,7 @@
 @media (max-height: 660px) {
   .cv-app { gap: 6px; }
   .cm-ticket { padding: 7px 12px 5px; }
-  .cm-ticket__lines li { line-height: 19px; font-size: 12px; }
+  .cm-ticket__lines { grid-template-columns: repeat(var(--n, 4), minmax(0, 52px)); padding-top: 6px; }
   .cm-ticket__foot { min-height: 30px; }
   .cm-pick { min-height: 42px; }
   .cm-pick--caviar { min-height: 48px; gap: 3px; }

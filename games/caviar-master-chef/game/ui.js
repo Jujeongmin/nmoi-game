@@ -212,19 +212,23 @@
   P._renderTicket = function (order, orderNo) {
     var self = this;
     this.el.ticketTitle.textContent = 'ORDER No.' + pad(orderNo, 2);
+    // The order as pictures, in plating order: the ingredient, its step number and a small
+    // name (it tells the four caviars apart). Hidden cards show "?" until they are plated.
     var frag = document.createDocumentFragment();
     order.steps.forEach(function (step, i) {
       var item = self.byId[step.kind][step.id];
-      var isSig = step.kind === 'caviar';
       var li = document.createElement('li');
-      if (isSig) li.className = 'is-signature';
+      if (step.kind === 'caviar') li.className = 'is-signature';
       li.innerHTML =
+        '<span class="pic"><img alt="" decoding="async"><span class="mask">?</span></span>' +
         '<span class="num">' + (i + 1) + '</span>' +
-        '<span class="name">' + (isSig ? '<em>시그니처 ·</em>' : '') + item.label + '</span>' +
-        '<span class="mask">' + (isSig ? '시그니처 · · ·' : '· · ·') + '</span>' +
-        '<span class="tick">✓</span>';
+        '<span class="tick">✓</span>' +
+        '<span class="name"></span>';
+      li.querySelector('img').src = item.image;
+      li.querySelector('.name').textContent = item.label;
       frag.appendChild(li);
     });
+    this.el.ticketLines.style.setProperty('--n', order.steps.length);
     this.el.ticketLines.replaceChildren(frag);
   };
 
