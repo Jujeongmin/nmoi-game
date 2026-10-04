@@ -132,12 +132,7 @@
   window.addEventListener('cv-settings', syncPause);
 
   function tick(dt) {
-    var move = null;
-    if (input.enabled) {
-      move = input.take();
-      move.dx /= renderer.scale; move.dy /= renderer.scale;   // CSS px → world units
-    }
-    game.update(dt, move);
+    game.update(dt, input.enabled ? input.take() : null);
     if (talk && !warned && game.phase === 'play' && game.timeLeft <= 10) { warned = true; talk.say('last10'); }
     var events = game.drainEvents();
     for (var i = 0; i < events.length; i++) handle(events[i]);

@@ -25,10 +25,8 @@
       spriteHeight: 30,    // on-screen body height of the member sprite (renderer scales its trims by it)
       hitRadius: 4.5,      // hitbox = vertical capsule, a bit inside the visual
       hitSpan: 7,          // capsule half-length (head to knees)
-      maxSpeed: 160,       // keyboard and mouse stick speed (the member is small: slower aims better)
-      response: 0,         // keyboard: 0 = the keys move and stop the member at once (no glide)
-      dragGain: 1.15,      // finger drag: member moves 1.15x the finger distance
-      dragMax: 2400,       // ... at most this many units/s; a faster flick catches up over the next frames
+      maxSpeed: 160,       // keys and stick (the member is small: a slower top speed aims better)
+      response: 0,         // 0 = keys and stick move and stop the member at once (no glide)
       knockback: 170,
       pickRadius: 15       // reach for pearls (from the capsule axis)
     },

@@ -238,10 +238,10 @@
     this._drawStick(input);
   };
 
-  /* Mouse stick, drawn in CSS pixels at the press point: the gold ring and a pearl knob. */
+  /* The stick, drawn in CSS pixels at the press point: the gold ring and a pearl knob. */
   P._drawStick = function (input) {
     var p = input && input.pointer;
-    if (!p || !p.active || !p.mouse || !input.enabled) return;
+    if (!p || !p.active || !input.enabled) return;
     var ctx = this.ctx, R = input.stickRadius;
     var dx = p.x - p.ox, dy = p.y - p.oy, len = Math.hypot(dx, dy);
     if (len > R) { dx = dx / len * R; dy = dy / len * R; }

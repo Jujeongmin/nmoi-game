@@ -62,7 +62,6 @@
     p.y = this.H * 0.55;
     p.vx = p.vy = 0;
     p.kbx = p.kby = 0;
-    p.cx = p.cy = 0;
     p.facing = -Math.PI / 2;
   };
 
@@ -170,31 +169,16 @@
 
   /* ---------- player ---------- */
 
-  /* input: { x, y } keyboard direction (0..1), or { drag: true, dx, dy } — a finger drag
-     in world units that moves the member right away. A flick faster than dragMax is spread
-     over the next frames (p.carry), so no distance is lost and nothing teleports. */
+  /* input: { x, y } direction (0..1) from the keys or the stick. */
   P._updatePlayer = function (dt, input) {
     var c = this.cfg.player, p = this.player;
-    if (input && input.drag) {
-      var ax = p.cx + input.dx * c.dragGain, ay = p.cy + input.dy * c.dragGain;
-      var mx = ax, my = ay, ml = Math.hypot(mx, my), cap = c.dragMax * dt;
-      if (ml > cap) { mx *= cap / ml; my *= cap / ml; }
-      p.cx = ax - mx; p.cy = ay - my;
-      p.x += mx; p.y += my;
-      // Velocity only drives the look (lean, facing, bubbles) — smoothed so it doesn't flicker.
-      var kv = dt > 0 ? 1 - Math.exp(-18 * dt) : 0;
-      p.vx += ((dt > 0 ? mx / dt : 0) - p.vx) * kv;
-      p.vy += ((dt > 0 ? my / dt : 0) - p.vy) * kv;
-    } else {
-      p.cx = p.cy = 0;
-      var tx = input ? input.x * c.maxSpeed : 0;
-      var ty = input ? input.y * c.maxSpeed : 0;
-      var k = c.response > 0 ? 1 - Math.exp(-c.response * dt) : 1;   // 0: keys move and stop at once
-      p.vx += (tx - p.vx) * k;
-      p.vy += (ty - p.vy) * k;
-      p.x += p.vx * dt;
-      p.y += p.vy * dt;
-    }
+    var tx = input ? input.x * c.maxSpeed : 0;
+    var ty = input ? input.y * c.maxSpeed : 0;
+    var k = c.response > 0 ? 1 - Math.exp(-c.response * dt) : 1;   // 0: it moves and stops at once
+    p.vx += (tx - p.vx) * k;
+    p.vy += (ty - p.vy) * k;
+    p.x += p.vx * dt;
+    p.y += p.vy * dt;
     // A hit pushes the member away, whatever the input.
     if (p.kbx || p.kby) {
       p.x += p.kbx * dt; p.y += p.kby * dt;
