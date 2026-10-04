@@ -37,7 +37,7 @@ const ESCAPE_BOT = () => {
     const turn = sc.turnRate + sc.turnGain * g.elapsed, dt = 0.05;
     let worst = 1e9;
     for (let t = 0; t < 1.0; t += dt) {
-      const k = 1 - Math.exp(-pc.response * dt);
+      const k = pc.response > 0 ? 1 - Math.exp(-pc.response * dt) : 1;
       vx += (dir.x * pc.maxSpeed - vx) * k; vy += (dir.y * pc.maxSpeed - vy) * k;
       px = Math.max(pc.radius, Math.min(g.W - pc.radius, px + vx * dt));
       py = Math.max(pc.halfHeight, Math.min(g.H - pc.halfHeight, py + vy * dt));
