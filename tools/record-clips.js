@@ -5,7 +5,7 @@
      node tools/record-clips.js [escape|match|chef ...]   (needs the local server: npx http-server -c-1 -p 5179)
 
    Each game is played by a small bot in a headless phone-sized browser; the recorder keeps
-   the highlight window (Escape: the final wave to the clear, Match: a table cleared,
+   the highlight window (Escape: the survival run around wave 3, Match: a table cleared,
    Master Chef: a perfect order) and crops it to the play area. A take with a hit / miss is
    thrown away and played again. */
 'use strict';
@@ -180,26 +180,26 @@ function durationOf(file) {
 const GAMES = {
   escape: {
     url: '/games/caviar-escape/?from=hub&lang=ko',
-    crop: ['#stage', '#stage', 4 / 5],
+    crop: ['#stage', '#stage'],   // the whole stage: the wave notice sits at its bottom
+    // A survival run: the bot plays in real time from just before wave 3 (25 s) — the time
+    // climbing, the wave notice, the sharks thick — and the take is kept only without a hit.
     async play(page) {
       await page.evaluate(ESCAPE_BOT);
       await startGame(page);
       await page.waitForFunction(() => window.CAVIAR.debug.game.phase === 'play');
-      // Skip to the final wave with the bot steering, then let it play in real time to the clear.
       await page.evaluate(() => {
         const NS = window.CAVIAR, D = NS.debug, g = D.game;
         g.lives = 99;
-        while (g.elapsed < 25.4) { D.input.held = {}; window.__clip.hold(window.__clip.steer()); D.step(0.1); }
-        g.lives = 3; g.invuln = 0;
+        while (g.elapsed < 22.8) { D.input.held = {}; window.__clip.hold(window.__clip.steer()); D.step(0.1); }
+        g.lives = 1; g.invuln = 0; g.shields = 0;
         g.events.length = 0;
         const hit = g._hit.bind(g);
         g._hit = (s) => { window.__clip.hits++; hit(s); };
       });
       const t = Date.now();
-      await page.waitForFunction(() => window.CAVIAR.debug.game.phase === 'clear' || window.CAVIAR.debug.game.phase === 'over', null, { timeout: 15000 });
-      await sleep(1500);   // the clear: confetti and the member's dance
-      const ok = await page.evaluate(() => window.__clip.hits === 0 && window.CAVIAR.debug.game.result === 'clear');
-      return { ok, from: t + 600, to: Date.now() };
+      await sleep(5200);
+      const ok = await page.evaluate(() => window.__clip.hits === 0 && window.CAVIAR.debug.game.phase === 'play');
+      return { ok, from: t, to: Date.now() };
     }
   },
   match: {
