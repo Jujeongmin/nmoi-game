@@ -37,7 +37,7 @@ ASSET_DIRS = sorted("assets/" + p.name for p in (Path(__file__).resolve().parent
 
 
 # A quoted or url() path into assets/ ending in a media extension, without a query yet.
-asset_ref = re.compile(r"""(["'(])((?:\.\./|\./|/)*)(assets/[^"'()?*\s]+\.(?:webp|png|jpe?g|gif|svg|mp3|ogg|m4a|wav|woff2?))(?=["')])""")
+asset_ref = re.compile(r"""(["'(])((?:\.\./|\./|/)*)(assets/[^"'()?*\s]+\.(?:webp|png|jpe?g|gif|svg|mp3|ogg|m4a|wav|mp4|webm|woff2?))(?=["')])""")
 _hashes = {}
 
 
