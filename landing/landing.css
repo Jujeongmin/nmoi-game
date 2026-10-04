@@ -375,10 +375,8 @@
   gap: 2px 8px;
 }
 .lp-opts--3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-/* Three narrow columns: the gold frame marks the pick, so no check mark eats the room and a
-   4-letter caviar name (임페리얼, 화이트펄) stays on one line. */
+/* Three narrow columns: a 4-letter caviar name (임페리얼, 화이트펄) stays on one line. */
 .lp-opts--3 .lp-opt { gap: 4px; padding-left: 7px; padding-right: 5px; }
-.lp-opts--3 .lp-opt.is-checked::after { content: none; }
 
 .lp-opt {
   position: relative;
@@ -410,17 +408,7 @@
   background: rgba(201, 174, 120, 0.12);
   color: var(--cv-ink);
   font-weight: 700;
-}
-.lp-opt.is-checked::after {   /* small check in the margin */
-  content: "";
-  flex: none;
-  width: 4px;
-  height: 8px;
-  margin-left: auto;
-  border-right: 1.5px solid var(--lp-gold-ink);
-  border-bottom: 1.5px solid var(--lp-gold-ink);
-  transform: translateY(-1px) rotate(45deg);
-}
+}   /* the gold frame alone marks the pick (no check mark over the gold leaf) */
 
 .lp-sheet__foot { padding-top: 4px; }
 .lp-sheet__foot .cv-btn { width: 100%; }
