@@ -1,7 +1,7 @@
 /* CAVIAR ESCAPE — game logic. No DOM, no canvas.
    Consumes an input vector {x, y} (length 0..1) and emits events that the UI,
    renderer and sound react to:
-   go · hit · nearMiss · pickup · combo · wave · dashAim · dash · end
+   go · hit · pickup · combo · wave · dashAim · dash · end
 
    Sharks come in three kinds:
      hunt  — enters from an edge, turns toward the player for a few seconds, swims off
@@ -42,7 +42,6 @@
     this.survival = 0;
     this.bonus = 0;
     this.lifeBonus = 0;
-    this.closeCalls = 0;
     this.pickups = 0;
     this.combo = 0;
     this.comboTimer = 0;
@@ -190,7 +189,7 @@
       p.cx = p.cy = 0;
       var tx = input ? input.x * c.maxSpeed : 0;
       var ty = input ? input.y * c.maxSpeed : 0;
-      var k = 1 - Math.exp(-c.response * dt);
+      var k = c.response > 0 ? 1 - Math.exp(-c.response * dt) : 1;   // 0: keys move and stop at once
       p.vx += (tx - p.vx) * k;
       p.vy += (ty - p.vy) * k;
       p.x += p.vx * dt;
@@ -276,7 +275,6 @@
       kind: kind, size: size || 1,
       x: x, y: y, heading: heading, speed: 0,
       mode: 'warn', t: 0, track: 0,
-      close: false, tainted: false, bonusCd: 0,
       wob: Math.random() * TAU
     };
   };
@@ -398,7 +396,6 @@
       var s = list[i];
       var margin = c.length * s.size;
       s.wob += dt * (s.kind === 'dash' && s.mode === 'dash' ? 16 : s.kind === 'pack' ? 13 : 9);
-      if (s.bonusCd > 0) s.bonusCd -= dt;
 
       if (s.kind === 'dash') {
         if (s.mode === 'aim') {
@@ -518,30 +515,10 @@
   };
 
   P._resolve = function () {
-    var sc = this.cfg.score, nm = sc.nearMissDist;
+    if (this.invuln > 0) return;
     for (var i = 0; i < this.sharks.length; i++) {
       var s = this.sharks[i];
-      if (!this._live(s)) continue;
-      var g = this._gap(s);
-
-      if (g < 0) {
-        if (this.invuln <= 0) this._hit(s);
-        s.close = true; s.tainted = true;
-      } else if (g < nm) {
-        s.close = true;
-        if (this.invuln > 0) s.tainted = true;
-      } else if (s.close && g > nm * 1.6) {
-        // Shark passed by without touching: close call.
-        if (!s.tainted && s.bonusCd <= 0) {
-          var mult = this._chain(this.player.x, this.player.y);
-          var amount = (s.kind === 'dart' ? sc.nearMissDart : sc.nearMiss) * mult;
-          this.bonus += amount;
-          this.closeCalls++;
-          s.bonusCd = 0.8;
-          this._emit('nearMiss', { x: this.player.x, y: this.player.y, amount: amount, mult: mult, kind: s.kind });
-        }
-        s.close = false; s.tainted = false;
-      }
+      if (this._live(s) && this._gap(s) < 0) { this._hit(s); return; }
     }
   };
 

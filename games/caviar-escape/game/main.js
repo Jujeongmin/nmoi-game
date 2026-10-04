@@ -83,11 +83,10 @@
       best: best,
       isNewBest: isNewBest,
       survived: game.elapsed,
-      closeCalls: game.closeCalls,
       lifeBonus: game.lifeBonus
     });
     NS.bingoUI.showRun(cfg.gameId, NS.bingo.report(cfg.gameId, {
-      result: game.result, score: score, lives: game.lives, closeCalls: game.closeCalls
+      result: game.result, score: score, lives: game.lives
     }));
   }
 
@@ -98,16 +97,13 @@
     if (talk) {
       if (ev.type === 'go') { warned = false; talk.say('start'); }
       else if (ev.type === 'hit') talk.say('oops');
-      else if (ev.type === 'nearMiss') talk.say('good');
+      else if (ev.type === 'combo') talk.say('good');
       else if (ev.type === 'end') talk.hide();
     }
     renderer.event(ev, game);
     switch (ev.type) {
       case 'hit':
         renderer.playAnim('frown');
-        break;
-      case 'nearMiss':
-        ui.bonusFeedback();
         break;
       case 'pickup':
       case 'combo':

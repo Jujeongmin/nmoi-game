@@ -209,7 +209,7 @@
     if (document.activeElement && document.activeElement.blur) document.activeElement.blur();
   };
 
-  /* data: { result, score, best, isNewBest, survived, closeCalls, lifeBonus }
+  /* data: { result, score, best, isNewBest, survived, lifeBonus }
      The score counts up from zero; a new record is then sealed with the wax stamp. */
   P.showResult = function (d) {
     var el = this.el;

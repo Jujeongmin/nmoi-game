@@ -25,7 +25,7 @@
 
   var MAP = {
     'caviar-escape': {
-      go: 'start', hit: 'hit', nearMiss: 'near',
+      go: 'start', hit: 'hit',
       pickup: 'collect', combo: 'combo',
       dashAim: 'alarm', wave: 'wave',
       end: function (d) { return d && d.result === 'clear' ? 'success' : 'fail'; }

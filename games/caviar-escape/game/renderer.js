@@ -171,12 +171,6 @@
         fx.flash('#ff3b2a', 0.32, 0.28);
         fx.text(ev.x, ev.y - 38, '-1', col.alert, 16, 0.9);
         break;
-      case 'nearMiss':
-        fx.ring(ev.x, ev.y, 50, 0.55);
-        fx.sparks(ev.x, ev.y, 7, 120);
-        fx.text(ev.x, ev.y - 40, NS.t('아슬아슬 +{n}', { n: ev.amount }) + (ev.mult > 1 ? ' x' + ev.mult : ''), col.goldBright, 14, 1.1);
-        fx.punch(0.06);
-        break;
       case 'pickup':
         fx.pop(ev.x, ev.y, 'pearl-burst', 46, 0.45);
         fx.sparks(ev.x, ev.y, 3, 90, 'gold-leaf');
