@@ -72,4 +72,15 @@
     var btn = document.getElementById('btn-back');
     if (btn) btn.textContent = '캐비어 선택';
   }
+
+  // A game's description (title) card: back to the restaurant from its top-left corner.
+  var titleScreen = document.getElementById('screen-title');
+  if (titleScreen) {
+    var back = document.createElement('button');
+    back.type = 'button';
+    back.className = 'cv-title-back';
+    back.textContent = '← 레스토랑';
+    back.addEventListener('click', function () { NS.hub.exit(); });
+    titleScreen.appendChild(back);
+  }
 })(window.CAVIAR = window.CAVIAR || {});
