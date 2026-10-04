@@ -73,6 +73,16 @@
     if (btn) btn.textContent = '캐비어 선택';
   }
 
+  // Play clips on the description cards stay still (poster) for reduced motion; tap plays them.
+  Array.prototype.forEach.call(document.querySelectorAll('.cv-clip__video'), function (v) {
+    var forced = false;   // ?motion=1 (cv-settings.js) plays motion anyway for the tab
+    try { forced = sessionStorage.getItem('cv-motion') === '1' || /[?&]motion=1(?:&|$)/.test(window.location.search); } catch (e) {}
+    if (forced || !(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches)) return;
+    v.removeAttribute('autoplay');
+    v.pause();
+    v.addEventListener('click', function () { if (v.paused) v.play(); else v.pause(); });
+  });
+
   // A game's description (title) card: back to the restaurant from its top-left corner.
   var titleScreen = document.getElementById('screen-title');
   if (titleScreen) {

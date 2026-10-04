@@ -239,6 +239,34 @@ html[lang="zh-Hans"] { --cv-font-ui: "PingFang SC", "Microsoft YaHei", "Noto San
 .cv-has-hud-settings > .cv-overlay { padding-top: 60px; }
 .cv-settings-btn--hud { position: relative; z-index: 60; align-self: center; margin: 0 2px 0 6px; }
 .cv-settings__headbtns { justify-self: end; display: flex; gap: 6px; align-items: center; }
+/* Game description card: a few seconds of real play instead of a paragraph (assets/clips,
+   tools/record-clips.js). Muted, looping; paused for reduced motion (cv-hub.js). */
+.cv-clip {
+  width: min(100%, 196px);
+  margin: 2px auto 14px;
+  padding: 3px;
+  border: 1px solid var(--cv-gold);
+  border-radius: 8px;
+  background: var(--cv-onyx);
+  box-shadow: 0 6px 18px rgba(11, 10, 8, 0.25);
+}
+.cv-clip__video { display: block; width: 100%; height: auto; border-radius: 5px; background: #0b0a08; }
+@media (max-height: 700px) { .cv-clip { width: min(100%, 160px); margin-bottom: 10px; } }
+/* A description card taller than the screen keeps its start button in view: the button row
+   sticks to the bottom of the card (with the frame's lines) while the rest scrolls above it. */
+#screen-title .cv-panel > .cv-actions {
+  position: sticky;
+  bottom: 0;
+  z-index: 3;
+  margin: 0 -26px -26px;
+  padding: 18px 26px 26px;
+  background:
+    linear-gradient(var(--cv-gold), var(--cv-gold)) 8px 0 / 1px 100% no-repeat,
+    linear-gradient(var(--cv-gold), var(--cv-gold)) calc(100% - 8px) 0 / 1px 100% no-repeat,
+    linear-gradient(var(--cv-gold), var(--cv-gold)) 8px calc(100% - 8px) / calc(100% - 16px) 1px no-repeat,
+    linear-gradient(rgba(239, 232, 216, 0), var(--cv-ivory) 18px);
+}
+
 /* Game description card: back to the restaurant, top-left (the gear sits top-right). */
 .cv-title-back {
   appearance: none;
