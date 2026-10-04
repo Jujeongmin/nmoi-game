@@ -12,6 +12,8 @@
     return n;
   }
   function pad(n) { return String(Math.max(0, Math.floor(n))).padStart(5, '0'); }
+  // A survival game shows its record as a time (23.45초); the others as a 5-digit score.
+  function rec(gameId, n) { return NS.campaign.timed(gameId) ? NS.campaign.fmtScore(gameId, n) : pad(n); }
 
   var handlers = {};
 
@@ -26,10 +28,10 @@
     var list = el('dl', 'cv-menu lp-rank__mine');
     Object.keys(NS.bingo.games).forEach(function (id) {
       var g = NS.bingo.games[id];
-      var best = NS.storage.scope(id).getNumber('best', 0);
+      var best = NS.storage.scope(id).getNumber(NS.campaign.timed(id) ? 'bestTime' : 'best', 0);
       var row = el('div', 'cv-menu__row');
       row.appendChild(el('dt', '', g.name));
-      row.appendChild(el('dd', 'lp-rank__score', pad(best)));
+      row.appendChild(el('dd', 'lp-rank__score', rec(id, best)));
       list.appendChild(row);
     });
     body.appendChild(list);
@@ -79,12 +81,12 @@
           var li = el('li', r.me ? 'is-me' : '');
           li.appendChild(el('b', '', String(r.rank)));
           li.appendChild(el('span', '', r.nickname));
-          li.appendChild(el('em', '', pad(r.score)));
+          li.appendChild(el('em', '', rec(ids[i], r.score)));
           ol.appendChild(li);
         });
         board.appendChild(ol);
         if (res.mine && !res.top.some(function (r) { return r.me; })) {
-          board.appendChild(el('p', 'lp-rank__mine-row', '내 순위 ' + res.mine.rank + '위 · ' + pad(res.mine.score)));
+          board.appendChild(el('p', 'lp-rank__mine-row', '내 순위 ' + res.mine.rank + '위 · ' + rec(ids[i], res.mine.score)));
         }
       }, function () {
         board.innerHTML = '';

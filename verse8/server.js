@@ -44,7 +44,8 @@ const WEEKS = [
 // week has ended (the final weekly board).
 // Numbers are provisional until the alpha data (10/13) — keep shared/cv-campaign.js in step.
 const BINGO = {
-  scoreEasy: { 'caviar-match': 2500, 'caviar-escape': 2500, 'caviar-master-chef': 2500 },  // score I (booster score)
+  // escape: survival time in 1/100 s (20 s / 45 s)
+  scoreEasy: { 'caviar-match': 2500, 'caviar-escape': 2000, 'caviar-master-chef': 2500 },  // score I (booster score)
   score: { 'caviar-match': 5000, 'caviar-escape': 4500, 'caviar-master-chef': 5000 },      // score II (escape: tools/sim-escape.js)
   rankTopPct: 10,          // game rank cell: weekly top 10 %
   refRankTop: 10,          // referral rank cell: weekly top 10
@@ -67,11 +68,14 @@ const REF_DAILY_CAP = 5;
 // anything real play reaches, so no real record is ever turned away (raised 2026-10-02).
 //   caviar-master-chef: 60 s, orders 3,4,5,6,6... skipping the memorize time and tapping every
 //                       0.3 s reaches ~24,000; a bot tapping every 0.13 s made 21,100.
-//   caviar-escape: 30 s, 3,000 survival + 2,000 lives + pearls and close calls x combo (up to x5);
-//                  a near-perfect run stays under ~30,000.
+//   caviar-escape: a survival run, score = 1/100 s survived: at most 100 a second since the run
+//                  opened (its countdown only adds slack), up to 10 minutes.
 //   caviar-match: a greedy bot aiming instantly, 1,200 runs: median ~20,000, best 49,950.
 const GAMES = {
-  'caviar-escape': { maxScore: 50000, duration: 30, lives: true },   // lives: takes +1 life boosters
+  // Escape is a survival run: the score is the time survived in 1/100 s, so it grows 100 a
+  // second at most (cap = maxScore over duration); timed: the booster is a shield on the page,
+  // the time is never multiplied.
+  'caviar-escape': { maxScore: 60000, duration: 600, lives: true, timed: true },   // lives: takes +1 life boosters
   'caviar-match': { maxScore: 150000, duration: 60 },
   'caviar-master-chef': { maxScore: 50000, duration: 60 },
 };
@@ -550,7 +554,7 @@ class Server {
     await $global.updateMyState(Object.assign({ runs }, reward.patch));
     Object.assign(me, reward.patch);
 
-    const boosted = Math.floor(raw * multiplier);
+    const boosted = game.timed ? raw : Math.floor(raw * multiplier);
     const season = seasonOf();
     const nickname = cleanNickname(me.nickname) || 'Guest';
     const lb = me.lb || {};

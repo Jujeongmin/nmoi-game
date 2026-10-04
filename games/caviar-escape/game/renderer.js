@@ -171,16 +171,13 @@
         fx.flash('#ff3b2a', 0.32, 0.28);
         fx.text(ev.x, ev.y - 38, '-1', col.alert, 16, 0.9);
         break;
-      case 'pickup':
-        fx.pop(ev.x, ev.y, 'pearl-burst', 46, 0.45);
-        fx.sparks(ev.x, ev.y, 3, 90, 'gold-leaf');
-        fx.sparks(ev.x, ev.y, 5, 100);
-        fx.text(ev.x, ev.y - 20, '+' + ev.amount + (ev.mult > 1 ? ' x' + ev.mult : ''), col.goldBright, 13, 0.9);
-        break;
-      case 'combo':
-        fx.ring(p.x, p.y, 64, 0.5);
-        fx.pop(p.x, p.y, 'glow', 90, 0.45);
-        fx.punch(0.04);
+      case 'shield':   // the pre-save shield takes the hit and bursts
+        fx.ring(ev.x, ev.y, 46, 0.5);
+        fx.pop(ev.x, ev.y, 'pearl-burst', 54, 0.5);
+        fx.sparks(ev.x, ev.y, 8, 140);
+        fx.shake(4, 0.25);
+        fx.flash('#bfe6ff', 0.18, 0.25);
+        fx.text(ev.x, ev.y - 30, NS.t('보호막!'), col.goldBright, 14, 0.9);
         break;
       case 'wave':
         fx.flash('#ffffff', 0.12, 0.35);
@@ -191,16 +188,7 @@
         fx.bubbles(ev.x, ev.y, 12, 10);
         break;
       case 'end':
-        if (ev.result === 'clear') {
-          fx.confetti(this.W, this.H, 80);
-          fx.burst(p.x, p.y, 36);
-          fx.ring(p.x, p.y, 90, 0.9);
-          fx.pop(p.x, p.y, 'glow', 150, 0.9);
-          fx.flash('#f3d58c', 0.25, 0.5);
-          fx.punch(0.07);
-        } else {
-          fx.shake(6, 0.5);
-        }
+        fx.shake(6, 0.5);
         break;
     }
   };
@@ -485,7 +473,35 @@
     if (game.phase === 'play' && Math.random() < dt * speed / 14) this.fx.bubbles(p.x - p.vx * 0.06, p.y + 4 - p.vy * 0.06, 1, 5);
 
     if (sheet && sheet.complete && sheet.naturalWidth && frame) this._drawMember(game, sheet, frame, blink);
+    if (game.shields > 0) this._drawShield(p, pc, game.shields);
     ctx.globalAlpha = 1;
+  };
+
+  /* Pre-save shield: an iridescent bubble around the member, a gleam running round it
+     (a second, fainter ring for the V8 weekly second shield). */
+  P._drawShield = function (p, pc, n) {
+    var ctx = this.ctx, r = pc.halfHeight * 1.35, t = this.time;
+    ctx.save();
+    ctx.translate(p.x, p.y);
+    var g = ctx.createRadialGradient(0, 0, r * 0.55, 0, 0, r);
+    g.addColorStop(0, 'rgba(180, 230, 255, 0)');
+    g.addColorStop(0.8, 'rgba(180, 230, 255, 0.12)');
+    g.addColorStop(1, 'rgba(255, 240, 210, 0.35)');
+    ctx.fillStyle = g;
+    ctx.beginPath(); ctx.arc(0, 0, r, 0, TAU); ctx.fill();
+    ctx.lineWidth = 1.4;
+    ctx.strokeStyle = 'rgba(226, 204, 152, ' + (0.65 + 0.25 * Math.sin(t * 4)) + ')';
+    ctx.beginPath(); ctx.arc(0, 0, r, 0, TAU); ctx.stroke();
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.85)';
+    ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.arc(0, 0, r, t * 2.2, t * 2.2 + 0.7); ctx.stroke();
+    if (n > 1) {
+      ctx.globalAlpha = 0.45;
+      ctx.strokeStyle = 'rgba(180, 230, 255, 0.9)';
+      ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.arc(0, 0, r + 4, 0, TAU); ctx.stroke();
+    }
+    ctx.restore();
   };
 
   /* Success: pearls rise out of the tin and circle the player. Drawn in the player's local space. */
@@ -545,16 +561,6 @@
   /* Last 10 seconds: the red glow sprite pulses along the side edges. Game over: the water darkens. */
   P._drawMood = function (game) {
     var ctx = this.ctx, w = this.canvas.width, h = this.canvas.height;
-    if (game.phase === 'play' && game.timeLeft <= 10) {
-      var red = this._tinted('glow', '#ff3b2a');
-      if (red) {
-        var rate = game.timeLeft <= 5 ? 9 : 5;
-        var e = Math.round(Math.min(w, h) * 0.09);
-        ctx.globalAlpha = 0.35 + 0.35 * Math.sin(this.time * rate);
-        ctx.drawImage(red, -e, -e * 0.5, e * 2, h + e);
-        ctx.drawImage(red, w - e, -e * 0.5, e * 2, h + e);
-      }
-    }
     if (game.phase === 'over') {
       ctx.globalAlpha = Math.min(0.55, game.phaseTime / 1.6 * 0.55);
       ctx.fillStyle = '#000';

@@ -261,7 +261,7 @@
   /* Progress the server reported for a cell (ranks: current standing until the week ends). */
   function statusText(cell) {
     var st = cell.status;
-    if (cell.type === 'score' && st && st.need) return '지금 최고 ' + st.best.toLocaleString('en-US') + '점 · ' + (st.need - st.best).toLocaleString('en-US') + '점 남음';
+    if (cell.type === 'score' && st && st.need) return '지금 최고 ' + NS.campaign.fmtScore(cell.gameId, st.best) + ' · ' + NS.campaign.fmtScore(cell.gameId, st.need - st.best) + ' 남음';
     if (cell.type !== 'rank' && cell.type !== 'refrank') return '';
     if (!st) return 'Verse8 서버에서 순위를 집계해요';
     if (!st.rank) return st.final ? '이번 주 기록이 없어 달성하지 못했어요' : '이번 주 기록이 생기면 순위가 표시돼요';
@@ -319,7 +319,7 @@
     if (!NS.chibi || !NS.chibi.member()) return null;
     var run = B.lastRun(gameId);
     var score = run ? run.score : 0;
-    var best = NS.storage.scope(gameId).getNumber('best', 0);
+    var best = NS.storage.scope(gameId).getNumber(NS.campaign.timed(gameId) ? 'bestTime' : 'best', 0);
     var anim, key;
     if (fresh && fresh.length) { anim = 'dance'; key = 'mission'; }
     else if (score > 0 && score >= best) { anim = 'dance'; key = 'best'; }
@@ -347,7 +347,7 @@
   function nextAction(gameId) {
     if (NS.campaign.isReleased()) return NS.presave ? ctaButton('n Moi 신곡 Spotify에서 듣기 →') : null;
     if (A.presaved()) return shareButton(gameId);
-    return NS.presave ? ctaButton('Spotify · 다음 판부터 x' + CFG.booster + ' →') : null;   // the PRE-SAVE tag says the rest
+    return NS.presave ? ctaButton('Spotify · 다음 판부터 ' + NS.campaign.boostLabel(gameId) + ' →') : null;   // the PRE-SAVE tag says the rest
   }
 
   function ctaButton(label) {

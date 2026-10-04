@@ -13,7 +13,7 @@
   var ui = new NS.UI(cfg);
   var store = NS.storage.scope(cfg.gameId);
 
-  var best = store.getNumber('best', 0);
+  var best = store.getNumber('bestTime', 0);   // the best time survived, 1/100 s (the old 'best' held points)
   NS.bingoUI.attachGame(cfg.gameId, { root: cfg.assetRoot });
 
   // Member selection (remembered locally).
@@ -57,6 +57,7 @@
     resultShown = false;
     game.start();
     game.lives += NS.account.runBonus(cfg.gameId).extraLife;   // +1 life booster (3-day streak)
+    game.shields = NS.account.runShields(cfg.gameId);           // pre-save: 1 shield (V8 weekly: 2)
   }
   NS.live = { gameId: cfg.gameId, score: function () { return game.phase === 'play' ? game.getScore() : null; } };
 
@@ -76,28 +77,21 @@
     input.reset();
     var score = game.getScore();
     var isNewBest = score > best;
-    if (isNewBest) { best = score; store.set('best', best); }
-    ui.showResult({
-      result: game.result,
-      score: score,
-      best: best,
-      isNewBest: isNewBest,
-      survived: game.elapsed,
-      lifeBonus: game.lifeBonus
-    });
+    if (isNewBest) { best = score; store.set('bestTime', best); }
+    ui.showResult({ score: score, best: best, isNewBest: isNewBest });
     NS.bingoUI.showRun(cfg.gameId, NS.bingo.report(cfg.gameId, {
       result: game.result, score: score, lives: game.lives
     }));
   }
 
   var talk = NS.talk ? NS.talk.bubble(stageEl, { anchor: 'top' }) : null;
-  var warned = false;
   function handle(ev) {
     NS.sound.event(cfg.gameId, ev.type, ev);
     if (talk) {
-      if (ev.type === 'go') { warned = false; talk.say('start'); }
+      if (ev.type === 'go') talk.say('start');
       else if (ev.type === 'hit') talk.say('oops');
-      else if (ev.type === 'combo') talk.say('good');
+      else if (ev.type === 'shield') talk.say('oops');
+      else if (ev.type === 'wave') talk.say('good');
       else if (ev.type === 'end') talk.hide();
     }
     renderer.event(ev, game);
@@ -105,15 +99,14 @@
       case 'hit':
         renderer.playAnim('frown');
         break;
-      case 'pickup':
-      case 'combo':
+      case 'shield':
         ui.bonusFeedback();
         break;
       case 'wave':
         ui.banner(ev.label, NS.t(ev.sub));
         break;
       case 'end':
-        renderer.playAnim(ev.result === 'clear' ? 'dance' : 'frown', ev.result !== 'clear');
+        renderer.playAnim('frown', true);
         break;
     }
   }
@@ -133,7 +126,6 @@
 
   function tick(dt) {
     game.update(dt, input.enabled ? input.take() : null);
-    if (talk && !warned && game.phase === 'play' && game.timeLeft <= 10) { warned = true; talk.say('last10'); }
     var events = game.drainEvents();
     for (var i = 0; i < events.length; i++) handle(events[i]);
 

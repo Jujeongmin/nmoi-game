@@ -97,7 +97,11 @@
       parts.push('출석 ' + NS.account.days() + '/' + nextOf(C.attNeed, NS.account.days()));
       parts.push('초대 ' + st.referrals + '/' + nextOf(C.refNeed, st.referrals));
       parts.push('빙고 ' + NS.bingo.doneCount() + '/' + NS.bingo.cells().length);
-      parts.push('오늘 ' + game + ' x' + NS.account.multiplier().toFixed(1));
+      var m = NS.account.multiplier();
+      if (NS.campaign.timed(w.game)) {   // survival game: shields instead of a multiplier
+        var sh = m >= NS.campaign.config.v8Booster ? 2 : m > 1 ? 1 : 0;
+        parts.push('오늘 ' + game + ' ' + NS.t('보호막 {n}', { n: sh }));
+      } else parts.push('오늘 ' + game + ' x' + m.toFixed(1));
     } else {
       if (participants) parts.push(participants.toLocaleString('en-US') + '명 참여 중');
       parts.push(w.label + ' 이번 주 게임 · ' + game);

@@ -29,6 +29,9 @@
     referralRunCap: 3,              // +1 run a day per referral, at most +3
     streakLifeEvery: 3,             // 3 days in a row with a run → one +1 life booster
     lifeGames: ['caviar-escape'],   // games with lives: a +1 life booster is used there
+    // Survival games: the record is the time survived in hundredths of a second (2345 = 23.45 s)
+    // and the pre-save booster is a shield (one hit) instead of x1.2 (the V8 weekly booster: 2).
+    timeGames: ['caviar-escape'],
     leaderboardTop: 10,
 
     // Retargeting (overview §6): events go to window.dataLayer, and to fbq / kreatorsPixel when
@@ -40,8 +43,9 @@
     // Bingo numbers (5x5: 24 missions + pre-save in the centre) — provisional until the alpha
     // data (10/13). verse8/server.js keeps the same numbers in BINGO and judges every cell.
     bingo: {
-      scoreEasy: { 'caviar-match': 2500, 'caviar-escape': 2500, 'caviar-master-chef': 2500 },  // score cell I (booster score)
-      score: { 'caviar-match': 5000, 'caviar-escape': 4500, 'caviar-master-chef': 5000 },      // score cell II (escape: tools/sim-escape.js, 2026-10-04)
+      // escape: survival time in 1/100 s (20 s / 45 s; tools/sim-escape.js, 2026-10-04)
+      scoreEasy: { 'caviar-match': 2500, 'caviar-escape': 2000, 'caviar-master-chef': 2500 },  // score cell I (booster score)
+      score: { 'caviar-match': 5000, 'caviar-escape': 4500, 'caviar-master-chef': 5000 },      // score cell II
       rankTopPct: 10,               // game rank cell: weekly top 10 %
       refRankTop: 10,               // referral rank cell: weekly top 10
       refNeed: [3, 5, 10],          // referral count cells (cumulative)
@@ -94,6 +98,19 @@
       for (var i = 0; i < C.weeks.length; i++) if (C.weeks[i].game === gameId) return i;
       return -1;
     },
+
+    /** A survival game: time record, shield booster (config.timeGames). */
+    timed: function (gameId) { return C.timeGames.indexOf(gameId) >= 0; },
+
+    /** A record as people read it: '23.45초' for a survival game, '1,234점' otherwise. */
+    fmtScore: function (gameId, n) {
+      n = Number(n) || 0;
+      if (this.timed(gameId)) return NS.t('{n}초', { n: (n / 100).toFixed(2) });
+      return NS.t('{n}점', { n: n.toLocaleString('en-US') });
+    },
+
+    /** What the pre-save booster gives in a game: '보호막 1회' or 'x1.2'. */
+    boostLabel: function (gameId) { return this.timed(gameId) ? NS.t('보호막 1회') : 'x' + C.booster; },
 
     isGameOpen: function (gameId) {
       var i = this.weekOfGame(gameId);

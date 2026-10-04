@@ -8,6 +8,9 @@
 
   function $(id) { return document.getElementById(id); }
   function pad(n, len) { var s = String(Math.max(0, Math.floor(n))); while (s.length < len) s = '0' + s; return s; }
+  // Records are hundredths of a second: '23.45초' (cards), '23.4' (HUD, one decimal while it runs).
+  function secs(cs) { return NS.campaign.fmtScore('caviar-escape', cs); }
+  function tenths(cs) { return (Math.floor(Math.max(0, cs) / 10) / 10).toFixed(1); }
   function restartClass(el, cls) { el.classList.remove(cls); void el.offsetWidth; el.classList.add(cls); }
 
   /* Point a .ce-sprite element at one animation row of a member sheet.
@@ -53,7 +56,6 @@
 
     var self = this;
     this.el.stageNum.textContent = pad(config.stage, 2);
-    this.scoreRoll = NS.juice.roller(this.el.score, 5);
     this.waveBanner = NS.juice.banner(this.el.stage);
     this.el.btnStart.addEventListener('click', function () { self._fire('start'); });
     this.el.btnRetry.addEventListener('click', function () { self._fire('retry'); });
@@ -106,16 +108,15 @@
   /* ---------- per-frame HUD ---------- */
   P.update = function (game, best) {
     var el = this.el;
-    var playing = game.phase === 'play';
-    var t = game.phase === 'idle' || game.phase === 'countdown' ? this.cfg.duration : Math.ceil(game.timeLeft);
-
-    this._set('time', el.time, pad(t, 2));
-
-    this.scoreRoll.set(game.getScore(), playing);   // rolls toward the score instead of jumping
-    this._set('best', el.best, pad(best, 5));
-
-    var low = playing && t <= 5;
-    if (this.cache.low !== low) { this.cache.low = low; el.timeItem.classList.toggle('is-alert', low); }
+    // Wave · time survived · best record; the sub-bar: life and shields.
+    this._set('stage', el.stageNum, pad(game.wave + 1, 2));
+    this._set('time', el.time, tenths(game.getScore()));
+    this._set('score', el.score, tenths(Math.max(best, game.getScore())));
+    this._set('best', el.best, String(game.shields));
+    if (this.cache.shieldOn !== game.shields > 0) {
+      this.cache.shieldOn = game.shields > 0;
+      el.best.parentNode.classList.toggle('is-on', game.shields > 0);
+    }
 
     if (this.cache.lives !== game.lives) {
       this.cache.lives = game.lives;
@@ -172,7 +173,7 @@
       text = '출발';
       kind = 'go';
     } else if (game.isOver() && !this.el.result.classList.contains('is-open')) {
-      text = game.phase === 'clear' ? '성공' : '게임 오버';
+      text = '게임 오버';
     }
     if (this.cache.callout === text) return;
     this.cache.callout = text;
@@ -195,7 +196,7 @@
   /* ---------- screens ---------- */
   P.showTitle = function (best) {
     this.hideBanner();
-    this.el.titleBest.textContent = pad(best, 5);
+    this.el.titleBest.textContent = secs(best);
     this.el.result.classList.remove('is-open');
     this.el.title.classList.add('is-open');
     NS.juice.enter(this.el.title);
@@ -209,19 +210,19 @@
     if (document.activeElement && document.activeElement.blur) document.activeElement.blur();
   };
 
-  /* data: { result, score, best, isNewBest, survived, lifeBonus }
-     The score counts up from zero; a new record is then sealed with the wax stamp. */
+  /* data: { score, best, isNewBest } — times in 1/100 s.
+     The time counts up from zero; a new record is then sealed with the wax stamp. */
   P.showResult = function (d) {
     var el = this.el;
-    el.resultTitle.textContent = d.result === 'clear' ? '성공' : '게임 오버';
-    el.resultBest.textContent = pad(d.best, 5);
+    el.resultTitle.textContent = '게임 오버';
+    el.resultBest.textContent = secs(d.best);
     el.resultNew.hidden = true;
 
     el.title.classList.remove('is-open');
     el.result.classList.add('is-open');
     NS.juice.enter(el.result);
     this._focusLater(el.btnRetry);
-    NS.juice.countUp(el.resultScore, d.score, 5).then(function () {
+    NS.juice.countUp(el.resultScore, d.score, 5, secs).then(function () {
       if (!d.isNewBest || !el.result.classList.contains('is-open')) return;
       el.resultNew.hidden = false;
       NS.juice.seal(el.result.querySelector('.cv-panel'));

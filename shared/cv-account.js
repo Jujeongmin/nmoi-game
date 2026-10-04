@@ -299,7 +299,15 @@
     runBonus: function (gameId) { return runBonus[gameId] || { multiplier: multiplier(), extraLife: 0 }; },
     /** Multiplier of the next counted run (HUD, result nudge, score missions). */
     multiplier: function () { return typeof state.serverMultiplier === 'number' && state.online ? state.serverMultiplier : multiplier(); },
-    runMultiplier: function (gameId) { return (runBonus[gameId] && runBonus[gameId].multiplier) || multiplier(); },
+    runMultiplier: function (gameId) {
+      if (NS.campaign.timed(gameId)) return 1;   // survival games: the booster is a shield, the time stays real
+      return (runBonus[gameId] && runBonus[gameId].multiplier) || multiplier();
+    },
+    /** Shields for this run of a survival game: 1 after pre-save, 2 with the V8 weekly booster. */
+    runShields: function (gameId) {
+      var m = (runBonus[gameId] && runBonus[gameId].multiplier) || multiplier();
+      return m >= CFG.v8Booster ? 2 : m > 1 ? 1 : 0;
+    },
     lifeTokens: function () { return state.lifeTokens || 0; },
     streak: function () { return streak(state.days); },
 
@@ -344,7 +352,7 @@
         }
         var left = NS.account.playsLeft(gameId);
         if (limit() >= UNLIMITED) {
-          line.textContent = '데모 · 판수 제한 없음' + (state.presaved ? ' · 부스터 x' + CFG.booster + ' 적용' : '');
+          line.textContent = '데모 · 판수 제한 없음' + (state.presaved ? ' · 부스터 ' + NS.campaign.boostLabel(gameId) + ' 적용' : '');
           ['btn-start', 'btn-retry'].forEach(function (id) {
             var btn = document.getElementById(id);
             if (btn && btn.dataset.out === '1') { btn.dataset.out = ''; if (btn.dataset.label) btn.textContent = btn.dataset.label; }
@@ -355,7 +363,7 @@
         b.textContent = left + ' / ' + limit();
         line.appendChild(document.createTextNode('오늘 남은 판 '));
         line.appendChild(b);
-        if (state.presaved) line.appendChild(document.createTextNode(' · 부스터 x' + CFG.booster + ' 적용'));
+        if (state.presaved) line.appendChild(document.createTextNode(' · 부스터 ' + NS.campaign.boostLabel(gameId) + ' 적용'));
         if (left <= 0) {
           line.classList.add('is-out');
           line.appendChild(document.createElement('br'));
@@ -475,12 +483,13 @@
         var main = el('div', 'cv-rank-line__main');
         main.appendChild(el('span', 'cv-rank-line__tag', NS.campaign.seasonLabel(r.season).split(' · ')[0]));
         main.appendChild(el('b', 'cv-rank-line__no', r.rank + '위'));
-        main.appendChild(el('span', 'cv-rank-line__best', '최고 ' + r.best.toLocaleString('en-US') + '점'));
+        main.appendChild(el('span', 'cv-rank-line__best', '최고 ' + NS.campaign.fmtScore(gameId, r.best)));
         line.appendChild(main);
         var open = el('button', 'cv-rank-line__open', '순위표 보기 ›');
         open.type = 'button';
         open.addEventListener('click', function () { NS.leaderboard.open(gameId); });
         line.appendChild(open);
+        if (NS.campaign.timed(gameId)) mult = 1;   // a shield, not a multiplier: the time is real
         var meta = (mult > 1 ? 'x' + mult + (mult === CFG.v8Booster ? ' V8 주간 부스터' : ' 부스터') : '') + (r.improved ? (mult > 1 ? ' · ' : '') + '기록 갱신!' : '');
         if (meta) line.appendChild(el('p', 'cv-rank-line__meta', meta));
       }, function (err) {
@@ -527,14 +536,14 @@
           var li = el('li', r.me ? 'is-me' : '');
           li.appendChild(el('b', '', String(r.rank)));
           li.appendChild(el('span', '', r.nickname));
-          li.appendChild(el('em', '', r.score.toLocaleString('en-US')));
+          li.appendChild(el('em', '', NS.campaign.fmtScore(gameId, r.score)));
           list.appendChild(li);
         });
         if (res.mine && !res.top.some(function (r) { return r.me; })) {
           var li = el('li', 'is-me cv-lb__mine');
           li.appendChild(el('b', '', String(res.mine.rank)));
           li.appendChild(el('span', '', res.mine.nickname || '나'));
-          li.appendChild(el('em', '', res.mine.score.toLocaleString('en-US')));
+          li.appendChild(el('em', '', NS.campaign.fmtScore(gameId, res.mine.score)));
           list.appendChild(li);
         }
       }, function () {

@@ -31,8 +31,13 @@
   function url() { return released() ? CFG.links.stream : CFG.links.presave; }
   function complete() { if (NS.bingo) NS.bingo.completePresave(); else if (NS.account) NS.account.presave(); }
   function ctaLabel() { return released() ? 'Spotify에서 듣기' : 'Spotify에서 Pre-save'; }
+  // The booster on this page: a survival game (Escape) gives a shield, the others x1.2.
+  function gameId() { return (NS.live && NS.live.gameId) || (NS.config && NS.config.gameId) || null; }
+  function timed() { var g = gameId(); return !!(g && NS.campaign.timed(g)); }
+  function boost() { return timed() ? '보호막 1회' : '점수 x' + CFG.booster; }
+  function boostShort() { return timed() ? '보호막 1회' : 'x' + CFG.booster; }
   function rewardText() {
-    return '응모권 +' + CFG.tickets.presave + ' · 점수 x' + CFG.booster + ' · 하루 1판 더';
+    return '응모권 +' + CFG.tickets.presave + ' · ' + boost() + ' · 하루 1판 더';
   }
 
   /** Opens Spotify (new tab) and records the click. Returns false when no link yet. */
@@ -103,7 +108,7 @@
         sub.textContent = 'n Moi 신곡이 나왔어요. 지금 Spotify에서 들어보세요.';
         after.appendChild(linkBlock());
       } else if (done()) {
-        sub.textContent = '프리세이브 완료! 응모권 +' + CFG.tickets.presave + ' · 점수 x' + CFG.booster + ' 부스터가 적용됐어요.';
+        sub.textContent = '프리세이브 완료! 응모권 +' + CFG.tickets.presave + ' · ' + boost() + ' 부스터가 적용됐어요.';
         var ok = el('button', 'cv-btn cv-btn--primary cv-presave-link__btn', '계속하기');
         ok.type = 'button';
         ok.addEventListener('click', dismiss);
@@ -171,7 +176,7 @@
         panel.appendChild(el('h2', 'cv-booster__title', '어떤 캔으로 시작할까요?'));
         var row = el('div', 'cv-booster__cans');
         var basic = can('is-basic', 'assets/bingo/tin-empty.webp', '기본 캔', '부스터 없이 바로 시작');
-        var almas = can('is-almas', 'assets/bingo/tin-almas.webp', '알마스 캔', 'Spotify 프리세이브 10초 → 점수 x' + CFG.booster + ' · 하루 1판 더 · 내 초대 링크');
+        var almas = can('is-almas', 'assets/bingo/tin-almas.webp', '알마스 캔', 'Spotify 프리세이브 10초 → ' + boost() + ' · 하루 1판 더 · 내 초대 링크');
         basic.addEventListener('click', function () { NS.track('booster_choice', { choice: 'basic' }); finish(); });
         almas.addEventListener('click', function () {
           NS.track('booster_choice', { choice: 'almas' });
@@ -192,7 +197,7 @@
         panel.innerHTML = '';
         panel.appendChild(el('p', 'cv-eyebrow', 'ALMAS CAN'));
         panel.appendChild(el('h2', 'cv-booster__title', '알마스 캔 활성!'));
-        panel.appendChild(el('p', 'cv-body cv-booster__text', '이제 매 판 점수 x' + CFG.booster + ' · 하루 1판 더 · 응모권 +' + CFG.tickets.presave +
+        panel.appendChild(el('p', 'cv-body cv-booster__text', '이제 매 판 ' + boost() + ' · 하루 1판 더 · 응모권 +' + CFG.tickets.presave +
           (url() ? '' : ' (데모: 스마트링크 연결 전이라 바로 완료 처리)')));
         var link = NS.account && NS.account.inviteLink();
         if (link && navigator.clipboard) {
@@ -243,16 +248,24 @@
         // score mission's progress while a run is on.
         var m = NS.account ? NS.account.multiplier() : 1;
         b.classList.toggle('is-off', m <= 1);
-        b.appendChild(el('b', '', 'x' + m.toFixed(1)));
-        b.appendChild(el('span', '', m === CFG.v8Booster ? 'V8 주간 첫 판 부스터' : m > 1 ? '알마스 캔 부스터 적용 중'
-          : released() ? 'n Moi 신곡 듣기' : '프리세이브하면 매 판 x' + CFG.booster));
+        if (timed()) {
+          // Survival game: shields instead of a multiplier (V8 weekly: 2).
+          var sh = m >= CFG.v8Booster ? 2 : m > 1 ? 1 : 0;
+          b.appendChild(el('b', '', NS.t('보호막 {n}', { n: sh })));
+          b.appendChild(el('span', '', m === CFG.v8Booster ? 'V8 주간 첫 판 · 보호막 2회' : m > 1 ? '알마스 캔 · 매 판 보호막 1회'
+            : released() ? 'n Moi 신곡 듣기' : '프리세이브하면 매 판 보호막 1회'));
+        } else {
+          b.appendChild(el('b', '', 'x' + m.toFixed(1)));
+          b.appendChild(el('span', '', m === CFG.v8Booster ? 'V8 주간 첫 판 부스터' : m > 1 ? '알마스 캔 부스터 적용 중'
+            : released() ? 'n Moi 신곡 듣기' : '프리세이브하면 매 판 x' + CFG.booster));
+        }
         b.appendChild(progress);
       } else if (released()) {
         b.appendChild(el('b', '', '▶ SPOTIFY'));
         b.appendChild(el('span', '', 'n Moi 신곡 듣기'));
       } else if (done()) {
         b.appendChild(el('b', '', 'PRE-SAVED'));
-        b.appendChild(el('span', '', '부스터 x' + CFG.booster + ' 적용 중 · 응모권 ' + NS.account.state().tickets + '장'));
+        b.appendChild(el('span', '', '부스터 ' + boostShort() + ' 적용 중 · 응모권 ' + NS.account.state().tickets + '장'));
       } else {
         b.appendChild(el('b', '', '▶ PRE-SAVE'));
         b.appendChild(el('span', '', rewardText()));

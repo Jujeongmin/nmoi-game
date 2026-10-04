@@ -67,4 +67,7 @@ cd web && git checkout develop && npm install
   게임 설명 카드 좌측 상단 "← 레스토랑", 설명 문단 대신 플레이 영상 (`assets/clips`, `tools/record-clips.js` 로 다시 녹화) /
   셰프 주문서 = 재료 그림 / 트레일러 = 이스터에그 (`shared/cv-eggs.js`: 게임 밖 화면에서 멤버가 가끔 빼꼼, 누르면 그 멤버 트레일러가 열림,
   5명 다 찾으면 단체 트레일러. 플레이 중엔 안 나옴. 테스트: 콘솔 `CAVIAR.eggs.peekNow()` / `CAVIAR.eggs.reset()`)
-- 이스케이프 빙고 점수 칸: I 2,500 / II 4,500 (10/4, 죽림고수 방식 + 아슬아슬 점수 제거 후 사용자 결정)
+- 이스케이프 = 버티기 모드 (10/4): 시간 제한 없음, 라이프 1, 기록 = 버틴 시간 (서버 점수 = 1/100초, 2345 = 23.45초, 배율 안 곱함).
+  진주·콤보 없음. 프리세이브 효과 = 매 판 보호막 1회 (V8 주간 부스터 = 2회), `cv-campaign.js` timeGames · timed() · fmtScore() · boostLabel().
+  빙고 시간 칸 20초 / 45초. 로컬 최고 기록 키는 'bestTime'. 난이도: 45초까지 오르고 그 뒤 천천히 더 (sim: 처음 하는 사람 봇 중간값 26초).
+  설명 카드 영상은 승인 후 다시 녹화 (`tools/record-clips.js` 의 escape 봇은 예전 30초 클리어 기준이라 고쳐야 함)

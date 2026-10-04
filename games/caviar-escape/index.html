@@ -19,16 +19,16 @@
     <!-- HUD -->
     <header class="cv-hud" aria-label="게임 상태">
       <div class="cv-hud__item">
-        <span class="cv-label">스테이지</span>
+        <span class="cv-label">웨이브</span>
         <span class="cv-value" id="hud-stage">01</span>
       </div>
       <div class="cv-hud__item" id="hud-time-item">
         <span class="cv-label">시간</span>
-        <span class="cv-value" id="hud-time">30</span>
+        <span class="cv-value" id="hud-time">0.0</span>
       </div>
       <div class="cv-hud__item" id="hud-score-item">
-        <span class="cv-label">점수</span>
-        <span class="cv-value" id="hud-score">00000</span>
+        <span class="cv-label">최고 기록</span>
+        <span class="cv-value" id="hud-score">0.0</span>
       </div>
     </header>
 
@@ -36,12 +36,10 @@
       <div class="cv-subhud__group" id="hud-lives" aria-label="라이프">
         <span class="cv-label">라이프</span>
         <span class="cv-pearl cv-pearl--white"></span>
-        <span class="cv-pearl cv-pearl--white"></span>
-        <span class="cv-pearl cv-pearl--white"></span>
       </div>
-      <div class="cv-subhud__group">
-        <span class="cv-label">최고 점수</span>
-        <span class="cv-value" id="hud-best">00000</span>
+      <div class="cv-subhud__group ce-shield-hud" id="hud-shield-group">
+        <span class="cv-label">보호막</span>
+        <span class="cv-value" id="hud-best">0</span>
       </div>
     </div>
 
@@ -63,7 +61,7 @@
       <span class="ce-guide__touch">화면 어디서든 드래그해 이동</span>
       <span class="ce-guide__keys">WASD · 방향키로 이동</span>
       <span class="ce-guide__sep" aria-hidden="true"></span>
-      <span>진주를 이어 주우면 콤보</span>
+      <span>상어를 피해 오래 버티기</span>
     </footer>
 
     <!-- Title card -->
@@ -81,9 +79,9 @@
         </div>
         <dl class="cv-menu ce-card__menu">
           <div class="cv-menu__row"><dt>이동</dt><dd>드래그 · WASD · 방향키</dd></div>
-          <div class="cv-menu__row"><dt>라이프</dt><dd>3개, 상어에 닿으면 1개 감소</dd></div>
-          <div class="cv-menu__row"><dt>아이템</dt><dd>진주를 주우면 점수 · 이어 주우면 콤보</dd></div>
-          <div class="cv-menu__row"><dt>최고 점수</dt><dd class="ce-num" id="title-best">00000</dd></div>
+          <div class="cv-menu__row"><dt>규칙</dt><dd>상어에 닿으면 끝 · 오래 버틸수록 높은 기록</dd></div>
+          <div class="cv-menu__row"><dt>프리세이브</dt><dd>매 판 보호막 1회 (한 번 막아줘요)</dd></div>
+          <div class="cv-menu__row"><dt>최고 기록</dt><dd class="ce-num" id="title-best">0.00초</dd></div>
         </dl>
         <div class="cv-actions">
           <button class="cv-btn cv-btn--primary" id="btn-start" type="button">시작하기</button>
@@ -96,8 +94,8 @@
       <div class="cv-panel ce-card">
         <h2 class="cv-heading ce-card__title--result" id="result-title">성공</h2>
         <dl class="cv-menu cv-score-grid">
-          <div class="cv-menu__row is-main"><dt>점수</dt><dd id="result-score">00000</dd></div>
-          <div class="cv-menu__row is-main"><dt><span class="cv-tag" id="result-new" hidden>신기록</span>최고 점수</dt><dd id="result-best">00000</dd></div>
+          <div class="cv-menu__row is-main"><dt>기록</dt><dd id="result-score">0.00초</dd></div>
+          <div class="cv-menu__row is-main"><dt><span class="cv-tag" id="result-new" hidden>신기록</span>최고 기록</dt><dd id="result-best">0.00초</dd></div>
         </dl>
         <div class="cv-actions">
           <button class="cv-btn cv-btn--primary" id="btn-retry" type="button">다시 하기</button>

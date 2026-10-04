@@ -210,3 +210,7 @@
 
 /* Result card fits a phone screen without scrolling */
 #screen-result .ce-card__title--result { margin-bottom: 10px; font-size: 28px; }
+
+/* Sub-bar shield count: dim at 0, gold while a pre-save shield is up. */
+.ce-shield-hud .cv-value { color: var(--cv-ivory-dim); }
+.ce-shield-hud.is-on .cv-value { color: var(--cv-gold-bright); text-shadow: 0 0 8px rgba(226, 204, 152, 0.6); }

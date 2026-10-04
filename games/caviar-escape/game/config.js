@@ -7,9 +7,11 @@
   NS.config = {
     gameId: 'caviar-escape',
     stage: 1,
-    duration: 30,          // seconds
-    lives: 3,
-    invulnTime: 1.0,       // seconds after a hit
+    // A survival run: no clock. The record is the time survived; one life (a +1 life booster
+    // adds one), and a pre-save shield takes one hit (2 with the V8 weekly booster).
+    lives: 1,
+    ramp: 45,              // seconds for the sharks to reach full strength; past it they keep thickening slowly
+    invulnTime: 1.0,       // seconds after a hit (or a shield break)
     countdown: 2.4,        // 3-2-1 before play (0.8 s per number)
     resultDelay: 1.6,      // pause between end and result modal
 
@@ -36,50 +38,40 @@
       radius: 11,
       size: 0.48,          // the hunting shark (length and radius x size; dart, dash and pack have their own size)
       baseSpeed: 72,
-      speedGain: 2.2,      // + units/s per second elapsed
+      speedGain: 1.5,      // + units/s per second elapsed, up to the ramp (45 s)
       turnRate: 1.75,      // rad/s — limited turning is what makes dodging possible
       turnGain: 0.025,
       trackTime: [3.2, 4.8], // seconds a shark hunts before swimming off
       warnTime: 0.75       // edge marker before it enters
     },
 
-    // Darts: small sharks shot straight across from every edge at where the player is,
-    // from the start and ever thicker (one every `every[0]` s at first, `every[1]` s at the end).
-    // aimed: share shot at the player; the rest cross on their own line, `wavy` of them swaying.
-    // ease: the ramp is slow at first (a beginner gets well past 10 s) and steep at the end.
+    // Darts: small sharks from every edge, ever thicker (one every `every[0]` s at first,
+    // `every[1]` s at full strength). aimed: share shot at the player; the rest cross on their
+    // own line, `wavy` of them swaying. ease: slow at first (a beginner gets past 20 s), steep
+    // later. Past the ramp: gap / (1 + overtime x s), speed x (1 + speedOvertime x s).
     dart: { size: 0.34, first: 0.8, every: [0.8, 0.1], speed: [105, 200], ease: 2.0, spread: 0.16,
-            aimed: 0.35, wavy: 0.5, waveAmp: [14, 30] },
+            aimed: 0.35, wavy: 0.5, waveAmp: [14, 30], overtime: 0.02, speedOvertime: 0.006 },
 
     // Dash shark (wave 2 on): aims from the edge, locks its line, then charges straight across.
     dash: { size: 0.62, aimTime: 1.0, lockTime: 0.3, speed: 360, every: [3.6, 5.2] },
 
-    // Shark pack (final wave): small sharks in a column crossing the screen, no tracking.
+    // Shark pack (wave 3 on): small sharks in a column crossing the screen, no tracking.
     pack: { size: 0.38, count: 5, gap: 20, speed: 140, warnTime: 0.9, every: [4.2, 6.0] },
 
     waves: [
       { at: 0 },
-      { at: 10, label: 'WAVE 2', sub: '돌진 상어 등장' },
-      { at: 20, label: 'FINAL WAVE', sub: '상어 떼가 몰려와요' }
+      { at: 15, label: 'WAVE 2', sub: '돌진 상어 등장' },
+      { at: 30, label: 'WAVE 3', sub: '상어 떼가 몰려와요' },
+      { at: 50, label: 'DEEP SEA', sub: '상어가 점점 빨라져요' }
     ],
 
     spawn: {
       first: 0.6,
       intervalStart: 2.4,
       intervalEnd: 1.05,
-      maxStart: 0,         // concurrent hunting sharks at t=0 (none: the first one comes with wave 2)
-      maxEnd: 2            // ... at the end (darts, dash sharks and the pack add to this)
+      maxStart: 0,         // concurrent hunting sharks at t=0 (none: the first one comes about wave 2)
+      maxEnd: 1            // ... at full strength (darts, dash sharks and the pack add to this)
     },
-
-    score: {
-      perSecond: 100,
-      clearPerLife: 500
-    },
-
-    // Pickups. Points are multiplied by the combo multiplier.
-    pearls: { first: 1.2, every: [1.3, 2.1], max: 3, life: 6.5, points: 60 },
-
-    // Pearls and close calls within `window` seconds chain; every `step` links adds x1, up to maxMult.
-    combo: { window: 2.6, step: 3, maxMult: 5 },
 
     /* Member sprites come from assets/chibi/members.js (CAVIAR.members).
        Remaining asset slots: leave null to use the Canvas placeholder,

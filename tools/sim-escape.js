@@ -38,7 +38,7 @@ function danger(g, dir, b) {
   let px = g.player.x, py = g.player.y, vx = g.player.vx, vy = g.player.vy;
   const sh = g.sharks.filter((s) => s.mode !== 'warn').map((s) => ({ x: s.x, y: s.y, h: s.heading, v: s.mode === 'aim' ? 0 : s.speed,
     kind: s.kind, hunt: s.kind === 'hunt' && s.mode === 'hunt', aim: s.mode === 'aim' ? s.t : 0, size: s.size || 1 }));
-  const turn = (sc.turnRate + sc.turnGain * g.elapsed);
+  const turn = (sc.turnRate + sc.turnGain * Math.min(g.elapsed, c.ramp));
   const dt = 0.05;
   let worst = 1e9;
   for (let t = 0; t < b.horizon; t += dt) {
@@ -81,7 +81,7 @@ function play(b) {
   const dt = 1 / 60;
   let input = { x: 0, y: 0 }, wait = 0;
   const hits = {};
-  while (!g.isOver()) {
+  while (!g.isOver() && g.elapsed < 300) {   // a survival run; 5 minutes is plenty
     wait -= dt;
     if (wait <= 0) { input = steer(g, b); wait = b.think; }
     const before = g.lives;
@@ -94,21 +94,18 @@ function play(b) {
     }
     g.drainEvents();
   }
-  return { score: g.getScore(), clear: g.result === 'clear', lives: g.lives, time: g.elapsed, hits };
+  return { score: g.getScore(), lives: g.lives, time: g.elapsed, hits };
 }
 
 const runs = Number(process.argv[2]) || 400;
 const pct = (a, q) => a[Math.min(a.length - 1, Math.floor(q * a.length))];
+// Survival run: the record is the time survived (getScore = hundredths of a second).
 for (const [name, b] of Object.entries(BOTS)) {
   const res = Array.from({ length: runs }, () => play(b));
-  const s = res.map((r) => r.score).sort((x, y) => x - y);
-  const clear = res.filter((r) => r.clear).length / runs;
   const hits = {};
   res.forEach((r) => { for (const k in r.hits) hits[k] = (hits[k] || 0) + r.hits[k]; });
   const t = res.map((r) => r.time).sort((x, y) => x - y);
-  console.log(name.padEnd(8),
-    'clear', (clear * 100).toFixed(0).padStart(3) + '%', ' survive median', pct(t, 0.5).toFixed(1) + 's',
-    ' hits', JSON.stringify(hits),
-    ' survive p10', pct(t, 0.1).toFixed(1) + 's', ' p25', pct(t, 0.25).toFixed(1) + 's',
-    ' p10', pct(s, 0.1), ' p25', pct(s, 0.25), ' median', pct(s, 0.5), ' p75', pct(s, 0.75), ' p90', pct(s, 0.9), ' best', s[s.length - 1]);
+  const f = (q) => pct(t, q).toFixed(1) + 's';
+  console.log(name.padEnd(8), 'survive p10', f(0.1), ' p25', f(0.25), ' median', f(0.5), ' p75', f(0.75), ' p90', f(0.9),
+    ' best', t[t.length - 1].toFixed(1) + 's', ' hits', JSON.stringify(hits));
 }

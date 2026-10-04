@@ -29,10 +29,8 @@
     MISSIONS.push(
       { id: k + '-first', week: i, type: 'first', game: w.game,
         title: w.label + ' 첫 판', desc: g.name + ' 한 판 끝까지 플레이' },
-      { id: k + '-score1', week: i, type: 'score', game: w.game, score: BC.scoreEasy[w.game],
-        title: w.label + ' ' + fmt(BC.scoreEasy[w.game]) + '점', desc: g.name + ' 한 판 ' + fmt(BC.scoreEasy[w.game]) + '점 이상 (부스터 적용 점수)' },
-      { id: k + '-score2', week: i, type: 'score', game: w.game, score: BC.score[w.game],
-        title: w.label + ' ' + fmt(BC.score[w.game]) + '점', desc: g.name + ' 한 판 ' + fmt(BC.score[w.game]) + '점 이상 (부스터 적용 점수)' },
+      scoreMission(k + '-score1', i, w, g, BC.scoreEasy[w.game]),
+      scoreMission(k + '-score2', i, w, g, BC.score[w.game]),
       { id: k + '-share', week: i, type: 'share', game: w.game,
         title: w.label + ' 결과 공유', desc: g.name + ' 결과 화면에서 공유하기 1번' },
       { id: k + '-rank', week: i, type: 'rank', game: w.game,
@@ -46,6 +44,15 @@
     );
   });
   function fmt(n) { return Number(n).toLocaleString('en-US'); }
+  // Score cells: points (booster score), or a survival time for a timed game (Escape).
+  function scoreMission(id, week, w, g, need) {
+    var timed = NS.campaign.timed(w.game), secs = Math.round(need / 100);
+    return {
+      id: id, week: week, type: 'score', game: w.game, score: need,
+      title: timed ? w.label + ' ' + secs + '초' : w.label + ' ' + fmt(need) + '점',
+      desc: timed ? g.name + ' 한 판 ' + secs + '초 이상 버티기' : g.name + ' 한 판 ' + fmt(need) + '점 이상 (부스터 적용 점수)'
+    };
+  }
 
   var PRESAVE = { id: 'presave', type: 'presave', tone: 'pearl', title: 'n Moi 프리세이브', desc: 'Spotify에서 프리세이브하고 채우기' };
 

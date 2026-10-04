@@ -38,27 +38,29 @@
     restart(panel, 'is-entering');
   }
 
-  function countUp(el, value, digits) {
+  // fmt(n): optional text for a value (a time record) instead of the zero-padded score.
+  function countUp(el, value, digits, fmt) {
     digits = digits || 5;
+    var show = fmt || function (n) { return pad(n, digits); };
     if (el._countRaf) cancelAnimationFrame(el._countRaf);
     var dur = calm() ? 0 : Math.min(1400, 500 + value / 12);
-    if (!dur) { el.textContent = pad(value, digits); return Promise.resolve(); }
+    if (!dur) { el.textContent = show(value); return Promise.resolve(); }
     return new Promise(function (resolve) {
       var start = 0, ticked = 0, done = false;
-      el.textContent = pad(0, digits);
+      el.textContent = show(0);
       function finish() {
         if (done) return;
         done = true;
         cancelAnimationFrame(el._countRaf);
         el._countRaf = 0;
-        el.textContent = pad(value, digits);
+        el.textContent = show(value);
         resolve();
       }
       function step(now) {
         if (done) return;
         if (!start) start = now;
         var q = Math.min(1, (now - start) / dur), e = 1 - Math.pow(1 - q, 3);
-        el.textContent = pad(value * e, digits);
+        el.textContent = show(fmt ? Math.round(value * e) : value * e);
         if (now - ticked > 70 && q < 1) { ticked = now; play('tap'); }
         if (q < 1) el._countRaf = requestAnimationFrame(step); else finish();
       }

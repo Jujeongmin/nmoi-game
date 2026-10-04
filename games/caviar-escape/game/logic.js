@@ -1,12 +1,15 @@
 /* CAVIAR ESCAPE — game logic. No DOM, no canvas.
+   A survival run (죽림고수 style): no clock, one life; the record is how long the member
+   lasts (getScore = hundredths of a second). A pre-save gives shields: each takes one hit.
    Consumes an input vector {x, y} (length 0..1) and emits events that the UI,
    renderer and sound react to:
-   go · hit · pickup · combo · wave · dashAim · dash · end
+   go · hit · shield · wave · dashAim · dash · end
 
-   Sharks come in three kinds:
-     hunt  — enters from an edge, turns toward the player for a few seconds, swims off
+   Sharks:
+     dart  — small, from any edge, straight across (some aimed at the player, most on their own line or wave)
+     hunt  — (wave 2) enters from an edge, turns toward the player for a few seconds, swims off
      dash  — (wave 2) aims from the edge, locks its line, charges straight across
-     pack  — (final wave) small sharks in a column crossing the screen, no tracking */
+     pack  — (wave 3) small sharks in a column crossing the screen, no tracking */
 (function (NS) {
   'use strict';
 
@@ -36,17 +39,11 @@
   P._reset = function () {
     var c = this.cfg;
     this.elapsed = 0;
-    this.timeLeft = c.duration;
     this.lives = c.lives;
+    this.shields = 0;
     this.invuln = 0;
-    this.survival = 0;
-    this.bonus = 0;
-    this.lifeBonus = 0;
-    this.pickups = 0;
-    this.combo = 0;
-    this.comboTimer = 0;
+    this.combo = 0;      // (no pearls or combos in the survival run; kept at rest for the view)
     this.mult = 1;
-    this.maxCombo = 0;
     this.wave = 0;
     this.result = null;
     this.sharks = [];
@@ -55,7 +52,6 @@
     this.dashTimer = 0;
     this.packTimer = 0;
     this.dartTimer = c.dart.first;
-    this.pearlTimer = c.pearls.first;
     this.events = [];
     var p = this.player;
     p.x = this.W / 2;
@@ -89,11 +85,14 @@
 
   /* ---------- read-only helpers for UI ---------- */
 
-  P.getScore = function () { return Math.floor(this.survival) + this.bonus + this.lifeBonus; };
-  P.difficulty = function () { return clamp(this.elapsed / this.cfg.duration, 0, 1); };
+  /** The record: hundredths of a second survived (2345 = 23.45 s). */
+  P.getScore = function () { return Math.floor(this.elapsed * 100); };
+  /** 0 → 1 over the ramp; past it the sharks keep thickening slowly (overtime). */
+  P.difficulty = function () { return clamp(this.elapsed / this.cfg.ramp, 0, 1); };
+  P.overtime = function () { return Math.max(0, this.elapsed - this.cfg.ramp); };
   P.countdownLeft = function () { return Math.max(0, this.cfg.countdown - this.phaseTime); };
-  P.isOver = function () { return this.phase === 'clear' || this.phase === 'over'; };
-  P.comboLeft = function () { return this.combo > 0 ? this.comboTimer / this.cfg.combo.window : 0; };
+  P.isOver = function () { return this.phase === 'over'; };
+  P.comboLeft = function () { return 0; };
   P.drainEvents = function () { var e = this.events; this.events = []; return e; };
 
   /* ---------- main step ---------- */
@@ -109,21 +108,15 @@
 
       case 'play':
         this.elapsed += dt;
-        this.timeLeft = Math.max(0, c.duration - this.elapsed);
-        this.survival += c.score.perSecond * dt;
         if (this.invuln > 0) this.invuln = Math.max(0, this.invuln - dt);
-        this._updateCombo(dt);
         this._updateWave();
         this._updatePlayer(dt, input);
         this._updateSpawner(dt);
-        this._updateItems(dt);
         this._updateSharks(dt);
         this._resolve();
         if (this.lives <= 0) this._finish('over');
-        else if (this.timeLeft <= 0) this._finish('clear');
         break;
 
-      case 'clear':
       case 'over':
         this._updatePlayer(dt, null);
         this._updateSharks(dt);
@@ -141,31 +134,6 @@
       this._emit('wave', { index: this.wave, label: w.label, sub: w.sub });
     }
   };
-
-  /* ---------- combo ---------- */
-
-  P._updateCombo = function (dt) {
-    if (this.combo <= 0) return;
-    this.comboTimer -= dt;
-    if (this.comboTimer <= 0) { this.combo = 0; this.mult = 1; this.comboTimer = 0; }
-  };
-
-  /* One link in the chain (a pearl or a close call). Returns the multiplier for its points. */
-  P._chain = function (x, y) {
-    var cc = this.cfg.combo;
-    var mult = this.mult;                     // this link scores at the multiplier it was earned under
-    this.combo++;
-    this.comboTimer = cc.window;
-    this.maxCombo = Math.max(this.maxCombo, this.combo);
-    var next = Math.min(cc.maxMult, 1 + Math.floor(this.combo / cc.step));
-    if (next > this.mult) {
-      this.mult = next;
-      this._emit('combo', { x: x, y: y, mult: next, combo: this.combo });
-    }
-    return mult;
-  };
-
-  P._breakCombo = function () { this.combo = 0; this.mult = 1; this.comboTimer = 0; };
 
   /* ---------- player ---------- */
 
@@ -218,19 +186,20 @@
     this.dartTimer -= dt;
     if (this.dartTimer <= 0) {
       this._spawnDart();
-      this.dartTimer = lerp(c.dart.every[0], c.dart.every[1], Math.pow(t, c.dart.ease)) * rand(0.7, 1.3);
+      var gap = lerp(c.dart.every[0], c.dart.every[1], Math.pow(t, c.dart.ease)) / (1 + this.overtime() * c.dart.overtime);
+      this.dartTimer = gap * rand(0.7, 1.3);
     }
 
     if (this.wave >= 1) {
       this.dashTimer -= dt;
-      if (this.dashTimer <= 0 && this.timeLeft > c.dash.aimTime + 0.4) {
+      if (this.dashTimer <= 0) {
         this._spawnDash();
         this.dashTimer = rand(c.dash.every[0], c.dash.every[1]);
       }
     }
     if (this.wave >= 2) {
       this.packTimer -= dt;
-      if (this.packTimer <= 0 && this.timeLeft > c.pack.warnTime + 0.6) {
+      if (this.packTimer <= 0) {
         this._spawnPack();
         this.packTimer = rand(c.pack.every[0], c.pack.every[1]);
       }
@@ -293,7 +262,7 @@
     var tx = aimed ? p.x : rand(W * 0.15, W * 0.85), ty = aimed ? p.y : rand(H * 0.15, H * 0.85);
     var s = this._newShark('dart', e.x, e.y, Math.atan2(ty - e.y, tx - e.x) + (aimed ? rand(-d.spread, d.spread) : 0), d.size);
     s.mode = 'swim';
-    s.speed = lerp(d.speed[0], d.speed[1], Math.pow(this.difficulty(), d.ease)) * rand(0.88, 1.12);
+    s.speed = lerp(d.speed[0], d.speed[1], Math.pow(this.difficulty(), d.ease)) * (1 + this.overtime() * d.speedOvertime) * rand(0.88, 1.12);
     s.aimed = aimed;
     if (!aimed && Math.random() < d.wavy) {
       s.base = { x: e.x, y: e.y, h: s.heading };   // the line it travels; the wave rides on it
@@ -327,52 +296,13 @@
     }
   };
 
-  /* ---------- items ---------- */
-
-  P._updateItems = function (dt) {
-    var c = this.cfg, i;
-
-    this.pearlTimer -= dt;
-    if (this.pearlTimer <= 0) {
-      if (this.pearls.length < c.pearls.max) this.pearls.push(this._itemAt(c.pearls.life, 'pearl'));
-      this.pearlTimer = rand(c.pearls.every[0], c.pearls.every[1]);
-    }
-
-    for (i = this.pearls.length - 1; i >= 0; i--) {
-      var pe = this.pearls[i];
-      pe.age += dt;
-      if (pe.age >= pe.life) { this.pearls.splice(i, 1); continue; }
-      if (this._toPlayer(pe.x, pe.y) < c.player.pickRadius) {
-        this.pearls.splice(i, 1);
-        var mult = this._chain(pe.x, pe.y);
-        var amount = c.pearls.points * mult;
-        this.bonus += amount;
-        this.pickups++;
-        this._emit('pickup', { kind: 'pearl', x: pe.x, y: pe.y, amount: amount, mult: mult, tone: pe.tone });
-      }
-    }
-  };
-
-  /* A spot away from the edges, not on top of the player, not on another item. */
-  P._itemAt = function (life, kind) {
-    var p = this.player, W = this.W, H = this.H, x = W / 2, y = H / 2;
-    for (var i = 0; i < 12; i++) {
-      x = rand(36, W - 36);
-      y = rand(54, H - 64);
-      if (Math.hypot(x - p.x, y - p.y) < 70) continue;
-      var clear = true, all = this.pearls;
-      for (var j = 0; j < all.length; j++) if (Math.hypot(x - all[j].x, y - all[j].y) < 48) { clear = false; break; }
-      if (clear) break;
-    }
-    return { kind: kind, x: x, y: y, age: 0, life: life, tone: Math.floor(Math.random() * 4), ph: Math.random() * TAU };
-  };
-
   /* ---------- sharks ---------- */
 
   P._updateSharks = function (dt) {
     var c = this.cfg.shark, cfg = this.cfg, p = this.player;
-    var target = c.baseSpeed + c.speedGain * this.elapsed;
-    var turn = (c.turnRate + c.turnGain * this.elapsed) * dt;
+    var grown = Math.min(this.elapsed, cfg.ramp);   // hunters stop speeding up at full strength
+    var target = c.baseSpeed + c.speedGain * grown;
+    var turn = (c.turnRate + c.turnGain * grown) * dt;
     var ending = this.isOver();
     var list = this.sharks;
 
@@ -513,18 +443,19 @@
     p.kby = dy / d * c.player.knockback;
     if (s.kind === 'hunt') s.mode = 'leave';
     this.invuln = c.invulnTime;
+    if (this.shields > 0) {          // the pre-save shield takes the hit
+      this.shields--;
+      this._emit('shield', { x: p.x, y: p.y, left: this.shields });
+      return;
+    }
     this.lives--;
-    this._breakCombo();
     this._emit('hit', { x: p.x, y: p.y, lives: this.lives });
   };
 
   P._finish = function (result) {
-    var c = this.cfg;
     this.result = result;
-    if (result === 'clear') this.lifeBonus = this.lives * c.score.clearPerLife;
     this.sharks = this.sharks.filter(function (s) { return s.mode !== 'warn' && s.mode !== 'aim'; });
     for (var i = 0; i < this.sharks.length; i++) if (this.sharks[i].kind === 'hunt') this.sharks[i].mode = 'leave';
-    this.pearls.length = 0;
     this.invuln = 0;
     this._setPhase(result);
     this._emit('end', { result: result, score: this.getScore() });
