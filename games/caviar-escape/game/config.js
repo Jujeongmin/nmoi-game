@@ -49,7 +49,7 @@
     // from the start and ever thicker (one every `every[0]` s at first, `every[1]` s at the end).
     // aimed: share shot at the player; the rest cross on their own line, `wavy` of them swaying.
     // ease: the ramp is slow at first (a beginner gets well past 10 s) and steep at the end.
-    dart: { size: 0.34, first: 0.8, every: [0.8, 0.055], speed: [105, 235], ease: 2.2, spread: 0.16,
+    dart: { size: 0.34, first: 0.8, every: [0.8, 0.1], speed: [105, 200], ease: 2.0, spread: 0.16,
             aimed: 0.35, wavy: 0.5, waveAmp: [14, 30] },
 
     // Dash shark (wave 2 on): aims from the edge, locks its line, then charges straight across.
@@ -69,7 +69,7 @@
       intervalStart: 2.4,
       intervalEnd: 1.05,
       maxStart: 0,         // concurrent hunting sharks at t=0 (none: the first one comes with wave 2)
-      maxEnd: 3            // ... at the end (darts, dash sharks and the pack add to this)
+      maxEnd: 2            // ... at the end (darts, dash sharks and the pack add to this)
     },
 
     score: {
