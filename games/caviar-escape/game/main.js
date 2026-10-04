@@ -91,7 +91,6 @@
       if (ev.type === 'go') talk.say('start');
       else if (ev.type === 'hit') talk.say('oops');
       else if (ev.type === 'shield') talk.say('oops');
-      else if (ev.type === 'wave') talk.say('good');
       else if (ev.type === 'end') talk.hide();
     }
     renderer.event(ev, game);

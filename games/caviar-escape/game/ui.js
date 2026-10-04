@@ -190,7 +190,7 @@
   };
 
   /* Wave banner (shared): a gold-ruled band across the stage. */
-  P.banner = function (label, sub) { this.waveBanner.show(label, sub, 1800); };
+  P.banner = function (label, sub) { this.waveBanner.show(label, sub, 1500); };   // a small pill (game.css)
   P.hideBanner = function () { this.waveBanner.hide(); };
 
   /* ---------- screens ---------- */

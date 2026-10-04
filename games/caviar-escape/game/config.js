@@ -10,7 +10,7 @@
     // A survival run: no clock. The record is the time survived; one life (a +1 life booster
     // adds one), and a pre-save shield takes one hit (2 with the V8 weekly booster).
     lives: 1,
-    ramp: 45,              // seconds for the sharks to reach full strength; past it they keep thickening slowly
+    ramp: 35,              // seconds for the sharks to reach full strength; past it they keep thickening slowly
     invulnTime: 1.0,       // seconds after a hit (or a shield break)
     countdown: 2.4,        // 3-2-1 before play (0.8 s per number)
     resultDelay: 1.6,      // pause between end and result modal
@@ -38,7 +38,7 @@
       radius: 11,
       size: 0.48,          // the hunting shark (length and radius x size; dart, dash and pack have their own size)
       baseSpeed: 72,
-      speedGain: 1.5,      // + units/s per second elapsed, up to the ramp (45 s)
+      speedGain: 1.8,      // + units/s per second elapsed, up to the ramp
       turnRate: 1.75,      // rad/s — limited turning is what makes dodging possible
       turnGain: 0.025,
       trackTime: [3.2, 4.8], // seconds a shark hunts before swimming off
@@ -49,7 +49,7 @@
     // `every[1]` s at full strength). aimed: share shot at the player; the rest cross on their
     // own line, `wavy` of them swaying. ease: slow at first (a beginner gets past 20 s), steep
     // later. Past the ramp: gap / (1 + overtime x s), speed x (1 + speedOvertime x s).
-    dart: { size: 0.34, first: 0.8, every: [0.8, 0.1], speed: [105, 200], ease: 2.0, spread: 0.16,
+    dart: { size: 0.34, first: 0.5, every: [0.42, 0.09], speed: [125, 205], ease: 1.4, spread: 0.16,
             aimed: 0.35, wavy: 0.5, waveAmp: [14, 30], overtime: 0.02, speedOvertime: 0.006 },
 
     // Dash shark (wave 2 on): aims from the edge, locks its line, then charges straight across.
@@ -60,9 +60,9 @@
 
     waves: [
       { at: 0 },
-      { at: 15, label: 'WAVE 2', sub: '돌진 상어 등장' },
-      { at: 30, label: 'WAVE 3', sub: '상어 떼가 몰려와요' },
-      { at: 50, label: 'DEEP SEA', sub: '상어가 점점 빨라져요' }
+      { at: 12, label: 'WAVE 2', sub: '돌진 상어 등장' },
+      { at: 25, label: 'WAVE 3', sub: '상어 떼가 몰려와요' },
+      { at: 40, label: 'DEEP SEA', sub: '상어가 점점 빨라져요' }
     ],
 
     spawn: {

@@ -214,3 +214,27 @@
 /* Sub-bar shield count: dim at 0, gold while a pre-save shield is up. */
 .ce-shield-hud .cv-value { color: var(--cv-ivory-dim); }
 .ce-shield-hud.is-on .cv-value { color: var(--cv-gold-bright); text-shadow: 0 0 8px rgba(226, 204, 152, 0.6); }
+
+/* Wave notice: a small gold pill at the bottom of the stage, not a band across the play
+   (a survival run cannot have the sharks hidden even for a moment; the member's speech
+   bubble takes the top). */
+.ce-stage .cv-banner {
+  top: auto;
+  bottom: 8px;
+  left: 0; right: 0;
+  width: fit-content;
+  max-width: calc(100% - 24px);
+  margin: 0 auto;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 5px 14px;
+  border: 1px solid var(--cv-gold);
+  border-radius: 999px;
+  background: rgba(8, 8, 8, 0.66);
+  white-space: nowrap;
+}
+.ce-stage .cv-banner__label { display: inline; font-size: 13px; letter-spacing: 0.12em; text-indent: 0; text-shadow: none; }
+.ce-stage .cv-banner__rule { display: none; }
+.ce-stage .cv-banner__sub { display: inline; font-size: 11px; color: var(--cv-ivory-dim); }
+.ce-stage .cv-banner__line { display: none; }
