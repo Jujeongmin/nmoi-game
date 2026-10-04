@@ -29,6 +29,7 @@
       response: 0,         // keyboard: 0 = the keys move and stop the member at once (no glide)
       dragGain: 1.15,      // finger drag: member moves 1.15x the finger distance
       dragMax: 2400,       // ... at most this many units/s; a faster flick catches up over the next frames
+      mouseCatchUp: 36,    // mouse drag: at maxSpeed, with at most this far still to catch up (no long trail)
       knockback: 170,
       pickRadius: 15       // reach for pearls (from the capsule axis)
     },

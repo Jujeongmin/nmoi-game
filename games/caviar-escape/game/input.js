@@ -46,7 +46,7 @@
       if (!self.enabled || self.pointer.active) return;
       e.preventDefault();
       var q = self._local(e), p = self.pointer;
-      p.active = true; p.id = e.pointerId;
+      p.active = true; p.id = e.pointerId; p.mouse = e.pointerType === 'mouse';
       p.x = q.x; p.y = q.y; p.dx = p.dy = 0;
       try { s.setPointerCapture(e.pointerId); } catch (err) { /* ignore */ }
     });
@@ -68,10 +68,10 @@
 
   P.reset = function () { this.held = {}; this._releasePointer(); };
 
-  /** This frame's input: { x, y } keyboard direction, plus { drag, dx, dy } in CSS px
+  /** This frame's input: { x, y } keyboard direction, plus { drag, dx, dy, mouse } in CSS px
       while a finger / mouse button is down (the drag since the last call). */
   P.take = function () {
-    var h = this.held, p = this.pointer, out = { x: 0, y: 0, drag: p.active, dx: p.dx, dy: p.dy };
+    var h = this.held, p = this.pointer, out = { x: 0, y: 0, drag: p.active, dx: p.dx, dy: p.dy, mouse: !!p.mouse };
     p.dx = p.dy = 0;
     var kx = (h.right ? 1 : 0) - (h.left ? 1 : 0);
     var ky = (h.down ? 1 : 0) - (h.up ? 1 : 0);

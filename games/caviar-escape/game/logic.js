@@ -176,10 +176,15 @@
   P._updatePlayer = function (dt, input) {
     var c = this.cfg.player, p = this.player;
     if (input && input.drag) {
-      var ax = p.cx + input.dx * c.dragGain, ay = p.cy + input.dy * c.dragGain;
-      var mx = ax, my = ay, ml = Math.hypot(mx, my), cap = c.dragMax * dt;
+      // A mouse moves at the keyboard's speed at most (a flick of the wrist is far faster than
+      // a thumb), keeping only a short way to catch up; a finger moves the member right away.
+      var gain = input.mouse ? 1 : c.dragGain;
+      var ax = p.cx + input.dx * gain, ay = p.cy + input.dy * gain;
+      var mx = ax, my = ay, ml = Math.hypot(mx, my), cap = (input.mouse ? c.maxSpeed : c.dragMax) * dt;
       if (ml > cap) { mx *= cap / ml; my *= cap / ml; }
       p.cx = ax - mx; p.cy = ay - my;
+      var left = Math.hypot(p.cx, p.cy), keep = input.mouse ? c.mouseCatchUp : Infinity;
+      if (left > keep) { p.cx *= keep / left; p.cy *= keep / left; }
       p.x += mx; p.y += my;
       // Velocity only drives the look (lean, facing, bubbles) — smoothed so it doesn't flicker.
       var kv = dt > 0 ? 1 - Math.exp(-18 * dt) : 0;
