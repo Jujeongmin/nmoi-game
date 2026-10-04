@@ -235,6 +235,20 @@
     fx.drawFlash(ctx, this.canvas.width, this.canvas.height);
 
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    this._drawStick(input);
+  };
+
+  /* Mouse stick, drawn in CSS pixels at the press point: the gold ring and a pearl knob. */
+  P._drawStick = function (input) {
+    var p = input && input.pointer;
+    if (!p || !p.active || !p.mouse || !input.enabled) return;
+    var ctx = this.ctx, R = input.stickRadius;
+    var dx = p.x - p.ox, dy = p.y - p.oy, len = Math.hypot(dx, dy);
+    if (len > R) { dx = dx / len * R; dy = dy / len * R; }
+    var ring = this._sprite('ring'), pearl = this._sprite('pearl');
+    if (ring) { ctx.globalAlpha = 0.45; ctx.drawImage(ring, p.ox - R, p.oy - R, R * 2, R * 2); }
+    if (pearl) { ctx.globalAlpha = 0.8; ctx.drawImage(pearl, p.ox + dx - 11, p.oy + dy - 11, 22, 22); }
+    ctx.globalAlpha = 1;
   };
 
   P._visible = function (s) { return s.mode !== 'warn' && s.mode !== 'aim' || s.kind === 'dash'; };
