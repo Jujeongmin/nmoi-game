@@ -23,7 +23,6 @@
       <p class="lp-bar__brand">Caviar</p>
       <div class="lp-bar__right">
         <button class="lp-bar__bingo" id="btn-bingo" type="button" aria-label="빙고판 열기">빙고 <span class="lp-bar__count" id="bingo-count">0/25</span></button>
-        <button class="lp-bar__menu" id="btn-menu" type="button" aria-label="메뉴 열기"><span></span><span></span><span></span></button>
       </div>
     </header>
 
@@ -141,32 +140,11 @@
           <nav class="lp-cans__more" aria-label="더 보기">
             <a class="lp-cans__link" data-href="pages/recipe/index.html"><b>Recipe Book</b><span>멤버 B컷</span></a>
             <a class="lp-cans__link" data-href="pages/trailer/index.html"><b>Trailer</b><span>트레일러</span></a>
+            <button class="lp-cans__link" id="btn-ranking" type="button"><b>Ranking</b><span>기록 · 순위</span></button>
           </nav>
         </div>
       </section>
     </main>
-
-    <!-- Site menu -->
-    <div class="cv-overlay lp-sheet-overlay" id="menu-sheet" role="dialog" aria-label="메뉴">
-      <div class="cv-panel lp-nav">
-        <p class="cv-eyebrow">MENU</p>
-        <h2 class="lp-nav__title">Caviar</h2>
-        <nav class="lp-nav__list">
-          <a class="lp-nav__item" data-href="pages/recipe/index.html"><b>Recipe Book</b><span>멤버 B컷 레시피북</span></a>
-          <a class="lp-nav__item" data-href="pages/trailer/index.html"><b>Trailer</b><span>트레일러 장바구니</span></a>
-          <button class="lp-nav__item" type="button" data-act="bingo"><b>Mission Bingo</b><span>게임 퀘스트 · 미션 빙고판</span></button>
-          <button class="lp-nav__item" type="button" data-act="ranking"><b>Ranking</b><span>내 기록 · 리더보드</span></button>
-          <button class="lp-nav__item" type="button" data-act="presave"><b>Pre-save</b><span>n Moi Spotify 프리세이브</span></button>
-          <button class="lp-nav__item" type="button" data-act="invite"><b>Invite</b><span>친구 초대 링크 · 주간 순위</span></button>
-          <button class="lp-nav__item" type="button" data-act="restart"><b>Restart</b><span>레스토랑 입장부터 다시</span></button>
-          <div class="lp-nav__item lp-nav__sound" id="menu-sound"><b>Sound</b></div>
-          <button class="lp-nav__item" type="button" data-act="settings"><b>Settings</b><span>언어 · 음량 · 내 정보</span></button>
-          <button class="lp-nav__item" type="button" data-act="login"><b>V8 Login</b><span>빙고 미션 · 더 큰 보상</span></button>
-          <button class="lp-nav__item lp-nav__item--demo" type="button" data-act="reset"><b>Demo Reset</b><span>시연용 · 기록 초기화</span></button>
-        </nav>
-        <button class="cv-btn lp-nav__close" type="button" data-act="close">닫기</button>
-      </div>
-    </div>
 
     <!-- Privacy notice (draft — wording to be confirmed) -->
     <div class="cv-overlay lp-sheet-overlay" id="privacy-sheet" role="dialog" aria-label="개인정보 처리 안내">

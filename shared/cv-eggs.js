@@ -92,10 +92,19 @@
     var box = el('button', 'cv-egg cv-egg--' + side);
     box.type = 'button';
     box.setAttribute('aria-label', m.name + ' — 찾았다!');
-    // Somewhere along the edge, clear of the corners (bars, gear, footer).
-    // (bottom: near a corner, so the main buttons in the middle stay free)
-    if (side === 'bottom') box.style.left = Math.round(Math.random() < 0.5 ? rand(12, 20) : rand(80, 88)) + '%';
-    else box.style.top = Math.round(rand(28, 64)) + '%';
+    // Along an edge of the app's column (on a wide screen the portrait app sits in the middle;
+    // the window's own edges would be outside it), clear of the corners (bars, gear, footer).
+    // Bottom: near a corner, so the main buttons in the middle stay free.
+    var app = document.getElementById('app') || document.body, r = app.getBoundingClientRect();
+    var W = 108;   // the peek box (cv-theme.css .cv-egg)
+    if (side === 'bottom') {
+      box.style.left = Math.round(r.left + r.width * (Math.random() < 0.5 ? rand(0.12, 0.2) : rand(0.8, 0.88)) - W / 2) + 'px';
+      box.style.marginLeft = '0';
+    } else {
+      box.style.top = Math.round(r.top + r.height * rand(0.28, 0.64)) + 'px';
+      if (side === 'left') box.style.left = Math.round(r.left - 8) + 'px';
+      else { box.style.right = 'auto'; box.style.left = Math.round(r.right - W + 8) + 'px'; }
+    }
     var spr = el('span', 'cv-egg__spr');
     box.appendChild(spr);
     box.appendChild(el('span', 'cv-egg__spark', '!'));

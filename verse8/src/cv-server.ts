@@ -67,6 +67,7 @@ const api = {
   adminListAdmins: () => call<AdminRoster>("adminListAdmins"),
   adminAddAdmin: (account: string, name?: string) => call<AdminRoster>("adminAddAdmin", [account, name]),
   adminRemoveAdmin: (account: string) => call<AdminRoster>("adminRemoveAdmin", [account]),
+  adminResetBoards: (which: "escape") => call<{ removed: number }>("adminResetBoards", [which]),
 };
 
 const w = window as unknown as { CAVIAR?: Record<string, unknown> };

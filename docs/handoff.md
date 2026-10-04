@@ -26,7 +26,7 @@ cd web && git checkout develop && npm install
 
 - `shared/cv-campaign.js`: `demo.unlockAllWeeks`, `demo.unlimitedPlays`
 - `verse8/server.js`: `DEMO_UNLIMITED_PLAYS`
-- 설정의 "데모 리셋" 메뉴
+- 설정 > 관리자 칸의 "데모 리셋" (사이트 메뉴는 10/4 제거: Ranking 은 캔 화면 링크로)
 
 ## 4. 남은 일
 

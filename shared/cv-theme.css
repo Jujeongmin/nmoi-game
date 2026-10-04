@@ -1009,3 +1009,7 @@ html.cv-has-footer .lp-app { padding-bottom: 0; }
 .cv-egg-found__title { margin: 0 0 6px; font: 700 19px/1.35 var(--cv-font-heading); color: var(--cv-ink); }
 .cv-egg-found__desc { margin: 0 0 18px; font: 500 13px/1.5 var(--cv-font-ui); color: var(--cv-ink-soft); }
 .cv-egg-found .cv-btn { flex: 1 1 0; min-width: 0; padding: 0 10px; white-space: nowrap; font-size: 13px; }
+
+/* Admin: the leaderboard clean-up button turns garnet once armed (the second tap deletes). */
+.cv-admin-reset { margin-top: 8px; }
+.cv-admin-reset__btn.is-armed { border-color: var(--cv-garnet); color: var(--cv-garnet); font-weight: 700; }

@@ -114,7 +114,7 @@
 
   NS.landingMenu = {
     init: function () {
-      var menu = $('menu-sheet'), ranking = $('ranking-sheet'), privacy = $('privacy-sheet'), invite = $('invite-sheet');
+      var ranking = $('ranking-sheet'), privacy = $('privacy-sheet'), invite = $('invite-sheet');
       bind(invite);
       handlers.invite = function () {
         var box = $('invite-body');
@@ -129,13 +129,14 @@
       Array.prototype.forEach.call(document.querySelectorAll('[data-href]'), function (a) {
         a.href = NS.hub.link(a.dataset.href);
       });
-      bind(menu);
       bind(ranking);
-      $('btn-menu').addEventListener('click', function () { open(menu); });
+      // (No site menu: everything it held is on the screens — Recipe Book / Trailer / Ranking
+      // under the cans, bingo and pre-save in the bar, sound / language in the settings.)
       handlers.ranking = function () { renderRanking(); open(ranking); };
+      $('btn-ranking').addEventListener('click', function () { handlers.ranking(); });
       handlers.settings = function () { NS.settings.open(); };
       document.addEventListener('keydown', function (e) {
-        if (e.key === 'Escape') { close(menu); close(ranking); close(invite); close(privacy); }
+        if (e.key === 'Escape') { close(ranking); close(invite); close(privacy); }
       });
     },
     on: function (name, fn) { handlers[name] = fn; },

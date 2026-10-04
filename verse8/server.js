@@ -605,6 +605,28 @@ class Server {
     return { account: $sender.account, admin };
   }
 
+  // Admin: clear leaderboards. 'escape': Caviar Escape's board and the combined board of
+  // every season (Escape turned from points into a survival time, so its old rows and the
+  // totals that summed them no longer compare). Players' links to removed rows just make a
+  // new row on their next run (upsertBest). Returns { removed } rows.
+  async adminResetBoards(which) {
+    await requireAdmin();
+    if (which !== 'escape') throw new Error('unknown boards');
+    const seasons = ['pre'].concat(WEEKS.map((w) => w.id), ['post']);
+    const cols = [];
+    for (const s of seasons) cols.push(collectionOf('caviar-escape', s), collectionOf(TOTAL, s, true));
+    let removed = 0;
+    for (const col of cols) {
+      for (let page = 0; page < 200; page++) {
+        let rows = [];
+        try { rows = await $global.getCollectionItems(col, { limit: 100 }); } catch (e) { rows = []; }
+        if (!rows.length) break;
+        for (const r of rows) { await $global.deleteCollectionItem(col, r.__id); removed++; }
+      }
+    }
+    return { removed };
+  }
+
   // One page of participants: everyone who registered an e-mail, oldest first. `after` is the
   // `next` of the previous page (a registration time). An account that changed its e-mail can
   // show up twice across pages; the page keeps the latest row.

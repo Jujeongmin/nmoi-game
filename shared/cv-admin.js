@@ -38,6 +38,56 @@
 
   /* ---------- settings panel ---------- */
 
+  /* Clear Escape's leaderboard and the combined one (Escape turned into a survival time).
+     Two taps: the first asks, the second deletes on the server (cannot be undone). */
+  function resetBoards() {
+    var wrap = el('div', 'cv-admin-reset');
+    var b = el('button', 'cv-settings__link cv-admin-reset__btn', '리더보드 정리 · 이스케이프 + 통합 순위');
+    var note = el('p', 'cv-settings__note', '');
+    b.type = 'button';
+    var armed = false, timer = 0;
+    b.addEventListener('click', function () {
+      if (!armed) {
+        armed = true;
+        b.textContent = '한 번 더 누르면 삭제돼요 (되돌릴 수 없어요)';
+        b.classList.add('is-armed');
+        timer = setTimeout(function () { armed = false; b.textContent = '리더보드 정리 · 이스케이프 + 통합 순위'; b.classList.remove('is-armed'); }, 5000);
+        return;
+      }
+      clearTimeout(timer);
+      b.disabled = true;
+      b.textContent = '지우는 중…';
+      NS.whenServer(function (s) {
+        s.adminResetBoards('escape').then(function (r) {
+          b.textContent = '정리했어요';
+          note.textContent = NS.t('이스케이프·통합 순위 기록 {n}개를 지웠어요', { n: r.removed });
+        }, function (err) {
+          b.disabled = false; armed = false;
+          b.classList.remove('is-armed');
+          b.textContent = '리더보드 정리 · 이스케이프 + 통합 순위';
+          note.textContent = '지우지 못했어요: ' + ((err && err.message) || '서버 연결 안 됨');
+        });
+      });
+    });
+    wrap.appendChild(b);
+    wrap.appendChild(note);
+    return wrap;
+  }
+
+  /* Demo reset (presentations): this browser's bingo, tickets, today's runs and demo login. */
+  function demoReset() {
+    var b = el('button', 'cv-settings__link', '데모 리셋 · 이 브라우저 기록 초기화');
+    b.type = 'button';
+    b.addEventListener('click', function () {
+      if (NS.landingMenu) { NS.landingMenu.run('reset'); return; }
+      if (!window.confirm(NS.t('시연용 초기화: 빙고·응모권·오늘 판수·데모 로그인을 지울까요?'))) return;
+      if (NS.bingo) NS.bingo.reset();
+      if (NS.account) NS.account.reset();
+      window.location.reload();
+    });
+    return b;
+  }
+
   function settings(panel) {
     var host = el('section', 'cv-settings__section cv-admin-entry');
     host.hidden = true;
@@ -64,6 +114,8 @@
           links.appendChild(b);
         });
         host.appendChild(links);
+        host.appendChild(resetBoards());
+        host.appendChild(demoReset());
       } else {
         var show = el('button', 'cv-settings__link cv-admin-entry__id', '내 계정 ID 보기');
         show.type = 'button';

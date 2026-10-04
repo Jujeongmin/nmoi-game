@@ -67,7 +67,6 @@
 
   // Site menu (landing/menu.js)
   NS.landingMenu.init();
-  document.getElementById('menu-sound').appendChild(NS.sound.button());
   NS.landingMenu.on('bingo', function () { NS.bingoUI.open(); });
   NS.landingMenu.on('presave', function () { NS.presave.interstitial(); });
   NS.landingMenu.on('restart', function () { flow.step = 'table'; render(); });
